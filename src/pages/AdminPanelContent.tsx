@@ -809,9 +809,68 @@ function OverviewTab() {
   )
 }
 
-// ─── Tab: System Monitoring ──────────────────────────────────────
+// ─── Tab: System Monitoring (Ultra-Pro) ──────────────────────────
+function useApiAnalyticsChart() {
+  return useQuery({
+    queryKey: ['admin-api-analytics-30d'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('api_analytics')
+        .select('date, total_requests, failed_requests, avg_response_time_ms, endpoint')
+        .gte('date', new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0])
+        .order('date', { ascending: true })
+
+      const byDay: Record<string, { day: string; requests: number; errors: number; latency: number; count: number }> = {}
+      for (const r of data || []) {
+        const day = new Date(r.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+        if (!byDay[day]) byDay[day] = { day, requests: 0, errors: 0, latency: 0, count: 0 }
+        byDay[day].requests += r.total_requests || 0
+        byDay[day].errors += r.failed_requests || 0
+        byDay[day].latency += r.avg_response_time_ms || 0
+        byDay[day].count += 1
+      }
+      return Object.values(byDay).map(d => ({
+        ...d,
+        latency: d.count > 0 ? Math.round(d.latency / d.count) : 0,
+        errorRate: d.requests > 0 ? Math.round((d.errors / d.requests) * 1000) / 10 : 0,
+      }))
+    },
+    staleTime: 5 * 60_000,
+  })
+}
+
+function useResponseTimePercentiles() {
+  return useQuery({
+    queryKey: ['admin-response-percentiles'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('api_logs')
+        .select('response_time_ms')
+        .not('response_time_ms', 'is', null)
+        .gte('created_at', new Date(Date.now() - 86400000).toISOString())
+        .order('response_time_ms', { ascending: true })
+        .limit(500)
+
+      if (!data || data.length === 0) return { p50: 0, p95: 0, p99: 0, avg: 0, total: 0 }
+      const times = data.map(d => d.response_time_ms!).filter(Boolean).sort((a, b) => a - b)
+      const n = times.length
+      return {
+        p50: times[Math.floor(n * 0.5)] || 0,
+        p95: times[Math.floor(n * 0.95)] || 0,
+        p99: times[Math.floor(n * 0.99)] || 0,
+        avg: Math.round(times.reduce((a, b) => a + b, 0) / n),
+        total: n,
+      }
+    },
+    staleTime: 60_000,
+  })
+}
+
 function SystemTab() {
   const { data: health, isLoading, refetch } = useSystemHealth()
+  const { data: apiChart = [] } = useApiAnalyticsChart()
+  const { data: percentiles } = useResponseTimePercentiles()
+  const [sysView, setSysView] = useState<'overview' | 'latency' | 'services'>('overview')
 
   const services = [
     { name: 'Base de données', icon: Database, status: 'healthy' as const, detail: `${health?.dbLatency || 0}ms` },
@@ -822,21 +881,17 @@ function SystemTab() {
     { name: 'Moteur de prix', icon: DollarSign, status: 'healthy' as const, detail: 'Actif' },
   ]
 
-  const metrics = [
-    { label: 'Latence API', value: health?.apiLatency || 0, unit: 'ms', max: 1000, icon: Cpu },
-    { label: 'Latence DB', value: health?.dbLatency || 0, unit: 'ms', max: 500, icon: Database },
-    { label: 'Taux d\'erreur', value: health?.errorRate || 0, unit: '%', max: 10, icon: AlertTriangle },
-    { label: 'Jobs actifs', value: health?.activeJobs || 0, unit: '', max: 50, icon: Zap },
-    { label: 'Jobs échoués', value: health?.failedJobs || 0, unit: '', max: 10, icon: XCircle },
-    { label: 'Uptime', value: health?.uptime || 99.9, unit: '%', max: 100, icon: CheckCircle },
-  ]
+  // SLA calculation
+  const slaTarget = 99.9
+  const currentUptime = health?.uptime || 99.9
+  const slaCompliant = currentUptime >= slaTarget
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-foreground">Monitoring Système</h2>
-          <p className="text-xs text-muted-foreground">État temps réel de l'infrastructure</p>
+          <p className="text-xs text-muted-foreground">Infrastructure, latence, SLA et services</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading} className="h-8 text-xs">
           <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -844,85 +899,202 @@ function SystemTab() {
         </Button>
       </div>
 
-      {/* Global status card */}
+      {/* KPIs Row */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-6">
+        <KPICard title="Latence API" value={`${health?.apiLatency || 0}ms`} subtitle="Temps réel" icon={Cpu} loading={isLoading} accent={health?.apiLatency && health.apiLatency > 500 ? 'warning' : 'primary'} />
+        <KPICard title="Latence DB" value={`${health?.dbLatency || 0}ms`} subtitle="Base de données" icon={Database} loading={isLoading} />
+        <KPICard title="Taux erreur" value={`${(health?.errorRate || 0).toFixed(1)}%`} subtitle="Dernière heure" icon={AlertTriangle} loading={isLoading} accent={(health?.errorRate || 0) > 3 ? 'destructive' : 'success'} />
+        <KPICard title="Uptime" value={`${currentUptime}%`} subtitle={slaCompliant ? 'SLA respecté' : 'SLA violé ⚠️'} icon={CheckCircle} loading={isLoading} accent={slaCompliant ? 'success' : 'destructive'} />
+        <KPICard title="Jobs actifs" value={(health?.activeJobs || 0).toString()} subtitle={`${health?.pendingJobs || 0} en attente`} icon={Zap} loading={isLoading} />
+        <KPICard title="P95 Latence" value={percentiles ? `${percentiles.p95}ms` : '—'} subtitle={`P50: ${percentiles?.p50 || 0}ms`} icon={Activity} loading={isLoading} accent={percentiles && percentiles.p95 > 1000 ? 'warning' : 'primary'} />
+      </div>
+
+      {/* SLA Bar */}
       <Card className="shadow-sm">
-        <CardContent className="pt-5">
-          <div className="flex items-center gap-3 mb-5">
-            <span className="relative flex h-3 w-3">
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                (health?.failedJobs || 0) > 5 ? 'bg-red-500' : (health?.errorRate || 0) > 3 ? 'bg-amber-500' : 'bg-emerald-500'
-              }`} />
-              <span className={`relative inline-flex rounded-full h-3 w-3 ${
-                (health?.failedJobs || 0) > 5 ? 'bg-red-500' : (health?.errorRate || 0) > 3 ? 'bg-amber-500' : 'bg-emerald-500'
-              }`} />
-            </span>
-            <div>
-              <h3 className="text-sm font-bold text-foreground">
-                {(health?.failedJobs || 0) > 5 ? 'Dégradation détectée' :
-                 (health?.errorRate || 0) > 3 ? 'Performance réduite' : 'Tous les systèmes opérationnels'}
-              </h3>
-              <p className="text-[10px] text-muted-foreground">
-                Dernière vérification: {new Date().toLocaleTimeString('fr-FR')}
-              </p>
+        <CardContent className="py-3 px-5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${slaCompliant ? 'bg-emerald-500' : 'bg-destructive'}`} />
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${slaCompliant ? 'bg-emerald-500' : 'bg-destructive'}`} />
+              </span>
+              <span className="text-sm font-semibold">SLA Tracking</span>
+              <span className={`text-lg font-bold font-mono ${slaCompliant ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>{currentUptime}%</span>
+              <span className="text-xs text-muted-foreground">/ {slaTarget}% cible</span>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <span>P50: <b className="font-mono text-foreground">{percentiles?.p50 || 0}ms</b></span>
+              <span>P95: <b className="font-mono text-foreground">{percentiles?.p95 || 0}ms</b></span>
+              <span>P99: <b className="font-mono text-foreground">{percentiles?.p99 || 0}ms</b></span>
             </div>
           </div>
-
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {metrics.map((m) => {
-              const ratio = m.value / m.max
-              const isUptime = m.label.includes('Uptime')
-              const color = isUptime
-                ? (ratio > 0.99 ? 'bg-emerald-500' : ratio > 0.95 ? 'bg-amber-500' : 'bg-destructive')
-                : (ratio < 0.5 ? 'bg-emerald-500' : ratio < 0.8 ? 'bg-amber-500' : 'bg-destructive')
-              return (
-                <div key={m.label} className="p-4 rounded-xl border bg-card hover:shadow-sm transition-shadow">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <div className="flex items-center gap-2">
-                      <m.icon className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-xs font-medium text-muted-foreground">{m.label}</span>
-                    </div>
-                    <span className="text-base font-bold font-mono text-foreground">{m.value}{m.unit}</span>
-                  </div>
-                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${color}`}
-                      style={{ width: `${Math.min(ratio * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              )
-            })}
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div className={`h-full rounded-full transition-all duration-700 ${slaCompliant ? 'bg-emerald-500' : 'bg-destructive'}`} style={{ width: `${Math.min(currentUptime, 100)}%` }} />
           </div>
         </CardContent>
       </Card>
 
-      {/* Services grid */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold">Services</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-2 md:grid-cols-2">
-            {services.map((svc) => (
-              <div key={svc.name} className="flex items-center justify-between p-3 rounded-xl border hover:border-primary/20 hover:shadow-sm transition-all">
-                <div className="flex items-center gap-2.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                      svc.status === 'healthy' ? 'bg-emerald-500' : svc.status === 'warning' ? 'bg-amber-500' : 'bg-red-500'
-                    }`} />
-                    <span className={`relative inline-flex rounded-full h-2 w-2 ${
-                      svc.status === 'healthy' ? 'bg-emerald-500' : svc.status === 'warning' ? 'bg-amber-500' : 'bg-red-500'
-                    }`} />
-                  </span>
-                  <svc.icon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">{svc.name}</span>
-                </div>
-                <span className="text-xs text-muted-foreground font-mono">{svc.detail}</span>
+      {/* Sub-nav */}
+      <div className="flex gap-1 bg-muted/50 p-0.5 rounded-lg w-fit">
+        {([
+          { key: 'overview', label: 'Vue globale', icon: BarChart3 },
+          { key: 'latency', label: 'Latence & Trafic', icon: Activity },
+          { key: 'services', label: 'Services', icon: Server },
+        ] as const).map(s => (
+          <button key={s.key} onClick={() => setSysView(s.key)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+              sysView === s.key ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <s.icon className="h-3.5 w-3.5" />{s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Overview: Metrics grid */}
+      {sysView === 'overview' && (
+        <Card className="shadow-sm">
+          <CardContent className="pt-5">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="relative flex h-3 w-3">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                  (health?.failedJobs || 0) > 5 ? 'bg-red-500' : (health?.errorRate || 0) > 3 ? 'bg-amber-500' : 'bg-emerald-500'
+                }`} />
+                <span className={`relative inline-flex rounded-full h-3 w-3 ${
+                  (health?.failedJobs || 0) > 5 ? 'bg-red-500' : (health?.errorRate || 0) > 3 ? 'bg-amber-500' : 'bg-emerald-500'
+                }`} />
+              </span>
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  {(health?.failedJobs || 0) > 5 ? 'Dégradation détectée' :
+                   (health?.errorRate || 0) > 3 ? 'Performance réduite' : 'Tous les systèmes opérationnels'}
+                </h3>
+                <p className="text-[10px] text-muted-foreground">
+                  Dernière vérification: {new Date().toLocaleTimeString('fr-FR')}
+                </p>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {[
+                { label: 'Latence API', value: health?.apiLatency || 0, unit: 'ms', max: 1000, icon: Cpu },
+                { label: 'Latence DB', value: health?.dbLatency || 0, unit: 'ms', max: 500, icon: Database },
+                { label: "Taux d'erreur", value: health?.errorRate || 0, unit: '%', max: 10, icon: AlertTriangle },
+                { label: 'Jobs actifs', value: health?.activeJobs || 0, unit: '', max: 50, icon: Zap },
+                { label: 'Jobs échoués', value: health?.failedJobs || 0, unit: '', max: 10, icon: XCircle },
+                { label: 'Uptime', value: health?.uptime || 99.9, unit: '%', max: 100, icon: CheckCircle },
+              ].map(m => {
+                const ratio = m.value / m.max
+                const isUptime = m.label.includes('Uptime')
+                const color = isUptime
+                  ? (ratio > 0.99 ? 'bg-emerald-500' : ratio > 0.95 ? 'bg-amber-500' : 'bg-destructive')
+                  : (ratio < 0.5 ? 'bg-emerald-500' : ratio < 0.8 ? 'bg-amber-500' : 'bg-destructive')
+                return (
+                  <div key={m.label} className="p-4 rounded-xl border bg-card hover:shadow-sm transition-shadow">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div className="flex items-center gap-2">
+                        <m.icon className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs font-medium text-muted-foreground">{m.label}</span>
+                      </div>
+                      <span className="text-base font-bold font-mono text-foreground">{m.value}{m.unit}</span>
+                    </div>
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${Math.min(ratio * 100, 100)}%` }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Latency & Traffic charts */}
+      {sysView === 'latency' && (
+        <div className="grid gap-5 lg:grid-cols-2">
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Activity className="h-4 w-4 text-primary" />Latence moyenne (30j)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {apiChart.length > 0 ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={apiChart} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="latGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={CHART_COLORS.primary} stopOpacity={0.3} />
+                        <stop offset="100%" stopColor={CHART_COLORS.primary} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <RechartsTooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
+                    <Area type="monotone" dataKey="latency" name="Latence (ms)" stroke={CHART_COLORS.primary} fill="url(#latGrad)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-[220px] text-sm text-muted-foreground">Aucune donnée</div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-primary" />Requêtes & Erreurs (30j)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {apiChart.length > 0 ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={apiChart} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <RechartsTooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
+                    <Bar dataKey="requests" name="Requêtes" fill={CHART_COLORS.primary} radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="errors" name="Erreurs" fill={CHART_COLORS.destructive} radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-[220px] text-sm text-muted-foreground">Aucune donnée</div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Services */}
+      {sysView === 'services' && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold">Services ({services.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 md:grid-cols-2">
+              {services.map(svc => (
+                <div key={svc.name} className="flex items-center justify-between p-3 rounded-xl border hover:border-primary/20 hover:shadow-sm transition-all">
+                  <div className="flex items-center gap-2.5">
+                    <span className="relative flex h-2 w-2">
+                      <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                        svc.status === 'healthy' ? 'bg-emerald-500' : svc.status === 'warning' ? 'bg-amber-500' : 'bg-red-500'
+                      }`} />
+                      <span className={`relative inline-flex rounded-full h-2 w-2 ${
+                        svc.status === 'healthy' ? 'bg-emerald-500' : svc.status === 'warning' ? 'bg-amber-500' : 'bg-red-500'
+                      }`} />
+                    </span>
+                    <svc.icon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">{svc.name}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground font-mono">{svc.detail}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
@@ -1412,9 +1584,50 @@ function AutomationTab() {
   )
 }
 
-// ─── Tab: Alert Center ───────────────────────────────────────────
+// ─── Tab: Alert Center (Ultra-Pro) ───────────────────────────────
+function useAlertHistory() {
+  return useQuery({
+    queryKey: ['admin-alert-history'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('active_alerts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100)
+      return data || []
+    },
+    refetchInterval: 30_000,
+  })
+}
+
+function useAlertRules() {
+  return useQuery({
+    queryKey: ['admin-alert-rules'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('alert_configurations')
+        .select('*')
+        .order('created_at', { ascending: false })
+      return data || []
+    },
+  })
+}
+
 function AlertCenterTab() {
   const { data: alerts = [], isLoading, refetch } = useAdminAlerts()
+  const { data: allAlerts = [], refetch: refetchHistory } = useAlertHistory()
+  const { data: rules = [] } = useAlertRules()
+  const [alertView, setAlertView] = useState<'active' | 'history' | 'rules'>('active')
+  const [severityFilter, setSeverityFilter] = useState<string>('all')
+
+  const resolvedAlerts = allAlerts.filter(a => a.status === 'resolved' || a.acknowledged)
+  const unresolvedAlerts = allAlerts.filter(a => a.status === 'active' && !a.acknowledged)
+
+  // MTTR calculation (mean time to resolve)
+  const resolvedWithTime = allAlerts.filter(a => a.acknowledged_at && a.created_at)
+  const mttr = resolvedWithTime.length > 0
+    ? Math.round(resolvedWithTime.reduce((s, a) => s + (new Date(a.acknowledged_at!).getTime() - new Date(a.created_at!).getTime()), 0) / resolvedWithTime.length / 60000)
+    : 0
 
   const grouped = {
     critical: alerts.filter(a => a.severity === 'critical'),
@@ -1422,74 +1635,217 @@ function AlertCenterTab() {
     info: alerts.filter(a => a.severity === 'info'),
   }
 
+  const filteredAlerts = severityFilter === 'all' ? alerts : alerts.filter(a => a.severity === severityFilter)
+
+  const handleAcknowledge = async (alertId: string) => {
+    await supabase.from('active_alerts').update({
+      acknowledged: true,
+      acknowledged_at: new Date().toISOString(),
+      status: 'acknowledged',
+    }).eq('id', alertId)
+    refetch()
+    refetchHistory()
+  }
+
+  const handleResolve = async (alertId: string) => {
+    await supabase.from('active_alerts').update({
+      status: 'resolved',
+      acknowledged: true,
+      acknowledged_at: new Date().toISOString(),
+    }).eq('id', alertId)
+    refetch()
+    refetchHistory()
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-foreground">Centre d'alertes</h2>
-          <p className="text-xs text-muted-foreground">Incidents système, business et sécurité</p>
+          <p className="text-xs text-muted-foreground">Incidents, escalades et règles de notification</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading} className="h-8 text-xs">
-          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
-          Actualiser
+        <Button variant="outline" size="sm" onClick={() => { refetch(); refetchHistory() }} disabled={isLoading} className="h-8 text-xs">
+          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />Actualiser
         </Button>
       </div>
 
-      <div className="grid gap-4 grid-cols-3">
-        {[
-          { label: 'Critique', count: grouped.critical.length, color: 'text-destructive', border: grouped.critical.length > 0 ? 'border-destructive/30 bg-destructive/5' : '' },
-          { label: 'Warning', count: grouped.warning.length, color: 'text-amber-500', border: '' },
-          { label: 'Info', count: grouped.info.length, color: 'text-muted-foreground', border: '' },
-        ].map((s) => (
-          <Card key={s.label} className={`shadow-sm ${s.border}`}>
-            <CardContent className="py-4 text-center">
-              <div className={`text-3xl font-bold ${s.color}`}>{s.count}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{s.label}</div>
-            </CardContent>
-          </Card>
+      {/* KPIs */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-6">
+        <KPICard title="Critiques" value={grouped.critical.length.toString()} subtitle="Actives" icon={XCircle} loading={isLoading} accent="destructive" />
+        <KPICard title="Warnings" value={grouped.warning.length.toString()} subtitle="Attention requise" icon={AlertTriangle} loading={isLoading} accent="warning" />
+        <KPICard title="Info" value={grouped.info.length.toString()} subtitle="Informatives" icon={Bell} loading={isLoading} />
+        <KPICard title="Non résolues" value={unresolvedAlerts.length.toString()} subtitle="En attente" icon={Clock} loading={isLoading} accent={unresolvedAlerts.length > 5 ? 'destructive' : 'primary'} />
+        <KPICard title="Résolues" value={resolvedAlerts.length.toString()} subtitle="Total historique" icon={CheckCircle} loading={isLoading} accent="success" />
+        <KPICard title="MTTR" value={mttr > 0 ? `${mttr}min` : '—'} subtitle="Temps moyen résolution" icon={Activity} loading={isLoading} />
+      </div>
+
+      {/* Sub-nav */}
+      <div className="flex gap-1 bg-muted/50 p-0.5 rounded-lg w-fit">
+        {([
+          { key: 'active', label: `Actives (${alerts.length})`, icon: Bell },
+          { key: 'history', label: `Historique (${allAlerts.length})`, icon: Clock },
+          { key: 'rules', label: `Règles (${rules.length})`, icon: Settings },
+        ] as const).map(s => (
+          <button key={s.key} onClick={() => setAlertView(s.key)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+              alertView === s.key ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <s.icon className="h-3.5 w-3.5" />{s.label}
+          </button>
         ))}
       </div>
 
-      <Card className="shadow-sm">
-        <CardContent className="pt-5">
-          {alerts.length === 0 ? (
-            <div className="text-center py-12">
-              <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-3 opacity-80" />
-              <h3 className="font-semibold text-foreground">Tout est en ordre</h3>
-              <p className="text-sm text-muted-foreground mt-1">Aucune alerte active pour le moment</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {alerts.map((alert) => (
-                <div key={alert.id} className={`p-4 rounded-xl border transition-colors ${
-                  alert.severity === 'critical' ? 'border-destructive/30 bg-destructive/5 hover:bg-destructive/10' :
-                  alert.severity === 'warning' ? 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10' : 'border-border hover:bg-muted/50'
-                }`}>
-                  <div className="flex items-start gap-3">
-                    {alert.severity === 'critical' ? (
-                      <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                    ) : alert.severity === 'warning' ? (
-                      <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-                    ) : (
-                      <Bell className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-semibold text-foreground">{alert.title}</h4>
-                        <Badge variant="outline" className="text-[10px] h-4">{alert.source}</Badge>
+      {/* Active alerts */}
+      {alertView === 'active' && (
+        <div className="space-y-3">
+          {/* Severity filter */}
+          <div className="flex gap-1.5">
+            {['all', 'critical', 'warning', 'info'].map(sev => (
+              <button key={sev} onClick={() => setSeverityFilter(sev)}
+                className={`px-2.5 py-1 text-[11px] font-medium rounded-md border transition-colors ${
+                  severityFilter === sev ? 'bg-primary text-primary-foreground border-primary' : 'bg-background border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {sev === 'all' ? 'Toutes' : sev === 'critical' ? `Critiques (${grouped.critical.length})` :
+                 sev === 'warning' ? `Warnings (${grouped.warning.length})` : `Info (${grouped.info.length})`}
+              </button>
+            ))}
+          </div>
+
+          <Card className="shadow-sm">
+            <CardContent className="pt-5">
+              {filteredAlerts.length === 0 ? (
+                <div className="text-center py-12">
+                  <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-3 opacity-80" />
+                  <h3 className="font-semibold text-foreground">Tout est en ordre</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Aucune alerte active</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredAlerts.map(alert => (
+                    <div key={alert.id} className={`p-4 rounded-xl border transition-colors ${
+                      alert.severity === 'critical' ? 'border-destructive/30 bg-destructive/5 hover:bg-destructive/10' :
+                      alert.severity === 'warning' ? 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10' : 'border-border hover:bg-muted/50'
+                    }`}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          {alert.severity === 'critical' ? <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" /> :
+                           alert.severity === 'warning' ? <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" /> :
+                           <Bell className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-semibold text-foreground">{alert.title}</h4>
+                              <Badge variant="outline" className="text-[10px] h-4">{alert.source}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">{alert.description}</p>
+                            <p className="text-[10px] text-muted-foreground mt-1 font-mono">
+                              {new Date(alert.timestamp).toLocaleString('fr-FR')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-1.5 shrink-0">
+                          <Button variant="outline" size="sm" className="h-7 text-[10px] px-2" onClick={() => handleAcknowledge(alert.id)}>
+                            <Eye className="h-3 w-3 mr-1" />Ack
+                          </Button>
+                          <Button variant="outline" size="sm" className="h-7 text-[10px] px-2 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10" onClick={() => handleResolve(alert.id)}>
+                            <CheckCircle className="h-3 w-3 mr-1" />Résoudre
+                          </Button>
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">{alert.description}</p>
-                      <p className="text-[10px] text-muted-foreground mt-1 font-mono">
-                        {new Date(alert.timestamp).toLocaleString('fr-FR')}
-                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* History */}
+      {alertView === 'history' && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" />Historique complet ({allAlerts.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="relative">
+              <div className="absolute left-[18px] top-0 bottom-0 w-px bg-border" />
+              <div className="space-y-0">
+                {allAlerts.slice(0, 30).map(a => (
+                  <div key={a.id} className="flex gap-4 py-2.5 relative">
+                    <div className={`h-[14px] w-[14px] rounded-full border-2 shrink-0 z-10 mt-1 ${
+                      a.status === 'resolved' ? 'bg-emerald-500 border-emerald-500' :
+                      a.severity === 'critical' ? 'bg-destructive border-destructive' :
+                      a.severity === 'warning' ? 'bg-amber-500 border-amber-500' :
+                      'bg-muted border-muted-foreground/30'
+                    }`} style={{ marginLeft: '12px' }} />
+                    <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-foreground">{a.title}</span>
+                          <Badge variant={a.status === 'resolved' ? 'default' : a.severity === 'critical' ? 'destructive' : 'outline'} className="text-[10px] h-5">
+                            {a.status === 'resolved' ? 'Résolu' : a.severity}
+                          </Badge>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground truncate">{a.message}</p>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground font-mono shrink-0">
+                        {new Date(a.created_at || '').toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Rules */}
+      {alertView === 'rules' && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Settings className="h-4 w-4 text-primary" />Règles d'alerte ({rules.length})
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {rules.length === 0 ? (
+              <div className="text-center py-12">
+                <Settings className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Aucune règle configurée</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {rules.map(rule => (
+                  <div key={rule.id} className="flex items-center justify-between p-3 rounded-xl border hover:shadow-sm transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className={`h-2.5 w-2.5 rounded-full ${rule.is_enabled ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`} />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{rule.alert_type}</p>
+                        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
+                          {rule.threshold_value && <span>Seuil: {rule.threshold_value}</span>}
+                          {rule.threshold_percent && <span>Seuil %: {rule.threshold_percent}%</span>}
+                          <span>Priorité: {rule.priority || 0}</span>
+                          {rule.channels && <span>Canaux: {(rule.channels as string[]).join(', ')}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <Badge className={`text-[10px] h-5 ${rule.is_enabled ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 'bg-muted text-muted-foreground'}`}>
+                      {rule.is_enabled ? 'Actif' : 'Inactif'}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

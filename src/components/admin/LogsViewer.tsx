@@ -1,40 +1,36 @@
-import { useState, useEffect, useCallback } from 'react'
+/**
+ * LogsViewer — Ultra-Pro Audit & System Logs with KPIs, volume chart, compact design
+ */
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table'
-import { 
-  FileText, 
-  RefreshCw, 
-  Download, 
-  Filter,
-  AlertTriangle,
-  Info,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-  Activity,
-  Database,
-  Shield,
-  Globe,
-  Clock
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  FileText, RefreshCw, Download, AlertTriangle, Info,
+  XCircle, CheckCircle, Activity, Database, Shield,
+  Globe, Clock, BarChart3, Search, Eye,
 } from 'lucide-react'
+import {
+  BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip,
+} from 'recharts'
 import { useToast } from '@/hooks/use-toast'
-import { supabase } from '@/integrations/supabase/client'
+
+const CHART_COLORS = {
+  primary: 'hsl(221, 83%, 53%)',
+  success: 'hsl(142, 76%, 36%)',
+  warning: 'hsl(38, 92%, 50%)',
+  destructive: 'hsl(0, 84%, 60%)',
+}
 
 interface LogEntry {
   id: string
   timestamp: string
+  rawTimestamp: string
   level: 'info' | 'warning' | 'error' | 'debug'
   source: string
   message: string
@@ -43,435 +39,326 @@ interface LogEntry {
   action?: string
 }
 
+function useRealLogs() {
+  return useQuery({
+    queryKey: ['admin-logs-ultra'],
+    queryFn: async () => {
+      const [securityEvents, activityLogs, apiLogs, auditLogs] = await Promise.all([
+        supabase.from('security_events').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('api_logs').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('audit_logs').select('id, action, action_category, severity, description, created_at, user_id, actor_email, resource_type').order('created_at', { ascending: false }).limit(50),
+      ])
+
+      const logs: LogEntry[] = []
+
+      for (const e of securityEvents.data || []) {
+        logs.push({
+          id: `sec_${e.id}`,
+          timestamp: new Date(e.created_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          rawTimestamp: e.created_at,
+          level: e.severity === 'critical' ? 'error' : e.severity === 'warning' ? 'warning' : 'info',
+          source: 'security',
+          message: e.description || e.event_type || 'Security event',
+          user: e.user_id?.slice(0, 8),
+          ip: (e.metadata as any)?.ip_address,
+          action: e.event_type,
+        })
+      }
+
+      for (const l of activityLogs.data || []) {
+        logs.push({
+          id: `act_${l.id}`,
+          timestamp: new Date(l.created_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          rawTimestamp: l.created_at || '',
+          level: l.severity === 'critical' ? 'error' : l.severity === 'warning' ? 'warning' : 'info',
+          source: l.source || 'system',
+          message: l.description || l.action,
+          user: l.user_id?.slice(0, 8),
+          ip: l.ip_address,
+          action: l.action,
+        })
+      }
+
+      for (const l of apiLogs.data || []) {
+        logs.push({
+          id: `api_${l.id}`,
+          timestamp: new Date(l.created_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          rawTimestamp: l.created_at || '',
+          level: (l.status_code || 0) >= 500 ? 'error' : (l.status_code || 0) >= 400 ? 'warning' : 'info',
+          source: 'api',
+          message: `${l.method} ${l.endpoint} — ${l.status_code} (${l.response_time_ms || 0}ms)`,
+          ip: l.ip_address,
+          action: 'api_request',
+        })
+      }
+
+      for (const a of auditLogs.data || []) {
+        logs.push({
+          id: `aud_${a.id}`,
+          timestamp: new Date(a.created_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          rawTimestamp: a.created_at,
+          level: a.severity === 'error' || a.severity === 'critical' ? 'error' : a.severity === 'warning' ? 'warning' : 'info',
+          source: 'audit',
+          message: a.description || `${a.action} (${a.action_category})`,
+          user: a.actor_email?.split('@')[0] || a.user_id?.slice(0, 8),
+          action: a.action,
+        })
+      }
+
+      logs.sort((a, b) => new Date(b.rawTimestamp).getTime() - new Date(a.rawTimestamp).getTime())
+      return logs
+    },
+    refetchInterval: 30_000,
+  })
+}
+
 export const LogsViewer = () => {
-  const [logs, setLogs] = useState<LogEntry[]>([])
-  const [filteredLogs, setFilteredLogs] = useState<LogEntry[]>([])
+  const { data: logs = [], isLoading, refetch } = useRealLogs()
   const [searchTerm, setSearchTerm] = useState('')
   const [levelFilter, setLevelFilter] = useState<string>('all')
   const [sourceFilter, setSourceFilter] = useState<string>('all')
-  const [autoRefresh, setAutoRefresh] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [page, setPage] = useState(0)
+  const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null)
+  const pageSize = 25
   const { toast } = useToast()
 
-  const fetchRealLogs = useCallback(async () => {
-    setIsLoading(true)
-    try {
-      // Fetch from multiple real sources
-      const [securityEvents, activityLogs, apiLogs] = await Promise.all([
-        supabase
-          .from('security_events')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(50),
-        supabase
-          .from('activity_logs')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(50),
-        supabase
-          .from('api_logs')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(50)
-      ])
-
-      const realLogs: LogEntry[] = []
-
-      // Convert security events
-      if (securityEvents.data) {
-        securityEvents.data.forEach((event: any) => {
-          realLogs.push({
-            id: `sec_${event.id}`,
-            timestamp: new Date(event.created_at).toLocaleString(),
-            level: event.severity === 'critical' ? 'error' : event.severity === 'warning' ? 'warning' : 'info',
-            source: 'security',
-            message: event.description || event.event_type || 'Security event',
-            user: event.user_id?.slice(0, 8),
-            ip: event.metadata?.ip_address,
-            action: event.event_type
-          })
-        })
-      }
-
-      // Convert activity logs
-      if (activityLogs.data) {
-        activityLogs.data.forEach((log: any) => {
-          realLogs.push({
-            id: `act_${log.id}`,
-            timestamp: new Date(log.created_at).toLocaleString(),
-            level: log.severity === 'critical' ? 'error' : log.severity === 'warning' ? 'warning' : 'info',
-            source: log.source || 'system',
-            message: log.description || log.action,
-            user: log.user_id?.slice(0, 8),
-            ip: log.ip_address,
-            action: log.action
-          })
-        })
-      }
-
-      // Convert API logs
-      if (apiLogs.data) {
-        apiLogs.data.forEach((log: any) => {
-          realLogs.push({
-            id: `api_${log.id}`,
-            timestamp: new Date(log.created_at).toLocaleString(),
-            level: log.status_code >= 500 ? 'error' : log.status_code >= 400 ? 'warning' : 'info',
-            source: 'api',
-            message: `${log.method} ${log.endpoint} - ${log.status_code} (${log.response_time_ms || 0}ms)`,
-            ip: log.ip_address,
-            action: 'api_request'
-          })
-        })
-      }
-
-      // Sort by timestamp
-      realLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-
-      setLogs(realLogs)
-      setFilteredLogs(realLogs)
-    } catch (error) {
-      console.error('Error fetching logs:', error)
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les logs",
-        variant: "destructive"
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }, [toast])
-
-  useEffect(() => {
-    fetchRealLogs()
-  }, [fetchRealLogs])
-
-  useEffect(() => {
-    let filtered = logs
-    
+  const filtered = useMemo(() => {
+    let result = logs
     if (searchTerm) {
-      filtered = filtered.filter(log => 
-        log.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.source.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (log.user && log.user.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
+      const q = searchTerm.toLowerCase()
+      result = result.filter(l => l.message.toLowerCase().includes(q) || l.source.includes(q) || l.user?.includes(q))
     }
-    
-    if (levelFilter !== 'all') {
-      filtered = filtered.filter(log => log.level === levelFilter)
-    }
-    
-    if (sourceFilter !== 'all') {
-      filtered = filtered.filter(log => log.source === sourceFilter)
-    }
-    
-    setFilteredLogs(filtered)
+    if (levelFilter !== 'all') result = result.filter(l => l.level === levelFilter)
+    if (sourceFilter !== 'all') result = result.filter(l => l.source === sourceFilter)
+    return result
   }, [logs, searchTerm, levelFilter, sourceFilter])
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout
-    
-    if (autoRefresh) {
-      interval = setInterval(() => {
-        fetchRealLogs()
-      }, 10000)
-    }
-    
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [autoRefresh, fetchRealLogs])
+  const paginated = filtered.slice(page * pageSize, (page + 1) * pageSize)
+  const totalPages = Math.ceil(filtered.length / pageSize)
 
-  const getLevelIcon = (level: string) => {
-    switch (level) {
-      case 'error':
-        return <XCircle className="h-4 w-4 text-destructive" />
-      case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-warning" />
-      case 'info':
-        return <Info className="h-4 w-4 text-info" />
-      case 'debug':
-        return <CheckCircle className="h-4 w-4 text-gray-500" />
-      default:
-        return <AlertCircle className="h-4 w-4" />
-    }
-  }
+  // Stats
+  const errorCount = logs.filter(l => l.level === 'error').length
+  const warningCount = logs.filter(l => l.level === 'warning').length
+  const sources = [...new Set(logs.map(l => l.source))]
 
-  const getLevelBadge = (level: string) => {
-    const variants = {
-      error: 'destructive',
-      warning: 'secondary',
-      info: 'default',
-      debug: 'outline'
+  // Volume chart
+  const volumeChart = useMemo(() => {
+    const byHour: Record<string, { hour: string; info: number; warning: number; error: number }> = {}
+    for (const l of logs) {
+      const d = new Date(l.rawTimestamp)
+      const hour = `${d.getHours().toString().padStart(2, '0')}h`
+      if (!byHour[hour]) byHour[hour] = { hour, info: 0, warning: 0, error: 0 }
+      byHour[hour][l.level === 'debug' ? 'info' : l.level]++
     }
-    return (
-      <Badge variant={variants[level as keyof typeof variants] as any}>
-        {level.toUpperCase()}
-      </Badge>
-    )
-  }
-
-  const getSourceIcon = (source: string) => {
-    switch (source) {
-      case 'auth':
-        return <Shield className="h-4 w-4" />
-      case 'database':
-        return <Database className="h-4 w-4" />
-      case 'api':
-        return <Globe className="h-4 w-4" />
-      case 'system':
-        return <Activity className="h-4 w-4" />
-      default:
-        return <FileText className="h-4 w-4" />
-    }
-  }
+    return Object.values(byHour).sort((a, b) => a.hour.localeCompare(b.hour))
+  }, [logs])
 
   const handleExport = () => {
-    const csvContent = [
+    const csv = [
       ['Timestamp', 'Level', 'Source', 'Message', 'User', 'IP', 'Action'].join(','),
-      ...filteredLogs.map(log => 
-        [log.timestamp, log.level, log.source, `"${log.message}"`, log.user || '', log.ip || '', log.action || ''].join(',')
-      )
+      ...filtered.map(l => [l.timestamp, l.level, l.source, `"${l.message}"`, l.user || '', l.ip || '', l.action || ''].join(','))
     ].join('\n')
-
-    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
     a.download = `logs-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
     URL.revokeObjectURL(url)
-
-    toast({
-      title: "Export réussi",
-      description: `${filteredLogs.length} logs exportés`
-    })
+    toast({ title: 'Export réussi', description: `${filtered.length} logs exportés` })
   }
 
-  // Calculate real stats
-  const errorCount = logs.filter(l => l.level === 'error').length
-  const warningCount = logs.filter(l => l.level === 'warning').length
+  const getLevelIcon = (level: string) => {
+    switch (level) {
+      case 'error': return <XCircle className="h-3.5 w-3.5 text-destructive" />
+      case 'warning': return <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+      default: return <Info className="h-3.5 w-3.5 text-muted-foreground" />
+    }
+  }
+
+  const getSourceIcon = (source: string) => {
+    switch (source) {
+      case 'security': case 'audit': return <Shield className="h-3.5 w-3.5" />
+      case 'api': return <Globe className="h-3.5 w-3.5" />
+      case 'system': return <Activity className="h-3.5 w-3.5" />
+      default: return <FileText className="h-3.5 w-3.5" />
+    }
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold flex items-center gap-2">
-            <FileText className="h-8 w-8" />
-            Logs Système
-          </h2>
-          <p className="text-muted-foreground">
-            Données en temps réel depuis Supabase
-          </p>
+          <h2 className="text-lg font-bold text-foreground">Audit & Logs Système</h2>
+          <p className="text-xs text-muted-foreground">Sécurité, activité, API et audit — données temps réel</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant={autoRefresh ? "default" : "outline"}
-            onClick={() => setAutoRefresh(!autoRefresh)}
-          >
-            <Clock className="h-4 w-4 mr-2" />
-            Auto-refresh {autoRefresh ? 'ON' : 'OFF'}
+          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleExport}>
+            <Download className="h-3.5 w-3.5 mr-1.5" />Export CSV
           </Button>
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="h-4 w-4 mr-2" />
-            Exporter
-          </Button>
-          <Button onClick={fetchRealLogs} disabled={isLoading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Actualiser
+          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => refetch()} disabled={isLoading}>
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />Actualiser
           </Button>
         </div>
       </div>
 
+      {/* KPI Cards */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
+        {[
+          { title: 'Total logs', value: logs.length.toString(), icon: FileText, accent: 'primary' as const },
+          { title: 'Erreurs', value: errorCount.toString(), icon: XCircle, accent: errorCount > 0 ? 'destructive' as const : 'success' as const },
+          { title: 'Warnings', value: warningCount.toString(), icon: AlertTriangle, accent: warningCount > 5 ? 'warning' as const : 'primary' as const },
+          { title: 'Sources', value: sources.length.toString(), icon: Database, accent: 'primary' as const },
+          { title: 'Filtrés', value: filtered.length.toString(), icon: Search, accent: 'primary' as const },
+        ].map(kpi => (
+          <Card key={kpi.title} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{kpi.title}</span>
+                <div className={`h-7 w-7 rounded-lg flex items-center justify-center ${
+                  kpi.accent === 'destructive' ? 'bg-destructive/10 text-destructive' :
+                  kpi.accent === 'warning' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
+                  kpi.accent === 'success' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                  'bg-primary/10 text-primary'
+                }`}>
+                  <kpi.icon className="h-3.5 w-3.5" />
+                </div>
+              </div>
+              <div className="text-xl font-bold text-foreground">{kpi.value}</div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Volume Chart */}
+      {volumeChart.length > 0 && (
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-primary" />Volume par heure
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={140}>
+              <BarChart data={volumeChart} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="hour" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                <RechartsTooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
+                <Bar dataKey="info" name="Info" stackId="a" fill={CHART_COLORS.primary} radius={[0, 0, 0, 0]} />
+                <Bar dataKey="warning" name="Warning" stackId="a" fill={CHART_COLORS.warning} />
+                <Bar dataKey="error" name="Erreur" stackId="a" fill={CHART_COLORS.destructive} radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filtres
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 flex-wrap">
-            <div className="flex-1 min-w-64">
-              <Input
-                placeholder="Rechercher dans les logs..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
-              />
+      <div className="flex flex-wrap gap-2 items-center">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input placeholder="Rechercher..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setPage(0) }}
+            className="pl-9 h-8 text-xs bg-muted/50 border-transparent focus:border-primary/30" />
+        </div>
+        <div className="flex gap-1">
+          {['all', 'error', 'warning', 'info'].map(lv => (
+            <button key={lv} onClick={() => { setLevelFilter(lv); setPage(0) }}
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-md border transition-colors ${
+                levelFilter === lv ? 'bg-primary text-primary-foreground border-primary' : 'bg-background border-border text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {lv === 'all' ? 'Tous' : lv === 'error' ? `Erreurs (${errorCount})` : lv === 'warning' ? `Warnings (${warningCount})` : 'Info'}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-1">
+          {['all', ...sources].map(src => (
+            <button key={src} onClick={() => { setSourceFilter(src); setPage(0) }}
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-md border transition-colors ${
+                sourceFilter === src ? 'bg-primary text-primary-foreground border-primary' : 'bg-background border-border text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {src === 'all' ? 'Toutes sources' : src}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Log entries */}
+      <Card className="shadow-sm">
+        <CardContent className="pt-4">
+          {isLoading ? (
+            <div className="space-y-2">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-10 w-full" />)}</div>
+          ) : paginated.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Aucun log trouvé</p>
             </div>
-            <Select value={levelFilter} onValueChange={setLevelFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Niveau" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les niveaux</SelectItem>
-                <SelectItem value="error">Erreur</SelectItem>
-                <SelectItem value="warning">Avertissement</SelectItem>
-                <SelectItem value="info">Information</SelectItem>
-                <SelectItem value="debug">Debug</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={sourceFilter} onValueChange={setSourceFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Source" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes les sources</SelectItem>
-                <SelectItem value="auth">Authentification</SelectItem>
-                <SelectItem value="api">API</SelectItem>
-                <SelectItem value="database">Base de données</SelectItem>
-                <SelectItem value="system">Système</SelectItem>
-                <SelectItem value="security">Sécurité</SelectItem>
-                <SelectItem value="import">Import</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          ) : (
+            <div className="space-y-0.5">
+              {paginated.map(log => (
+                <div key={log.id}
+                  onClick={() => setSelectedLog(selectedLog?.id === log.id ? null : log)}
+                  className={`flex items-center gap-3 py-2 px-3 -mx-3 rounded-lg cursor-pointer transition-colors ${
+                    log.level === 'error' ? 'hover:bg-destructive/5' : 'hover:bg-muted/50'
+                  } ${selectedLog?.id === log.id ? 'bg-muted/50' : ''}`}
+                >
+                  {getLevelIcon(log.level)}
+                  <span className="text-[10px] font-mono text-muted-foreground w-28 shrink-0">{log.timestamp}</span>
+                  <div className="flex items-center gap-1.5 w-16 shrink-0">
+                    {getSourceIcon(log.source)}
+                    <span className="text-[10px] text-muted-foreground capitalize">{log.source}</span>
+                  </div>
+                  <span className={`text-xs flex-1 min-w-0 truncate ${log.level === 'error' ? 'text-destructive' : 'text-foreground'}`}>
+                    {log.message}
+                  </span>
+                  {log.user && <span className="text-[10px] text-muted-foreground font-mono shrink-0">{log.user}</span>}
+                  {log.ip && <span className="text-[10px] text-muted-foreground font-mono shrink-0">{log.ip}</span>}
+                </div>
+              ))}
+
+              {/* Expanded detail */}
+              {selectedLog && (
+                <div className="mt-2 p-3 rounded-lg bg-muted/50 border text-xs space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={selectedLog.level === 'error' ? 'destructive' : selectedLog.level === 'warning' ? 'secondary' : 'default'} className="text-[10px]">
+                      {selectedLog.level.toUpperCase()}
+                    </Badge>
+                    <span className="font-mono text-muted-foreground">{selectedLog.timestamp}</span>
+                  </div>
+                  <p className="text-foreground">{selectedLog.message}</p>
+                  <div className="flex gap-4 text-[10px] text-muted-foreground">
+                    <span>Source: <b>{selectedLog.source}</b></span>
+                    {selectedLog.action && <span>Action: <b>{selectedLog.action}</b></span>}
+                    {selectedLog.user && <span>User: <b>{selectedLog.user}</b></span>}
+                    {selectedLog.ip && <span>IP: <b>{selectedLog.ip}</b></span>}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 pt-3 border-t">
+              <span className="text-[10px] text-muted-foreground">
+                Page {page + 1} / {totalPages} — {filtered.length} logs
+              </span>
+              <div className="flex gap-1">
+                <Button variant="outline" size="sm" className="h-7 text-[10px] px-2.5" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+                  Précédent
+                </Button>
+                <Button variant="outline" size="sm" className="h-7 text-[10px] px-2.5" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
+                  Suivant
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
-
-      <Tabs defaultValue="all" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="all">Tous les Logs ({logs.length})</TabsTrigger>
-          <TabsTrigger value="errors">Erreurs ({errorCount})</TabsTrigger>
-          <TabsTrigger value="warnings">Avertissements ({warningCount})</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all">
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Logs Récents ({filteredLogs.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              ) : filteredLogs.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>Aucun log trouvé</p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-16">Niveau</TableHead>
-                      <TableHead className="w-32">Timestamp</TableHead>
-                      <TableHead className="w-24">Source</TableHead>
-                      <TableHead>Message</TableHead>
-                      <TableHead className="w-40">Utilisateur/IP</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {getLevelIcon(log.level)}
-                            {getLevelBadge(log.level)}
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {log.timestamp}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {getSourceIcon(log.source)}
-                            <span className="capitalize">{log.source}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="max-w-md">
-                          <div className="truncate" title={log.message}>
-                            {log.message}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          <div>
-                            {log.user && <div>{log.user}</div>}
-                            {log.ip && <div className="font-mono">{log.ip}</div>}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="errors">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-destructive">
-                <XCircle className="h-5 w-5" />
-                Erreurs ({errorCount})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead>Message</TableHead>
-                    <TableHead>Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {logs.filter(l => l.level === 'error').map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell className="font-mono text-sm">{log.timestamp}</TableCell>
-                      <TableCell>{log.source}</TableCell>
-                      <TableCell>{log.message}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{log.action}</Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="warnings">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-warning">
-                <AlertTriangle className="h-5 w-5" />
-                Avertissements ({warningCount})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead>Message</TableHead>
-                    <TableHead>IP</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {logs.filter(l => l.level === 'warning').map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell className="font-mono text-sm">{log.timestamp}</TableCell>
-                      <TableCell>{log.source}</TableCell>
-                      <TableCell>{log.message}</TableCell>
-                      <TableCell className="font-mono">{log.ip}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
     </div>
   )
 }
