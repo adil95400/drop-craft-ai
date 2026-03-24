@@ -103,9 +103,9 @@
 - [x] Load testing k6 (scripts/load-test.js — 5 scenarios, 6 stages)
 
 ### Pipeline
-- [ ] GitHub Actions workflow — Sprint 6+
-- [ ] Staging environment — Sprint 6+
-- [ ] Blue-green deployment — Sprint 6+
+- [x] GitHub Actions CI/CD (ci.yml + deploy.yml + security-scan.yml)
+- [x] Security scan pipeline (CodeQL, secret detection, RLS audit)
+- [ ] Blue-green deployment — Sprint 7+
 
 ## Remaining for Sprint 6+
 - [ ] Prometheus metrics export
