@@ -7,7 +7,7 @@
  * Headers: X-Cron-Secret: <your-secret>
  * Body: { "jobs": ["all"] } or { "jobs": ["sync", "pricing", "inventory"] }
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -40,15 +40,31 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Authenticate via secret
-    if (CRON_SECRET) {
-      const providedSecret = req.headers.get('x-cron-secret') || req.headers.get('authorization')?.replace('Bearer ', '');
-      if (providedSecret !== CRON_SECRET) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
+    // SECURITY: CRON_SECRET is MANDATORY — no fallthrough
+    if (!CRON_SECRET) {
+      console.error('[external-cron-trigger] CRON_SECRET not configured — blocking all requests');
+      return new Response(JSON.stringify({ error: 'Server misconfigured: CRON_SECRET not set' }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const providedSecret = req.headers.get('x-cron-secret') || req.headers.get('authorization')?.replace('Bearer ', '');
+    if (providedSecret !== CRON_SECRET) {
+      // Log failed auth attempt
+      const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      await adminClient.from('activity_logs').insert({
+        action: 'cron_auth_failed',
+        entity_type: 'security',
+        description: 'Unauthorized cron trigger attempt',
+        severity: 'warn',
+        source: 'external_cron',
+      });
+
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const { jobs = ['orchestrator'] } = await req.json().catch(() => ({ jobs: ['orchestrator'] }));
