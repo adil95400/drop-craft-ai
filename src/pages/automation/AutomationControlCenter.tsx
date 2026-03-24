@@ -250,6 +250,160 @@ export default function AutomationControlCenter() {
   );
 }
 
+/* ── Automation Health Panel ── */
+const SUBSYSTEMS = [
+  { key: 'orchestrator', label: 'Orchestrateur', fn: 'automation-orchestrator', body: { action: 'run_all' }, icon: Zap },
+  { key: 'supplier_sync', label: 'Sync Fournisseurs', fn: 'supplier-sync-cron', body: {}, icon: RefreshCw },
+  { key: 'pricing', label: 'Moteur de Prix', fn: 'pricing-rules-engine', body: { action: 'apply_all' }, icon: DollarSign },
+  { key: 'inventory', label: 'Inventaire Intelligent', fn: 'smart-inventory-engine', body: { action: 'check_and_reorder' }, icon: Package },
+  { key: 'alerts', label: 'Alertes', fn: 'automation-alert-engine', body: { action: 'scan' }, icon: Bell },
+  { key: 'webhooks', label: 'Webhook Retry', fn: 'webhook-retry', body: {}, icon: Activity },
+  { key: 'cart_recovery', label: 'Récupération Paniers', fn: 'cart-recovery-cron', body: {}, icon: Truck },
+  { key: 'security', label: 'Sécurité', fn: 'automation-security-engine', body: { action: 'full_scan' }, icon: ShieldAlert },
+];
+
+function AutomationHealthPanel() {
+  const queryClient = useQueryClient();
+
+  const { data: healthData, isLoading } = useQuery({
+    queryKey: ['automation-health-status'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('activity_logs')
+        .select('action, created_at, severity, description, source')
+        .eq('source', 'automation')
+        .order('created_at', { ascending: false })
+        .limit(200);
+
+      if (error) throw error;
+
+      // Map each subsystem to its latest log entry
+      const statusMap: Record<string, { lastRun: string | null; status: 'ok' | 'warn' | 'error' | 'unknown'; description: string }> = {};
+
+      for (const sub of SUBSYSTEMS) {
+        const relevantLogs = (data || []).filter((log: any) => {
+          const action = log.action?.toLowerCase() || '';
+          const desc = log.description?.toLowerCase() || '';
+          return action.includes(sub.key) || desc.includes(sub.label.toLowerCase()) || action.includes(sub.key.replace('_', ''));
+        });
+
+        if (relevantLogs.length > 0) {
+          const latest = relevantLogs[0];
+          statusMap[sub.key] = {
+            lastRun: latest.created_at,
+            status: latest.severity === 'error' ? 'error' : latest.severity === 'warn' ? 'warn' : 'ok',
+            description: latest.description || '',
+          };
+        } else {
+          statusMap[sub.key] = { lastRun: null, status: 'unknown', description: 'Aucune exécution récente' };
+        }
+      }
+
+      return statusMap;
+    },
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+
+  const triggerSubsystem = useMutation({
+    mutationFn: async (sub: typeof SUBSYSTEMS[0]) => {
+      const { error } = await supabase.functions.invoke(sub.fn, { body: sub.body });
+      if (error) throw error;
+    },
+    onSuccess: (_, sub) => {
+      toast.success(`${sub.label} exécuté avec succès`);
+      queryClient.invalidateQueries({ queryKey: ['automation-health-status'] });
+    },
+    onError: (e: Error, sub) => toast.error(`${sub.label}: ${e.message}`),
+  });
+
+  const statusColors: Record<string, string> = {
+    ok: 'bg-green-500',
+    warn: 'bg-yellow-500',
+    error: 'bg-destructive',
+    unknown: 'bg-muted-foreground/40',
+  };
+
+  const statusLabels: Record<string, string> = {
+    ok: 'OK',
+    warn: 'Attention',
+    error: 'Erreur',
+    unknown: 'Inconnu',
+  };
+
+  const formatTimeAgo = (iso: string | null) => {
+    if (!iso) return 'Jamais';
+    const diff = Date.now() - new Date(iso).getTime();
+    if (diff < 60_000) return 'Il y a < 1 min';
+    if (diff < 3600_000) return `Il y a ${Math.floor(diff / 60_000)} min`;
+    if (diff < 86400_000) return `Il y a ${Math.floor(diff / 3600_000)}h`;
+    return `Il y a ${Math.floor(diff / 86400_000)}j`;
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">Santé des Sous-systèmes</h3>
+          <p className="text-sm text-muted-foreground">État en temps réel de chaque module d'automatisation</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => queryClient.invalidateQueries({ queryKey: ['automation-health-status'] })}
+          className="gap-1.5"
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          Rafraîchir
+        </Button>
+      </div>
+
+      <div className="grid gap-3">
+        {SUBSYSTEMS.map((sub) => {
+          const health = healthData?.[sub.key];
+          const status = health?.status || 'unknown';
+
+          return (
+            <Card key={sub.key}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-2.5 w-2.5 rounded-full ${statusColors[status]}`} />
+                    <sub.icon className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium text-sm">{sub.label}</p>
+                      <p className="text-xs text-muted-foreground truncate max-w-[300px]">
+                        {health?.description || 'En attente'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <Badge variant={status === 'error' ? 'destructive' : status === 'warn' ? 'secondary' : 'outline'} className="text-xs">
+                        {statusLabels[status]}
+                      </Badge>
+                      <p className="text-xs text-muted-foreground mt-0.5">{formatTimeAgo(health?.lastRun || null)}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      disabled={triggerSubsystem.isPending}
+                      onClick={() => triggerSubsystem.mutate(sub)}
+                    >
+                      {triggerSubsystem.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ── Alert Configuration Panel ── */
 function AlertConfigPanel() {
   const { data: configs, isLoading } = useQuery({
