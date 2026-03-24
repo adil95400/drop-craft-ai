@@ -47,8 +47,7 @@ async function extractFromAliExpress(url: string): Promise<any> {
   const apiKey = Deno.env.get('ALIEXPRESS_API_KEY');
   
   if (!apiKey) {
-    console.warn('AliExpress API key not configured, using simulated data');
-    return simulateProductData(url, 'aliexpress');
+    throw new Error('AliExpress API key not configured. Please add ALIEXPRESS_API_KEY in your environment secrets.');
   }
 
   try {
@@ -101,7 +100,7 @@ async function extractFromAliExpress(url: string): Promise<any> {
     };
   } catch (error) {
     console.error('AliExpress extraction error:', error);
-    return simulateProductData(url, 'aliexpress');
+    throw new Error(`AliExpress extraction failed: ${error.message}`);
   }
 }
 
@@ -112,8 +111,7 @@ async function extractFromAmazon(url: string): Promise<any> {
   const associateTag = Deno.env.get('AMAZON_ASSOCIATE_TAG');
   
   if (!accessKey || !secretKey || !associateTag) {
-    console.warn('Amazon API credentials not configured, using simulated data');
-    return simulateProductData(url, 'amazon');
+    throw new Error('Amazon API credentials not configured. Please add AMAZON_ACCESS_KEY, AMAZON_SECRET_KEY and AMAZON_ASSOCIATE_TAG.');
   }
 
   try {
@@ -125,14 +123,24 @@ async function extractFromAmazon(url: string): Promise<any> {
     
     const asin = asinMatch[1] || asinMatch[2];
     
-    // L'implémentation complète de la signature AWS et de l'appel API serait ici
-    // Pour l'instant, on simule les données
+    // Amazon PA-API v5 call
     console.log('Amazon ASIN detected:', asin);
     
-    return simulateProductData(url, 'amazon');
+    const paApiHost = 'webservices.amazon.com';
+    const paApiPath = '/paapi5/getitems';
+    const payload = JSON.stringify({
+      ItemIds: [asin],
+      Resources: ['Images.Primary.Large', 'ItemInfo.Title', 'ItemInfo.Features', 'Offers.Listings.Price', 'ItemInfo.ByLineInfo'],
+      PartnerTag: associateTag,
+      PartnerType: 'Associates',
+      Marketplace: 'www.amazon.com',
+    });
+
+    // Note: Full HMAC-SHA256 signing required for production PA-API calls
+    throw new Error(`Amazon PA-API signing not yet implemented for ASIN ${asin}. Configure a scraping fallback or implement AWS Signature V4.`);
   } catch (error) {
     console.error('Amazon extraction error:', error);
-    return simulateProductData(url, 'amazon');
+    throw new Error(`Amazon extraction failed: ${error.message}`);
   }
 }
 
@@ -141,8 +149,7 @@ async function extractFromEBay(url: string): Promise<any> {
   const apiKey = Deno.env.get('EBAY_API_KEY');
   
   if (!apiKey) {
-    console.warn('eBay API key not configured, using simulated data');
-    return simulateProductData(url, 'ebay');
+    throw new Error('eBay API key not configured. Please add EBAY_API_KEY in your environment secrets.');
   }
 
   try {
@@ -183,7 +190,7 @@ async function extractFromEBay(url: string): Promise<any> {
     };
   } catch (error) {
     console.error('eBay extraction error:', error);
-    return simulateProductData(url, 'ebay');
+    throw new Error(`eBay extraction failed: ${error.message}`);
   }
 }
 
@@ -225,69 +232,18 @@ async function extractFromShopify(url: string): Promise<any> {
     };
   } catch (error) {
     console.error('Shopify extraction error:', error);
-    return simulateProductData(url, 'shopify');
+    throw new Error(`Shopify extraction failed: ${error.message}`);
   }
 }
 
-// Simulation de données pour développement et fallback
-function simulateProductData(url: string, platform: Platform): any {
-  const domain = new URL(url).hostname;
-  const productId = url.split('/').pop()?.split('?')[0] || 'unknown';
-  
-  const platformNames: Record<Platform, string> = {
-    aliexpress: 'AliExpress',
-    amazon: 'Amazon',
-    ebay: 'eBay',
-    shopify: 'Shopify',
-    generic: 'E-commerce',
-  };
-  
-  return {
-    name: `Produit ${platformNames[platform]} ${productId.substring(0, 8)}`,
-    description: `Produit de qualité importé depuis ${platformNames[platform]}. URL source: ${url}`,
-    price: Math.floor(Math.random() * 100) + 10,
-    cost_price: Math.floor(Math.random() * 50) + 5,
-    sku: `${platform.toUpperCase()}-${productId.substring(0, 8)}`,
-    category: `Import ${platformNames[platform]}`,
-    stock_quantity: Math.floor(Math.random() * 100) + 10,
-    image_url: `https://picsum.photos/seed/${productId}/400/400`,
-    image_urls: [
-      `https://picsum.photos/seed/${productId}/400/400`,
-      `https://picsum.photos/seed/${productId}2/400/400`,
-    ],
-    supplier_url: url,
-    supplier_name: domain,
-    rating: (Math.random() * 2 + 3).toFixed(1), // 3.0-5.0
-    reviews_count: Math.floor(Math.random() * 500) + 10,
-    status: 'active',
-  };
-}
+// NOTE: simulateProductData has been removed. All extractors now throw errors
+// when API keys are missing, forcing proper configuration before use.
 
-// Extraction des reviews
+// Extraction des reviews - returns empty array when no API is available
 async function extractReviewsFromUrl(url: string, platform: Platform): Promise<any[]> {
-  // Pour l'instant, génération simulée
-  // En production, utiliser les APIs spécifiques de chaque plateforme
-  
-  const productId = url.split('/').pop()?.split('?')[0] || 'unknown';
-  const reviewCount = Math.floor(Math.random() * 5) + 3;
-  
-  const reviews = [];
-  for (let i = 0; i < reviewCount; i++) {
-    reviews.push({
-      product_name: `Produit ${productId.substring(0, 8)}`,
-      product_sku: `${platform.toUpperCase()}-${productId.substring(0, 8)}`,
-      customer_name: `Client ${i + 1}`,
-      rating: Math.floor(Math.random() * 2) + 4, // 4-5 étoiles
-      title: `Excellent produit`,
-      comment: `Très satisfait de cet achat. Produit conforme à la description. Livraison rapide depuis ${platform}.`,
-      verified_purchase: true,
-      review_date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-      source: `one_click_import_${platform}`,
-      platform: platform,
-    });
-  }
-  
-  return reviews;
+  // Reviews require platform-specific APIs. Return empty when not configured.
+  console.log(`[one-click-import] Review extraction for ${platform} requires dedicated API integration.`);
+  return [];
 }
 
 // Normalisation des données produit

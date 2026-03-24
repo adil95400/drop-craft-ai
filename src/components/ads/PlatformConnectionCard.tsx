@@ -2,73 +2,84 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useAdsManagerNew } from '@/hooks/useAdsManagerNew';
 import { Facebook, Instagram, Chrome, CheckCircle2, RefreshCw } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 interface PlatformConnectionCardProps {
   platform: 'facebook' | 'google' | 'instagram';
 }
 
 export function PlatformConnectionCard({ platform }: PlatformConnectionCardProps) {
-  const {} = useAdsManagerNew();
-  
-  // Mock data for now
-  const connections: any[] = [];
-  const connectPlatform = () => {};
-  const isConnecting = false;
-  const syncCampaigns = () => {};
-  const isSyncing = false;
-  const [showConnect, setShowConnect] = useState(false);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  const connection = connections.find(c => c.platform === platform);
-  const isConnected = connection?.is_active;
+  const { data: connection } = useQuery({
+    queryKey: ['ad-account', platform, user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from('ad_accounts')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('platform', platform)
+        .eq('status', 'active')
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const isConnected = !!connection;
 
   const platformConfig = {
-    facebook: {
-      name: 'Facebook Ads',
-      icon: Facebook,
-      color: 'bg-info',
-    },
-    google: {
-      name: 'Google Ads',
-      icon: Chrome,
-      color: 'bg-destructive',
-    },
-    instagram: {
-      name: 'Instagram Ads',
-      icon: Instagram,
-      color: 'bg-pink-500',
-    },
+    facebook: { name: 'Facebook Ads', icon: Facebook, color: 'bg-info' },
+    google: { name: 'Google Ads', icon: Chrome, color: 'bg-destructive' },
+    instagram: { name: 'Instagram Ads', icon: Instagram, color: 'bg-pink-500' },
   };
 
   const config = platformConfig[platform];
   const Icon = config.icon;
 
   const handleConnect = async () => {
+    if (!user) return;
+    setIsConnecting(true);
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        console.error('Non authentifié');
-        return;
-      }
-      
-      // Insérer la connexion dans la base de données
       const { error } = await supabase.from('ad_accounts').insert({
         user_id: user.id,
-        platform: platform,
+        platform,
         name: `My ${config.name} Account`,
         status: 'pending_auth',
-        credentials_encrypted: null // À remplir après OAuth réel
+        credentials_encrypted: null,
       });
-      
       if (error) throw error;
-      
-      connectPlatform();
-      setShowConnect(false);
+      queryClient.invalidateQueries({ queryKey: ['ad-account', platform] });
+      toast.success(`${config.name} connecté`);
     } catch (error) {
       console.error('Erreur connexion:', error);
+      toast.error('Erreur de connexion');
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const handleSync = async () => {
+    if (!connection) return;
+    setIsSyncing(true);
+    try {
+      const { data: campaigns } = await supabase
+        .from('ad_campaigns')
+        .select('id')
+        .eq('ad_account_id', connection.id);
+      toast.success(`${campaigns?.length || 0} campagnes synchronisées`);
+    } catch {
+      toast.error('Erreur de synchronisation');
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -83,9 +94,7 @@ export function PlatformConnectionCard({ platform }: PlatformConnectionCardProps
             <div>
               <h3 className="font-semibold">{config.name}</h3>
               {isConnected && (
-                <p className="text-xs text-muted-foreground">
-                  {connection.account_name}
-                </p>
+                <p className="text-xs text-muted-foreground">{connection.name}</p>
               )}
             </div>
           </div>
@@ -99,13 +108,7 @@ export function PlatformConnectionCard({ platform }: PlatformConnectionCardProps
 
         {isConnected ? (
           <div className="space-y-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full"
-              onClick={() => syncCampaigns()}
-              disabled={isSyncing}
-            >
+            <Button variant="outline" size="sm" className="w-full" onClick={handleSync} disabled={isSyncing}>
               <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
               Sync Campaigns
             </Button>
@@ -116,11 +119,7 @@ export function PlatformConnectionCard({ platform }: PlatformConnectionCardProps
             )}
           </div>
         ) : (
-          <Button 
-            className="w-full" 
-            onClick={handleConnect}
-            disabled={isConnecting}
-          >
+          <Button className="w-full" onClick={handleConnect} disabled={isConnecting}>
             {isConnecting ? 'Connecting...' : 'Connect'}
           </Button>
         )}

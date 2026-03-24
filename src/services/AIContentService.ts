@@ -140,8 +140,35 @@ export const AIContentService = {
 
     const startTime = Date.now();
     
-    // Simulate AI generation (in real app, call AI API)
-    const generatedText = `Contenu généré automatiquement pour le produit. Variables utilisées: ${JSON.stringify(variables)}`;
+    // Fetch the template to build the prompt
+    const { data: template } = await supabase
+      .from('ai_content_templates')
+      .select('*')
+      .eq('id', templateId)
+      .single();
+
+    if (!template) throw new Error('Template not found');
+
+    // Build prompt from template
+    let prompt = template.prompt_template;
+    for (const [key, value] of Object.entries(variables)) {
+      prompt = prompt.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), String(value));
+    }
+
+    // Call the unified-ai edge function for real AI generation
+    const { data: aiResponse, error: aiError } = await supabase.functions.invoke('unified-ai', {
+      body: {
+        action: 'generate',
+        prompt,
+        maxTokens: template.max_tokens || 500,
+        context: `content_type:${template.content_type}, tone:${template.tone || 'professional'}, language:${template.language || 'fr'}`,
+      }
+    });
+
+    if (aiError) throw new Error(`AI generation failed: ${aiError.message}`);
+    
+    const generatedText = aiResponse?.content || aiResponse?.text || `[AI generation error - no content returned]`;
+    const tokensUsed = aiResponse?.usage?.total_tokens || 0;
     
     const { data, error } = await supabase
       .from('ai_generated_content')
@@ -149,12 +176,12 @@ export const AIContentService = {
         user_id: user.id,
         template_id: templateId,
         product_id: productId,
-        content_type: 'description',
+        content_type: template.content_type,
         generated_content: generatedText,
         variables_used: variables,
-        quality_score: 0.85,
+        quality_score: aiResponse?.quality_score || null,
         status: 'draft',
-        tokens_used: 150,
+        tokens_used: tokensUsed,
         generation_time_ms: Date.now() - startTime
       })
       .select()
@@ -162,11 +189,13 @@ export const AIContentService = {
     
     if (error) throw error;
 
-    // Update template usage count
-    await supabase
-      .from('ai_content_templates')
-      .update({ usage_count: supabase.rpc as any })
-      .eq('id', templateId);
+    // Increment template usage count (non-critical, fire-and-forget)
+    try {
+      await (supabase.rpc as any)('increment_usage_counter', {
+        p_user_id: user.id,
+        p_counter_key: `template_${templateId}`,
+      });
+    } catch { /* non-critical */ }
 
     return data as unknown as AIGeneratedContent;
   },
