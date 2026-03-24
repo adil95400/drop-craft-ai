@@ -204,6 +204,10 @@ export default function AutomationControlCenter() {
               <BarChart3 className="h-3.5 w-3.5" />
               Vue d'ensemble
             </TabsTrigger>
+            <TabsTrigger value="health" className="gap-1.5">
+              <Activity className="h-3.5 w-3.5" />
+              Santé
+            </TabsTrigger>
             <TabsTrigger value="alerts" className="gap-1.5">
               <Bell className="h-3.5 w-3.5" />
               Alertes
@@ -212,7 +216,7 @@ export default function AutomationControlCenter() {
               )}
             </TabsTrigger>
             <TabsTrigger value="activity" className="gap-1.5">
-              <Activity className="h-3.5 w-3.5" />
+              <TrendingUp className="h-3.5 w-3.5" />
               Activité
             </TabsTrigger>
             <TabsTrigger value="settings" className="gap-1.5">
@@ -223,6 +227,10 @@ export default function AutomationControlCenter() {
 
           <TabsContent value="overview">
             <AutomationMetricsDashboard period={period} />
+          </TabsContent>
+
+          <TabsContent value="health">
+            <AutomationHealthPanel />
           </TabsContent>
 
           <TabsContent value="alerts">
