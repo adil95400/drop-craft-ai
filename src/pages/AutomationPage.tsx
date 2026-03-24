@@ -37,10 +37,10 @@ export default function AutomationPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { 
-    data: workflows = [], 
+    workflows, 
     isLoading: isLoadingWorkflows, 
     refetch 
-  } = useAutomationWorkflows();
+  } = useRealAutomation();
   
   const { data: stats, isLoading: isLoadingStats } = useAutomationStats();
   
