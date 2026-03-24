@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Zap, List, Activity, Plus, Play, Pause, Trash2, RefreshCw, CheckCircle2, XCircle, Clock, FlaskConical, LayoutTemplate, GitBranch, BarChart3, Terminal, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAutomationWorkflows, useAutomationStats } from '@/hooks/useAutomationRealData';
+import { useRealAutomation, useAutomationStats } from '@/hooks/useRealAutomation';
+import type { AutomationWorkflow } from '@/hooks/useRealAutomation';
 import { formatDistanceToNow } from 'date-fns';
 import { getDateFnsLocale } from '@/utils/dateFnsLocale';
 import { cn } from '@/lib/utils';
@@ -36,10 +37,10 @@ export default function AutomationPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { 
-    data: workflows = [], 
+    workflows, 
     isLoading: isLoadingWorkflows, 
     refetch 
-  } = useAutomationWorkflows();
+  } = useRealAutomation();
   
   const { data: stats, isLoading: isLoadingStats } = useAutomationStats();
   
