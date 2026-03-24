@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, Mail, CheckCircle2, ArrowLeft, ShieldCheck, KeyRound, AlertCircle, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import forgotPasswordIllustration from '@/assets/forgot-password-illustration.png'
 
 interface ForgotPasswordModalProps {
   open: boolean
