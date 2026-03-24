@@ -87,7 +87,7 @@ export function ForgotPasswordModal({ open, onOpenChange }: ForgotPasswordModalP
         {/* Animated Header */}
         <div className={cn(
           "relative px-6 pt-8 pb-6 transition-colors duration-500",
-          step === 'success' && "bg-green-50 dark:bg-green-950/30",
+          step === 'success' && "bg-success-light dark:bg-success/10",
           step === 'error' && "bg-destructive/5",
           (step === 'form' || step === 'sending') && "bg-primary/5"
         )}>
