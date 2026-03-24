@@ -36,9 +36,9 @@ serve(async (req) => {
 
     switch (action) {
       case 'apply_pricing_rules': {
-        // Get user's active repricing rules
+        // Get user's active pricing rules
         const { data: rules } = await supabase
-          .from('repricing_rules')
+          .from('pricing_rules')
           .select('*')
           .eq('user_id', user.id)
           .eq('is_active', true);
