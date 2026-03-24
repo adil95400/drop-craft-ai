@@ -236,39 +236,8 @@ async function extractFromShopify(url: string): Promise<any> {
   }
 }
 
-// Simulation de données pour développement et fallback
-function simulateProductData(url: string, platform: Platform): any {
-  const domain = new URL(url).hostname;
-  const productId = url.split('/').pop()?.split('?')[0] || 'unknown';
-  
-  const platformNames: Record<Platform, string> = {
-    aliexpress: 'AliExpress',
-    amazon: 'Amazon',
-    ebay: 'eBay',
-    shopify: 'Shopify',
-    generic: 'E-commerce',
-  };
-  
-  return {
-    name: `Produit ${platformNames[platform]} ${productId.substring(0, 8)}`,
-    description: `Produit de qualité importé depuis ${platformNames[platform]}. URL source: ${url}`,
-    price: Math.floor(Math.random() * 100) + 10,
-    cost_price: Math.floor(Math.random() * 50) + 5,
-    sku: `${platform.toUpperCase()}-${productId.substring(0, 8)}`,
-    category: `Import ${platformNames[platform]}`,
-    stock_quantity: Math.floor(Math.random() * 100) + 10,
-    image_url: `https://picsum.photos/seed/${productId}/400/400`,
-    image_urls: [
-      `https://picsum.photos/seed/${productId}/400/400`,
-      `https://picsum.photos/seed/${productId}2/400/400`,
-    ],
-    supplier_url: url,
-    supplier_name: domain,
-    rating: (Math.random() * 2 + 3).toFixed(1), // 3.0-5.0
-    reviews_count: Math.floor(Math.random() * 500) + 10,
-    status: 'active',
-  };
-}
+// NOTE: simulateProductData has been removed. All extractors now throw errors
+// when API keys are missing, forcing proper configuration before use.
 
 // Extraction des reviews
 async function extractReviewsFromUrl(url: string, platform: Platform): Promise<any[]> {
