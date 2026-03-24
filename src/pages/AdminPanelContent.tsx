@@ -48,6 +48,7 @@ import {
 import { EnhancedUserManagement } from '@/components/admin/EnhancedUserManagement'
 import { LogsViewer } from '@/components/admin/LogsViewer'
 import { QuickActionsPanel } from '@/components/admin/QuickActionsPanel'
+import SupplierControlTab from '@/components/admin/SupplierControlTab'
 
 // ─── Types ───────────────────────────────────────────────────────
 interface DashboardKPIs {
@@ -1111,6 +1112,10 @@ const AdminPanelContent = () => {
               <Users className="h-3.5 w-3.5" />
               Utilisateurs
             </TabsTrigger>
+            <TabsTrigger value="suppliers" className="gap-1.5 text-xs h-8 data-[state=active]:shadow-sm">
+              <Globe className="h-3.5 w-3.5" />
+              Fournisseurs
+            </TabsTrigger>
             <TabsTrigger value="audit" className="gap-1.5 text-xs h-8 data-[state=active]:shadow-sm">
               <Shield className="h-3.5 w-3.5" />
               Audit & Logs
@@ -1122,6 +1127,7 @@ const AdminPanelContent = () => {
           <TabsContent value="automation"><AutomationTab /></TabsContent>
           <TabsContent value="alerts"><AlertCenterTab /></TabsContent>
           <TabsContent value="users"><EnhancedUserManagement /></TabsContent>
+          <TabsContent value="suppliers"><SupplierControlTab /></TabsContent>
           <TabsContent value="audit"><LogsViewer /></TabsContent>
         </Tabs>
       </div>
