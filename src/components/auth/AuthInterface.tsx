@@ -483,7 +483,7 @@ export const AuthInterface = () => {
                 <div className="mt-8 pt-6 border-t border-border">
                   <div className="flex items-center justify-center gap-6 text-muted-foreground">
                     <div className="flex items-center gap-1.5 text-xs">
-                      <Shield className="h-3.5 w-3.5 text-green-600" />
+                      <Shield className="h-3.5 w-3.5 text-success" />
                       <span>SSL sécurisé</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs">
