@@ -27,6 +27,7 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
   const isMobile = useIsMobile()
   const isTablet = useIsTablet()
   useRetentionTracking()
+  useAutomationPolling()
 
   // Version mobile avec navigation en bas
   if (isMobile) {
