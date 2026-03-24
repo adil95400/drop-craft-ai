@@ -43,7 +43,7 @@ export const useRealAutomation = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  const { data: workflows = [], isLoading: isLoadingWorkflows } = useQuery({
+  const workflowsQuery = useQuery({
     queryKey: ['automation-workflows'],
     queryFn: async () => {
       const res = await automationApi.listWorkflows()
