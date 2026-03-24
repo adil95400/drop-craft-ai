@@ -32,10 +32,10 @@ const getPasswordStrength = (password: string): { score: number; label: string; 
   if (/[0-9]/.test(password)) score++;
   if (/[^A-Za-z0-9]/.test(password)) score++;
 
-  if (score <= 1) return { score, label: 'Faible', color: 'bg-red-500' };
-  if (score <= 2) return { score, label: 'Moyen', color: 'bg-orange-500' };
-  if (score <= 3) return { score, label: 'Bon', color: 'bg-yellow-500' };
-  return { score, label: 'Excellent', color: 'bg-green-500' };
+  if (score <= 1) return { score, label: 'Faible', color: 'bg-destructive' };
+  if (score <= 2) return { score, label: 'Moyen', color: 'bg-warning' };
+  if (score <= 3) return { score, label: 'Bon', color: 'bg-chart-3' };
+  return { score, label: 'Excellent', color: 'bg-success' };
 };
 
 // Carousel slides
