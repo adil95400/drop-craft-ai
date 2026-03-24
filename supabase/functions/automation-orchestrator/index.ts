@@ -182,30 +182,56 @@ Deno.serve(async (req) => {
 });
 
 /**
- * Invoke a subsystem edge function
+ * Invoke a subsystem edge function with retry + exponential backoff
  */
-async function invokeSubsystem(
+async function invokeWithRetry(
   supabaseUrl: string, 
   serviceKey: string, 
   functionName: string, 
-  body: any
+  body: any,
+  maxRetries = 2
 ): Promise<any> {
-  try {
-    const url = `${supabaseUrl}/functions/v1/${functionName}`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${serviceKey}`,
-      },
-      body: JSON.stringify(body),
-    });
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const url = `${supabaseUrl}/functions/v1/${functionName}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${serviceKey}`,
+        },
+        body: JSON.stringify(body),
+      });
 
-    const data = await response.json().catch(() => ({ status: response.status }));
-    return { status: response.ok ? 'success' : 'error', data };
-  } catch (error) {
-    console.error(`[orchestrator] Subsystem ${functionName} failed:`, error);
-    return { status: 'error', error: String(error) };
+      const data = await response.json().catch(() => ({ status: response.status }));
+
+      if (response.ok) {
+        return { status: 'success', data, attempts: attempt + 1 };
+      }
+
+      // Don't retry on 4xx client errors (except 429 rate limit)
+      if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+        return { status: 'error', data, httpStatus: response.status, attempts: attempt + 1 };
+      }
+
+      // Retry on 5xx or 429
+      if (attempt < maxRetries) {
+        const delay = Math.min(1000 * Math.pow(2, attempt), 8000) + Math.random() * 1000;
+        console.warn(`[orchestrator] ${functionName} returned ${response.status}, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        return { status: 'error', data, httpStatus: response.status, attempts: attempt + 1 };
+      }
+    } catch (error) {
+      if (attempt < maxRetries) {
+        const delay = Math.min(1000 * Math.pow(2, attempt), 8000) + Math.random() * 1000;
+        console.warn(`[orchestrator] ${functionName} threw, retrying in ${Math.round(delay)}ms: ${error}`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        console.error(`[orchestrator] Subsystem ${functionName} failed after ${maxRetries + 1} attempts:`, error);
+        return { status: 'error', error: String(error), attempts: attempt + 1 };
+      }
+    }
   }
 }
 
