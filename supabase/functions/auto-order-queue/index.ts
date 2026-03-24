@@ -531,18 +531,55 @@ async function processCJOrder(supabase: any, queueItem: OrderQueueItem): Promise
 async function processAliExpressOrder(supabase: any, queueItem: OrderQueueItem): Promise<any> {
   console.log('🌏 Processing AliExpress order:', queueItem.order_id);
   
-  // AliExpress DS API integration placeholder
-  // In production, implement actual AliExpress API calls
-  
   const payload = queueItem.payload;
   
-  // Simulate order (replace with real API in production)
+  // Get AliExpress credentials
+  const { data: credentials } = await supabase
+    .from('supplier_credentials_vault')
+    .select('credentials_encrypted')
+    .eq('user_id', payload.userId)
+    .eq('supplier_type', 'aliexpress')
+    .single();
+
+  if (!credentials?.credentials_encrypted?.api_key) {
+    throw new Error('AliExpress API credentials not configured. Please add your AliExpress DS API key.');
+  }
+
+  // AliExpress DS API - Place order
+  const response = await fetch('https://api-sg.aliexpress.com/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      app_key: credentials.credentials_encrypted.api_key,
+      method: 'aliexpress.ds.order.create',
+      logistics_address: JSON.stringify({
+        contact_person: payload.shipping?.name,
+        address: payload.shipping?.address1,
+        city: payload.shipping?.city,
+        zip: payload.shipping?.zip,
+        country: payload.shipping?.country_code,
+        phone_country: '+1',
+        mobile_no: payload.shipping?.phone,
+      }),
+      product_items: JSON.stringify(payload.items?.map((item: any) => ({
+        product_id: item.supplier_product_id,
+        sku_id: item.supplier_sku_id,
+        product_count: item.quantity,
+      })) || []),
+    }),
+  });
+
+  const result = await response.json();
+  if (!response.ok || result.error_response) {
+    throw new Error(result.error_response?.msg || `AliExpress API error: ${response.status}`);
+  }
+
   return {
-    supplierOrderId: `AE-${Date.now()}`,
-    supplierOrderNumber: `AE${Math.random().toString(36).substring(7).toUpperCase()}`,
+    supplierOrderId: result.result?.order_list?.[0]?.order_id || `AE-${Date.now()}`,
+    supplierOrderNumber: result.result?.order_list?.[0]?.order_id?.toString(),
     supplier: 'aliexpress',
     status: 'pending',
-    message: 'Order placed via AliExpress DS API'
+    rawResponse: result,
   };
 }
 
