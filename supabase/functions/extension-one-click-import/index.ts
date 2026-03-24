@@ -149,8 +149,7 @@ async function extractFromEBay(url: string): Promise<any> {
   const apiKey = Deno.env.get('EBAY_API_KEY');
   
   if (!apiKey) {
-    console.warn('eBay API key not configured, using simulated data');
-    return simulateProductData(url, 'ebay');
+    throw new Error('eBay API key not configured. Please add EBAY_API_KEY in your environment secrets.');
   }
 
   try {
