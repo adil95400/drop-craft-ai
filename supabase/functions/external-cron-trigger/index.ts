@@ -7,7 +7,7 @@
  * Headers: X-Cron-Secret: <your-secret>
  * Body: { "jobs": ["all"] } or { "jobs": ["sync", "pricing", "inventory"] }
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
