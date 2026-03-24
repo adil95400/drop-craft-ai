@@ -608,9 +608,9 @@ export default function CatalogProductsPage() {
           {/* Résultats count + Sort indicator */}
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
-              {filteredProducts.length === stats.total ?
-              `${stats.total} produit(s)` :
-              `${filteredProducts.length} sur ${stats.total} produit(s)`
+              {hasActiveFilters ?
+              `Page ${currentPage}/${totalPages || 1} · ${stats.total} produit(s) au total` :
+              `${stats.total} produit(s)`
               }
             </span>
             <div className="flex items-center gap-2">

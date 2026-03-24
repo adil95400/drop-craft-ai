@@ -446,11 +446,11 @@ function DesktopTableView({
                 <div className="flex items-center gap-3">
                   <LazyProductImage
                     src={product.image_url}
-                    alt={product.name}
+                    alt={getDisplayName(product)}
                     className="h-10 w-10"
                   />
                   <div className="min-w-0">
-                    <p className="font-medium truncate max-w-[200px]">{product.name}</p>
+                    <p className="font-medium truncate max-w-[200px]">{getDisplayName(product)}</p>
                     {product.sku && (
                       <p className="text-sm text-muted-foreground truncate">{product.sku}</p>
                     )}
