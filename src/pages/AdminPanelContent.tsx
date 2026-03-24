@@ -481,12 +481,12 @@ function AdminTopBar({ alertCount }: { alertCount: number }) {
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
               <span className="text-xs font-bold text-primary">
-                {(profile?.full_name || profile?.email || 'A').charAt(0).toUpperCase()}
+                {(profile?.full_name || 'A').charAt(0).toUpperCase()}
               </span>
             </div>
             <div className="hidden lg:block">
               <p className="text-xs font-medium leading-none">{profile?.full_name || 'Admin'}</p>
-              <p className="text-[10px] text-muted-foreground">{profile?.email}</p>
+              <p className="text-[10px] text-muted-foreground">Administrateur</p>
             </div>
           </div>
         </div>
