@@ -599,37 +599,12 @@ export const AdvancedAnalytics: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Position Concurrentielle</CardTitle>
-              <CardDescription>Analyse comparative automatisée vs marché</CardDescription>
+              <CardDescription>Données concurrentielles disponibles après activation du module concurrent tracking</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {competitiveAnalysisData.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">{item.metric}</h4>
-                      <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                        <span>Notre valeur: {typeof item.our_value === 'number' ? 
-                          item.metric.includes('Prix') || item.metric.includes('Note') ? 
-                          item.our_value.toFixed(1) : item.our_value.toLocaleString()
-                          : item.our_value}
-                        </span>
-                        <span>Moyenne marché: {typeof item.competitor_avg === 'number' ? 
-                          item.metric.includes('Prix') || item.metric.includes('Note') ? 
-                          item.competitor_avg.toFixed(1) : item.competitor_avg.toLocaleString()
-                          : item.competitor_avg}
-                        </span>
-                      </div>
-                    </div>
-                    <Badge className={
-                      item.market_position === 'leader' ? 'bg-success/10 text-success' :
-                      item.market_position === 'favorable' ? 'bg-info/10 text-blue-800' :
-                      'bg-warning/10 text-yellow-800'
-                    } variant="outline">
-                      {item.market_position === 'leader' ? 'Leader' :
-                       item.market_position === 'favorable' ? 'Favorable' : 'Challenger'}
-                    </Badge>
-                  </div>
-                ))}
+              <div className="text-center py-8 text-muted-foreground">
+                <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>Activez le module de veille concurrentielle pour voir les données comparatives.</p>
               </div>
             </CardContent>
           </Card>
