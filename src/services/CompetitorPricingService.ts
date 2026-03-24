@@ -300,8 +300,8 @@ export const CompetitorPricingService = {
 
     // Update last_executed_at
     await supabase
-      .from('repricing_rules')
-      .update({ last_executed_at: new Date().toISOString() })
+      .from('pricing_rules')
+      .update({ last_applied_at: new Date().toISOString() })
       .eq('id', id);
 
     return {
