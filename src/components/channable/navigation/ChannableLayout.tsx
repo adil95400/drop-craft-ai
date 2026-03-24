@@ -12,6 +12,7 @@ import { MobileHeader, MobileNav } from '@/components/mobile/MobileNav'
 import { SkipToContent } from '@/components/a11y/SkipToContent'
 import { cn } from '@/lib/utils'
 import { useRetentionTracking } from '@/hooks/useRetentionTracking'
+import { useAutomationPolling } from '@/hooks/useAutomationPolling'
 
 // Lazy-load non-critical overlay components
 const OnboardingModal = lazy(() => import('@/components/onboarding/UnifiedOnboarding').then(m => ({ default: m.OnboardingModal })));
