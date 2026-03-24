@@ -189,11 +189,13 @@ export const AIContentService = {
     
     if (error) throw error;
 
-    // Increment template usage count
-    await supabase.rpc('increment_usage_counter', {
-      p_user_id: user.id,
-      p_counter_key: `template_${templateId}`,
-    }).catch(() => { /* non-critical */ });
+    // Increment template usage count (non-critical, fire-and-forget)
+    try {
+      await (supabase.rpc as any)('increment_usage_counter', {
+        p_user_id: user.id,
+        p_counter_key: `template_${templateId}`,
+      });
+    } catch { /* non-critical */ }
 
     return data as unknown as AIGeneratedContent;
   },
