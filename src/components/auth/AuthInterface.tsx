@@ -396,7 +396,7 @@ export const AuthInterface = () => {
                         autoComplete="new-password"
                       />
                       {form.confirmPassword && form.password === form.confirmPassword && (
-                        <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                        <p className="text-xs text-success flex items-center gap-1 mt-1">
                           <Check className="h-3 w-3" />
                           Les mots de passe correspondent
                         </p>
