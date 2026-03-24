@@ -260,7 +260,7 @@ export const CompetitorPricingService = {
     if (updates.schedule !== undefined) dbUpdates.schedule = updates.schedule;
 
     const { data, error } = await supabase
-      .from('repricing_rules')
+      .from('pricing_rules')
       .update(dbUpdates)
       .eq('id', id)
       .select()
