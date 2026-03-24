@@ -1,5 +1,5 @@
 /**
- * Create Repricing Rule Dialog — Full CRUD for repricing_rules table
+ * Create Repricing Rule Dialog — routes to pricing_rules canonical table
  */
 import { useState } from 'react';
 import {
