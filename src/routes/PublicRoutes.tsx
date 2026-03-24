@@ -86,6 +86,7 @@ export function PublicRoutes() {
       <Route index element={<Index />} />
       <Route path="auth" element={<AuthPage />} />
       <Route path="auth/extension" element={<ExtensionAuthPage />} />
+      <Route path="reset-password" element={<ResetPassword />} />
       
       {/* Marketing */}
       <Route path="pricing" element={<Pricing />} />
