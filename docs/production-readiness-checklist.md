@@ -90,9 +90,9 @@
 - [x] Celery task lifecycle logging
 
 ### Metrics
-- [ ] Prometheus/Datadog integration (Sprint 6+)
-- [ ] Custom dashboards for API latency, error rates
-- [ ] Alert routing (PagerDuty/Slack)
+- [x] System monitoring with real metrics (system-monitoring Edge Function)
+- [x] Analytics persistence (analytics_insights snapshots)
+- [x] Alert routing (Slack webhook + active_alerts table)
 
 ## CI/CD
 
