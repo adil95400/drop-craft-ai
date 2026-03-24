@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils';
 interface Product {
   id: string;
   name: string;
+  title?: string;
   sku?: string;
   price?: number;
   cost_price?: number;
@@ -48,6 +49,11 @@ interface Product {
   images?: string[];
   brand?: string;
   variants?: any[];
+}
+
+/** Get the display name from a product, preferring title over name */
+function getDisplayName(product: Product): string {
+  return product.title || product.name || 'Produit sans nom';
 }
 
 type SortField = 'name' | 'price' | 'stock_quantity' | 'margin' | 'created_at';
