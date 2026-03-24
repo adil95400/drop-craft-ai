@@ -304,9 +304,9 @@ function MobileCardView({
                     onCheckedChange={() => handleToggleSelect(product.id)}
                     className="mt-1"
                   />
-                  <LazyProductImage
+                   <LazyProductImage
                     src={product.image_url}
-                    alt={product.name}
+                    alt={getDisplayName(product)}
                     className="h-16 w-16 flex-shrink-0"
                   />
                 </div>
