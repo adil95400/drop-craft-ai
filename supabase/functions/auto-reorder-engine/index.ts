@@ -416,22 +416,85 @@ async function handleProcessQueue(supabase: any) {
   });
 }
 
-// ─── Place order via supplier (simulated API calls) ──────────────────
+// ─── Place order via real supplier API ────────────────────────────────
 
 async function placeSupplierOrder(supabase: any, item: any): Promise<any> {
   const payload = item.payload || {};
   const supplierType = item.supplier_type;
+  const supplierId = payload.supplier_id;
 
-  // In production, these would be real API calls to CJ, AliExpress, etc.
-  // For now, simulate based on supplier type
-  const supplierOrderId = `${supplierType.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+  // Get supplier credentials
+  let apiKey = '';
+  if (supplierId) {
+    const { data: creds } = await supabase
+      .from('supplier_credentials_vault')
+      .select('oauth_data, api_key_encrypted, access_token_encrypted')
+      .eq('supplier_id', supplierId)
+      .eq('user_id', item.user_id)
+      .maybeSingle();
 
-  return {
-    supplier_order_id: supplierOrderId,
-    estimated_delivery: calculateEstimatedDelivery(supplierType, payload.estimated_delivery_days),
-    confirmation: true,
-    placed_at: new Date().toISOString(),
-  };
+    if (creds) {
+      const od = creds.oauth_data || {};
+      apiKey = od.accessToken || od.apiKey || creds.api_key_encrypted || creds.access_token_encrypted || '';
+    }
+  }
+
+  // Route to real API based on supplier type
+  switch (supplierType) {
+    case 'cjdropshipping':
+    case 'cj': {
+      if (!apiKey) throw new Error('CJ Access Token not configured');
+      const res = await fetch('https://developers.cjdropshipping.com/api2.0/v1/shopping/order/createOrder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'CJ-Access-Token': apiKey },
+        body: JSON.stringify({
+          products: [{ vid: payload.product_id, quantity: payload.quantity }],
+          shippingAddress: payload.shipping_address || {},
+          shippingMethodId: 'CJ_PACKET_B',
+        }),
+      });
+      const data = await res.json();
+      if (data.code !== 200) throw new Error(`CJ API: ${data.message || data.code}`);
+      return {
+        supplier_order_id: data.data?.orderId || data.data?.orderNum,
+        method: 'api',
+        platform: 'cjdropshipping',
+        placed_at: new Date().toISOString(),
+      };
+    }
+
+    case 'bigbuy': {
+      if (!apiKey) throw new Error('BigBuy API key not configured');
+      const res = await fetch('https://api.bigbuy.eu/rest/order/create.json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          products: [{ reference: payload.product_sku || payload.product_id, quantity: payload.quantity }],
+          internalReference: `AUTO-${Date.now()}`,
+        }),
+      });
+      if (!res.ok) throw new Error(`BigBuy API: ${res.status}`);
+      const data = await res.json();
+      return {
+        supplier_order_id: data.id || data.orderId,
+        method: 'api',
+        platform: 'bigbuy',
+        placed_at: new Date().toISOString(),
+      };
+    }
+
+    default: {
+      // Generic fallback — create internal reference, requires manual processing
+      const fallbackId = `${supplierType.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      return {
+        supplier_order_id: fallbackId,
+        method: 'manual',
+        platform: supplierType,
+        estimated_delivery: calculateEstimatedDelivery(supplierType, payload.estimated_delivery_days),
+        placed_at: new Date().toISOString(),
+      };
+    }
+  }
 }
 
 // ─── Email fallback when API is unavailable ──────────────────────────
