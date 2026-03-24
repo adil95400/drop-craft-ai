@@ -8,6 +8,7 @@ import Index from '@/pages/Index';
 // Keep auth lazy, but load landing route eagerly to prevent root suspense lock
 const AuthPage = lazy(() => import('@/pages/AuthPage'));
 const ExtensionAuthPage = lazy(() => import('@/pages/auth/ExtensionAuthPage'));
+const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'));
 
 // Pages publiques lazy loaded
 const Pricing = lazy(() => import('@/pages/Pricing'));
@@ -85,6 +86,7 @@ export function PublicRoutes() {
       <Route index element={<Index />} />
       <Route path="auth" element={<AuthPage />} />
       <Route path="auth/extension" element={<ExtensionAuthPage />} />
+      <Route path="reset-password" element={<ResetPassword />} />
       
       {/* Marketing */}
       <Route path="pricing" element={<Pricing />} />

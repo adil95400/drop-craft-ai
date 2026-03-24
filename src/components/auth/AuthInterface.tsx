@@ -32,10 +32,10 @@ const getPasswordStrength = (password: string): { score: number; label: string; 
   if (/[0-9]/.test(password)) score++;
   if (/[^A-Za-z0-9]/.test(password)) score++;
 
-  if (score <= 1) return { score, label: 'Faible', color: 'bg-red-500' };
-  if (score <= 2) return { score, label: 'Moyen', color: 'bg-orange-500' };
-  if (score <= 3) return { score, label: 'Bon', color: 'bg-yellow-500' };
-  return { score, label: 'Excellent', color: 'bg-green-500' };
+  if (score <= 1) return { score, label: 'Faible', color: 'bg-destructive' };
+  if (score <= 2) return { score, label: 'Moyen', color: 'bg-warning' };
+  if (score <= 3) return { score, label: 'Bon', color: 'bg-chart-3' };
+  return { score, label: 'Excellent', color: 'bg-success' };
 };
 
 // Carousel slides
@@ -396,7 +396,7 @@ export const AuthInterface = () => {
                         autoComplete="new-password"
                       />
                       {form.confirmPassword && form.password === form.confirmPassword && (
-                        <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                        <p className="text-xs text-success flex items-center gap-1 mt-1">
                           <Check className="h-3 w-3" />
                           Les mots de passe correspondent
                         </p>
@@ -483,11 +483,11 @@ export const AuthInterface = () => {
                 <div className="mt-8 pt-6 border-t border-border">
                   <div className="flex items-center justify-center gap-6 text-muted-foreground">
                     <div className="flex items-center gap-1.5 text-xs">
-                      <Shield className="h-3.5 w-3.5 text-green-600" />
+                      <Shield className="h-3.5 w-3.5 text-success" />
                       <span>SSL sécurisé</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs">
-                      <Check className="h-3.5 w-3.5 text-green-600" />
+                      <Check className="h-3.5 w-3.5 text-success" />
                       <span>RGPD conforme</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs">

@@ -87,7 +87,7 @@ export function ForgotPasswordModal({ open, onOpenChange }: ForgotPasswordModalP
         {/* Animated Header */}
         <div className={cn(
           "relative px-6 pt-8 pb-6 transition-colors duration-500",
-          step === 'success' && "bg-green-50 dark:bg-green-950/30",
+          step === 'success' && "bg-success-light dark:bg-success/10",
           step === 'error' && "bg-destructive/5",
           (step === 'form' || step === 'sending') && "bg-primary/5"
         )}>
@@ -128,12 +128,12 @@ export function ForgotPasswordModal({ open, onOpenChange }: ForgotPasswordModalP
             {step === 'success' && (
               <motion.div key="success-header" {...fadeVariants} className="relative z-10">
                 <motion.div
-                  className="w-14 h-14 rounded-2xl bg-green-100 dark:bg-green-900/50 flex items-center justify-center mb-4"
+                  className="w-14 h-14 rounded-2xl bg-success/10 flex items-center justify-center mb-4"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.1 }}
                 >
-                  <CheckCircle2 className="h-7 w-7 text-green-600 dark:text-green-400" />
+                  <CheckCircle2 className="h-7 w-7 text-success" />
                 </motion.div>
                 <h2 className="text-xl font-bold text-foreground">Email envoyé ! ✉️</h2>
                 <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
@@ -201,7 +201,7 @@ export function ForgotPasswordModal({ open, onOpenChange }: ForgotPasswordModalP
 
                 {/* Security badge */}
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border">
-                  <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
+                  <ShieldCheck className="h-4 w-4 text-success shrink-0" />
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     Le lien expirera après 1 heure. Votre compte reste sécurisé.
                   </p>
