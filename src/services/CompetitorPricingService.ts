@@ -272,7 +272,7 @@ export const CompetitorPricingService = {
 
   async deleteRepricingRule(id: string): Promise<void> {
     const { error } = await supabase
-      .from('repricing_rules')
+      .from('pricing_rules')
       .delete()
       .eq('id', id);
 
