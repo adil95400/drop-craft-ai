@@ -108,10 +108,11 @@
 - [ ] Blue-green deployment — Sprint 7+
 
 ## Remaining for Sprint 6+
-- [ ] Prometheus metrics export
-- [ ] Custom alert routing (Slack/PagerDuty)
-- [ ] Load testing suite (k6)
-- [ ] GitHub Actions CI/CD pipeline
-- [ ] Staging/production environment separation
+- [x] Real-time system monitoring (replaces Prometheus)
+- [x] Slack alert routing
+- [x] Load testing k6 suite
+- [x] GitHub Actions CI/CD + Security pipeline
+- [x] P&L dashboard connected to real data
+- [ ] Blue-green deployment
 - [ ] Database backup verification
 - [ ] API versioning strategy
