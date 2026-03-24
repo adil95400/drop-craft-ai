@@ -100,7 +100,7 @@ async function extractFromAliExpress(url: string): Promise<any> {
     };
   } catch (error) {
     console.error('AliExpress extraction error:', error);
-    return simulateProductData(url, 'aliexpress');
+    throw new Error(`AliExpress extraction failed: ${error.message}`);
   }
 }
 
