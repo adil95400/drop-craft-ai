@@ -83,6 +83,26 @@ Deno.serve(async (req) => {
 
     console.log(`[orchestrator] Starting action: ${action} (auth: ${authenticatedBy})`);
 
+    // ── IDEMPOTENCY CHECK ───────────────────────────────────
+    // Prevent duplicate orchestration runs within a 2-minute window
+    const idempotencyKey = `orchestrator:${action}:${Math.floor(Date.now() / 120000)}`;
+    const { data: existingRun } = await supabase
+      .from('idempotency_keys')
+      .select('id')
+      .eq('key', idempotencyKey)
+      .maybeSingle();
+
+    if (existingRun && authenticatedBy === 'cron') {
+      console.log(`[orchestrator] Skipping duplicate run for ${action} (idempotency key: ${idempotencyKey})`);
+      return json(corsHeaders, { success: true, skipped: true, reason: 'duplicate_within_window' });
+    }
+
+    // Record idempotency key (expires in 5 min)
+    await supabase.from('idempotency_keys').upsert({
+      key: idempotencyKey,
+      expires_at: new Date(Date.now() + 300000).toISOString(),
+    }).catch(() => { /* non-critical */ });
+
     const results: Record<string, any> = {};
 
     // ── HEALTH CHECK ────────────────────────────────────────
@@ -105,14 +125,14 @@ Deno.serve(async (req) => {
 
     // ── 1. SUPPLIER SYNC ────────────────────────────────────
     if (action === 'run_all' || action === 'run_sync') {
-      results.sync = await invokeSubsystem(supabaseUrl, supabaseKey, 'supplier-sync-cron', {});
+      results.sync = await invokeWithRetry(supabaseUrl, supabaseKey, 'supplier-sync-cron', {});
     }
 
     // ── 2. AUTO-REORDER ─────────────────────────────────────
     if (action === 'run_all' || action === 'run_reorder') {
-      results.reorder_check = await invokeSubsystem(supabaseUrl, supabaseKey, 'auto-reorder-engine', { action: 'check_and_reorder' });
-      results.reorder_process = await invokeSubsystem(supabaseUrl, supabaseKey, 'auto-reorder-engine', { action: 'process_queue' });
-      results.reorder_tracking = await invokeSubsystem(supabaseUrl, supabaseKey, 'auto-reorder-engine', { action: 'update_tracking' });
+      results.reorder_check = await invokeWithRetry(supabaseUrl, supabaseKey, 'auto-reorder-engine', { action: 'check_and_reorder' });
+      results.reorder_process = await invokeWithRetry(supabaseUrl, supabaseKey, 'auto-reorder-engine', { action: 'process_queue' });
+      results.reorder_tracking = await invokeWithRetry(supabaseUrl, supabaseKey, 'auto-reorder-engine', { action: 'update_tracking' });
     }
 
     // ── 3. SCHEDULED WORKFLOWS ──────────────────────────────
@@ -127,29 +147,34 @@ Deno.serve(async (req) => {
 
     // ── 5. ALERT SCAN ───────────────────────────────────────
     if (action === 'run_all' || action === 'run_alerts') {
-      results.alerts = await invokeSubsystem(supabaseUrl, supabaseKey, 'automation-alert-engine', { action: 'scan_all' });
+      results.alerts = await invokeWithRetry(supabaseUrl, supabaseKey, 'automation-alert-engine', { action: 'scan_all' });
     }
 
     // ── 6. CART RECOVERY ────────────────────────────────────
     if (action === 'run_all') {
-      results.cart_recovery = await invokeSubsystem(supabaseUrl, supabaseKey, 'cart-recovery-cron', {});
+      results.cart_recovery = await invokeWithRetry(supabaseUrl, supabaseKey, 'cart-recovery-cron', {});
     }
 
     const totalTime = Date.now() - startTime;
+
+    // Summarize failures for monitoring
+    const failedSubsystems = Object.entries(results)
+      .filter(([_, v]) => v?.status === 'error')
+      .map(([k]) => k);
 
     // Log orchestration run
     await supabase.from('activity_logs').insert({
       action: 'automation_orchestrator_run',
       entity_type: 'system',
-      description: `Orchestration ${action} completed in ${totalTime}ms (auth: ${authenticatedBy})`,
-      details: { action, results, duration_ms: totalTime, authenticated_by: authenticatedBy },
+      description: `Orchestration ${action} completed in ${totalTime}ms (auth: ${authenticatedBy})${failedSubsystems.length ? ` — ${failedSubsystems.length} failures: ${failedSubsystems.join(', ')}` : ''}`,
+      details: { action, results, duration_ms: totalTime, authenticated_by: authenticatedBy, failed: failedSubsystems },
       source: 'automation_orchestrator',
-      severity: 'info',
+      severity: failedSubsystems.length > 0 ? 'warn' : 'info',
     });
 
-    console.log(`[orchestrator] Completed ${action} in ${totalTime}ms`);
+    console.log(`[orchestrator] Completed ${action} in ${totalTime}ms (${failedSubsystems.length} failures)`);
 
-    return json(corsHeaders, { success: true, action, duration_ms: totalTime, results });
+    return json(corsHeaders, { success: true, action, duration_ms: totalTime, results, failed: failedSubsystems });
   } catch (error) {
     console.error('[orchestrator] Fatal error:', error);
     return json(corsHeaders, { success: false, error: String(error), duration_ms: Date.now() - startTime }, 500);
