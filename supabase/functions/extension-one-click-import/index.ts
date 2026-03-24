@@ -123,14 +123,24 @@ async function extractFromAmazon(url: string): Promise<any> {
     
     const asin = asinMatch[1] || asinMatch[2];
     
-    // L'implémentation complète de la signature AWS et de l'appel API serait ici
-    // Pour l'instant, on simule les données
+    // Amazon PA-API v5 call
     console.log('Amazon ASIN detected:', asin);
     
-    return simulateProductData(url, 'amazon');
+    const paApiHost = 'webservices.amazon.com';
+    const paApiPath = '/paapi5/getitems';
+    const payload = JSON.stringify({
+      ItemIds: [asin],
+      Resources: ['Images.Primary.Large', 'ItemInfo.Title', 'ItemInfo.Features', 'Offers.Listings.Price', 'ItemInfo.ByLineInfo'],
+      PartnerTag: associateTag,
+      PartnerType: 'Associates',
+      Marketplace: 'www.amazon.com',
+    });
+
+    // Note: Full HMAC-SHA256 signing required for production PA-API calls
+    throw new Error(`Amazon PA-API signing not yet implemented for ASIN ${asin}. Configure a scraping fallback or implement AWS Signature V4.`);
   } catch (error) {
     console.error('Amazon extraction error:', error);
-    return simulateProductData(url, 'amazon');
+    throw new Error(`Amazon extraction failed: ${error.message}`);
   }
 }
 
