@@ -12,6 +12,7 @@ import { MobileHeader, MobileNav } from '@/components/mobile/MobileNav'
 import { SkipToContent } from '@/components/a11y/SkipToContent'
 import { cn } from '@/lib/utils'
 import { useRetentionTracking } from '@/hooks/useRetentionTracking'
+import { useAutomationPolling } from '@/hooks/useAutomationPolling'
 
 // Lazy-load non-critical overlay components
 const OnboardingModal = lazy(() => import('@/components/onboarding/UnifiedOnboarding').then(m => ({ default: m.OnboardingModal })));
@@ -26,6 +27,7 @@ export function ChannableLayout({ children, className }: ChannableLayoutProps) {
   const isMobile = useIsMobile()
   const isTablet = useIsTablet()
   useRetentionTracking()
+  useAutomationPolling()
 
   // Version mobile avec navigation en bas
   if (isMobile) {
