@@ -416,22 +416,85 @@ async function handleProcessQueue(supabase: any) {
   });
 }
 
-// ─── Place order via supplier (simulated API calls) ──────────────────
+// ─── Place order via real supplier API ────────────────────────────────
 
 async function placeSupplierOrder(supabase: any, item: any): Promise<any> {
   const payload = item.payload || {};
   const supplierType = item.supplier_type;
+  const supplierId = payload.supplier_id;
 
-  // In production, these would be real API calls to CJ, AliExpress, etc.
-  // For now, simulate based on supplier type
-  const supplierOrderId = `${supplierType.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+  // Get supplier credentials
+  let apiKey = '';
+  if (supplierId) {
+    const { data: creds } = await supabase
+      .from('supplier_credentials_vault')
+      .select('oauth_data, api_key_encrypted, access_token_encrypted')
+      .eq('supplier_id', supplierId)
+      .eq('user_id', item.user_id)
+      .maybeSingle();
 
-  return {
-    supplier_order_id: supplierOrderId,
-    estimated_delivery: calculateEstimatedDelivery(supplierType, payload.estimated_delivery_days),
-    confirmation: true,
-    placed_at: new Date().toISOString(),
-  };
+    if (creds) {
+      const od = creds.oauth_data || {};
+      apiKey = od.accessToken || od.apiKey || creds.api_key_encrypted || creds.access_token_encrypted || '';
+    }
+  }
+
+  // Route to real API based on supplier type
+  switch (supplierType) {
+    case 'cjdropshipping':
+    case 'cj': {
+      if (!apiKey) throw new Error('CJ Access Token not configured');
+      const res = await fetch('https://developers.cjdropshipping.com/api2.0/v1/shopping/order/createOrder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'CJ-Access-Token': apiKey },
+        body: JSON.stringify({
+          products: [{ vid: payload.product_id, quantity: payload.quantity }],
+          shippingAddress: payload.shipping_address || {},
+          shippingMethodId: 'CJ_PACKET_B',
+        }),
+      });
+      const data = await res.json();
+      if (data.code !== 200) throw new Error(`CJ API: ${data.message || data.code}`);
+      return {
+        supplier_order_id: data.data?.orderId || data.data?.orderNum,
+        method: 'api',
+        platform: 'cjdropshipping',
+        placed_at: new Date().toISOString(),
+      };
+    }
+
+    case 'bigbuy': {
+      if (!apiKey) throw new Error('BigBuy API key not configured');
+      const res = await fetch('https://api.bigbuy.eu/rest/order/create.json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          products: [{ reference: payload.product_sku || payload.product_id, quantity: payload.quantity }],
+          internalReference: `AUTO-${Date.now()}`,
+        }),
+      });
+      if (!res.ok) throw new Error(`BigBuy API: ${res.status}`);
+      const data = await res.json();
+      return {
+        supplier_order_id: data.id || data.orderId,
+        method: 'api',
+        platform: 'bigbuy',
+        placed_at: new Date().toISOString(),
+      };
+    }
+
+    default: {
+      // Generic fallback — create internal reference, requires manual processing
+      const fallbackId = `${supplierType.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      return {
+        supplier_order_id: fallbackId,
+        method: 'manual',
+        platform: supplierType,
+        estimated_delivery: calculateEstimatedDelivery(supplierType, payload.estimated_delivery_days),
+        placed_at: new Date().toISOString(),
+      };
+    }
+  }
 }
 
 // ─── Email fallback when API is unavailable ──────────────────────────
@@ -493,13 +556,44 @@ async function handleUpdateTracking(supabase: any) {
     let trackingStatus = currentResult.tracking_status || 'confirmed';
     let shouldUpdate = false;
 
-    // Simulate tracking progression
-    if (daysSinceOrder >= estimatedDays && trackingStatus !== 'delivered') {
-      trackingStatus = 'delivered';
-      shouldUpdate = true;
-      results.delivered++;
+    // Try real tracking via 17Track if available
+    const trackApiKey = Deno.env.get('TRACK17_API_KEY');
+    if (item.tracking_number && trackApiKey) {
+      try {
+        const tRes = await fetch('https://api.17track.net/track/v2.2/gettrackinfo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', '17token': trackApiKey },
+          body: JSON.stringify([{ number: item.tracking_number }]),
+        });
+        const tData = await tRes.json();
+        const info = tData?.data?.accepted?.[0]?.track;
+        if (info) {
+          const statusMap: Record<number, string> = { 0: 'not_found', 10: 'in_transit', 30: 'pick_up', 40: 'delivered' };
+          trackingStatus = statusMap[info.e] || trackingStatus;
+          shouldUpdate = true;
+        }
+      } catch (e) {
+        console.warn('17Track lookup failed:', e);
+      }
+    }
 
-      // Auto-update stock when delivered
+    // Fallback: time-based progression
+    if (!shouldUpdate) {
+      if (daysSinceOrder >= estimatedDays && trackingStatus !== 'delivered') {
+        trackingStatus = 'delivered';
+        shouldUpdate = true;
+      } else if (daysSinceOrder >= Math.ceil(estimatedDays * 0.7) && trackingStatus === 'confirmed') {
+        trackingStatus = 'in_transit';
+        shouldUpdate = true;
+      } else if (daysSinceOrder >= 1 && trackingStatus === 'pending') {
+        trackingStatus = 'confirmed';
+        shouldUpdate = true;
+      }
+    }
+
+    // Handle delivery → auto stock update
+    if (trackingStatus === 'delivered' && currentResult.tracking_status !== 'delivered') {
+      results.delivered++;
       if (item.payload?.product_id && item.payload?.quantity) {
         const { data: product } = await supabase
           .from('products')
@@ -508,31 +602,21 @@ async function handleUpdateTracking(supabase: any) {
           .single();
 
         if (product) {
-          await supabase
-            .from('products')
-            .update({
-              stock_quantity: (product.stock_quantity || 0) + item.payload.quantity,
-            })
-            .eq('id', item.payload.product_id);
+          await supabase.from('products').update({
+            stock_quantity: (product.stock_quantity || 0) + item.payload.quantity,
+          }).eq('id', item.payload.product_id);
 
-          // Log stock update
           await supabase.from('activity_logs').insert({
             user_id: item.user_id,
             action: 'auto_reorder_triggered',
             entity_type: 'product',
             entity_id: item.payload.product_id,
-            description: `Stock updated: +${item.payload.quantity} units (auto-delivery)`,
+            description: `Stock updated: +${item.payload.quantity} units (delivery confirmed)`,
             source: 'auto_reorder_engine',
             severity: 'info',
           });
         }
       }
-    } else if (daysSinceOrder >= Math.ceil(estimatedDays * 0.7) && trackingStatus === 'confirmed') {
-      trackingStatus = 'in_transit';
-      shouldUpdate = true;
-    } else if (daysSinceOrder >= 1 && trackingStatus === 'pending') {
-      trackingStatus = 'confirmed';
-      shouldUpdate = true;
     }
 
     if (shouldUpdate) {

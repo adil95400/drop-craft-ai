@@ -474,34 +474,204 @@ Deno.serve(
         break
       }
       
-      case 'amazon':
-      case 'ebay':
-      case 'temu':
+      case 'amazon': {
+        try {
+          // Amazon SP-API — requires LWA (Login with Amazon) OAuth credentials
+          const refreshToken = credentials.refreshToken || credentials.accessToken
+          const clientId = credentials.clientId || credentials.appKey
+          const clientSecret = credentials.clientSecret || credentials.appSecret
+          const marketplace = credentials.marketplace || 'A13V1IB3VIYZZH' // FR default
+
+          if (!refreshToken || !clientId || !clientSecret) {
+            console.log('Amazon SP-API: Missing credentials, skipping')
+            syncStats.errors.push('Amazon: Configure refreshToken, clientId, clientSecret')
+            break
+          }
+
+          // Step 1: Get access token via LWA
+          const tokenRes = await fetch('https://api.amazon.com/auth/o2/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              grant_type: 'refresh_token',
+              refresh_token: refreshToken,
+              client_id: clientId,
+              client_secret: clientSecret,
+            }),
+          })
+
+          if (!tokenRes.ok) {
+            throw new Error(`Amazon LWA token failed: ${tokenRes.status}`)
+          }
+
+          const tokenData = await tokenRes.json()
+          const accessToken = tokenData.access_token
+
+          // Step 2: Get catalog items
+          const catalogRes = await fetch(
+            `https://sellingpartnerapi-eu.amazon.com/catalog/2022-04-01/items?marketplaceIds=${marketplace}&pageSize=${Math.min(limit, 20)}&includedData=summaries,images,salesRanks`,
+            {
+              headers: {
+                'x-amz-access-token': accessToken,
+                'Content-Type': 'application/json',
+              },
+            }
+          )
+
+          if (!catalogRes.ok) {
+            throw new Error(`Amazon Catalog API: ${catalogRes.status}`)
+          }
+
+          const catalogData = await catalogRes.json()
+          const items = catalogData.items || []
+
+          products = items.map((item: any) => {
+            const summary = item.summaries?.[0] || {}
+            const image = item.images?.[0]?.images?.[0]?.link
+            return {
+              supplier_id: supplierId,
+              external_id: item.asin,
+              sku: `AMZ-${item.asin}`,
+              name: summary.itemName || 'Amazon Product',
+              description: summary.itemName || '',
+              price: 0, // Price requires Pricing API
+              cost_price: 0,
+              currency: 'EUR',
+              stock_quantity: 0, // Stock requires Inventory API
+              images: image ? [image] : [],
+              category: summary.classifications?.[0]?.displayName || 'Amazon',
+              attributes: {
+                asin: item.asin,
+                brand: summary.brand,
+                marketplace,
+                modelNumber: summary.modelNumber,
+              },
+              status: 'active',
+            }
+          })
+
+          syncStats.fetched = products.length
+          console.log(`Amazon SP-API: Fetched ${products.length} catalog items`)
+        } catch (error) {
+          console.error('Amazon sync failed:', error)
+          syncStats.errors.push(`Amazon: ${error.message}`)
+        }
+        break
+      }
+
+      case 'temu': {
+        try {
+          // Temu Open Platform API
+          const appKey = credentials.appKey || credentials.apiKey || credentialData.api_key_encrypted
+          const appSecret = credentials.appSecret || credentials.secretKey
+
+          if (!appKey || !appSecret) {
+            console.log('Temu: Missing API credentials')
+            syncStats.errors.push('Temu: Configure appKey and appSecret from Temu Open Platform')
+            break
+          }
+
+          // Temu merchant API — product list
+          const timestamp = Math.floor(Date.now() / 1000).toString()
+          const res = await fetch('https://openapi.temupay.com/bg/merchant/goods/list', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Key': appKey,
+              'Access-Timestamp': timestamp,
+            },
+            body: JSON.stringify({
+              pageNo: 1,
+              pageSize: Math.min(limit, 100),
+            }),
+          })
+
+          if (!res.ok) {
+            throw new Error(`Temu API: ${res.status}`)
+          }
+
+          const data = await res.json()
+          const goodsList = data.result?.goodsList || []
+
+          products = goodsList.map((g: any) => ({
+            supplier_id: supplierId,
+            external_id: g.goodsId?.toString() || `temu-${Date.now()}`,
+            sku: g.goodsSn || `TEMU-${g.goodsId}`,
+            name: g.goodsName || 'Temu Product',
+            description: g.goodsDesc || '',
+            price: parseFloat(g.marketPrice || '0') / 100,
+            cost_price: parseFloat(g.costPrice || g.marketPrice || '0') / 100,
+            currency: 'EUR',
+            stock_quantity: g.stockQuantity || 0,
+            images: g.thumbUrl ? [g.thumbUrl] : [],
+            category: g.catName || 'Temu',
+            attributes: {
+              source: 'temu',
+              catId: g.catId,
+              saleStatus: g.saleStatus,
+            },
+            status: g.saleStatus === 1 ? 'active' : 'inactive',
+          }))
+
+          syncStats.fetched = products.length
+          console.log(`Temu: Fetched ${products.length} products`)
+        } catch (error) {
+          console.error('Temu sync failed:', error)
+          syncStats.errors.push(`Temu: ${error.message}`)
+        }
+        break
+      }
+
+      case 'ebay': {
+        try {
+          const accessToken = credentials.accessToken || credentialData.access_token_encrypted
+
+          if (!accessToken) {
+            syncStats.errors.push('eBay: Configure OAuth access token')
+            break
+          }
+
+          const res = await fetch(
+            `https://api.ebay.com/sell/inventory/v1/inventory_item?limit=${Math.min(limit, 100)}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          )
+
+          if (!res.ok) throw new Error(`eBay API: ${res.status}`)
+
+          const data = await res.json()
+          const items = data.inventoryItems || []
+
+          products = items.map((item: any) => ({
+            supplier_id: supplierId,
+            external_id: item.sku,
+            sku: item.sku,
+            name: item.product?.title || 'eBay Product',
+            description: item.product?.description || '',
+            price: item.product?.aspects?.Price?.[0] || 0,
+            cost_price: 0,
+            currency: 'EUR',
+            stock_quantity: item.availability?.shipToLocationAvailability?.quantity || 0,
+            images: item.product?.imageUrls || [],
+            category: item.product?.aspects?.Category?.[0] || 'eBay',
+            attributes: { source: 'ebay', condition: item.condition },
+            status: 'active',
+          }))
+
+          syncStats.fetched = products.length
+        } catch (error) {
+          console.error('eBay sync failed:', error)
+          syncStats.errors.push(`eBay: ${error.message}`)
+        }
+        break
+      }
+
       case 'wish': {
-        // Marketplace connectors - require specific API setup
-        console.log(`${connectorId}: Marketplace connector - generating sample products`)
-        
-        products = Array.from({ length: Math.min(limit, 20) }, (_, i) => ({
-          supplier_id: supplierId,
-          external_id: `${connectorId}-${Date.now()}-${i}`,
-          sku: `${connectorId.toUpperCase()}-${1000 + i}`,
-          name: `${connectorId.charAt(0).toUpperCase() + connectorId.slice(1)} Product ${i + 1}`,
-          description: `Product from ${connectorId} marketplace`,
-          price: Math.round((Math.random() * 100 + 20) * 100) / 100,
-          cost_price: Math.round((Math.random() * 60 + 10) * 100) / 100,
-          currency: 'USD',
-          stock_quantity: Math.floor(Math.random() * 500) + 50,
-          images: [],
-          category: connectorId.charAt(0).toUpperCase() + connectorId.slice(1),
-          attributes: {
-            source: connectorId,
-            marketplace: true,
-            note: 'Configure API credentials for real product data'
-          },
-          status: 'active'
-        }))
-        
-        syncStats.fetched = products.length
+        syncStats.errors.push('Wish: API deprecated, use CSV import')
         break
       }
       
