@@ -62,15 +62,18 @@ export interface ProductSupplierLink {
   margin: number;
 }
 
-export interface SyncLogEntry {
+export interface SyncJobEntry {
   id: string;
   supplier_name: string;
-  sync_type: string;
+  supplier_type: string;
+  job_type: string;
   status: string;
-  items_processed: number;
-  items_failed: number;
+  products_processed: number;
+  products_created: number;
+  products_updated: number;
+  products_failed: number;
   error_message: string | null;
-  started_at: string;
+  started_at: string | null;
   completed_at: string | null;
   duration_seconds: number | null;
 }
@@ -84,41 +87,21 @@ export function useSupplierOverview() {
     queryFn: async () => {
       if (!user?.id) return [];
       
-      // Fetch suppliers
-      const { data: suppliers, error } = await supabase
-        .from('suppliers')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('name');
+      const [suppRes, scoreRes, connRes, mapRes] = await Promise.all([
+        supabase.from('suppliers').select('*').eq('user_id', user.id).order('name'),
+        supabase.from('supplier_scores').select('*').eq('user_id', user.id),
+        supabase.from('supplier_connections').select('*').eq('user_id', user.id),
+        supabase.from('product_supplier_mapping').select('supplier_id').eq('user_id', user.id),
+      ]);
       
-      if (error || !suppliers) return [];
-      
-      // Fetch scores
-      const { data: scores } = await supabase
-        .from('supplier_scores')
-        .select('*')
-        .eq('user_id', user.id);
-      
-      // Fetch connections
-      const { data: connections } = await supabase
-        .from('supplier_connections')
-        .select('*')
-        .eq('user_id', user.id);
-      
-      // Fetch product counts per supplier
-      const { data: mappings } = await supabase
-        .from('product_supplier_mapping')
-        .select('supplier_id')
-        .eq('user_id', user.id);
-      
+      const suppliers = suppRes.data || [];
       const productCounts: Record<string, number> = {};
-      mappings?.forEach(m => {
-        const sid = (m as any).supplier_id;
-        productCounts[sid] = (productCounts[sid] || 0) + 1;
+      mapRes.data?.forEach((m: any) => {
+        productCounts[m.supplier_id] = (productCounts[m.supplier_id] || 0) + 1;
       });
       
-      const scoreMap = new Map(scores?.map(s => [s.supplier_id, s]) || []);
-      const connMap = new Map(connections?.map(c => [(c as any).connector_id, c]) || []);
+      const scoreMap = new Map((scoreRes.data || []).map(s => [s.supplier_id, s]));
+      const connMap = new Map((connRes.data || []).map((c: any) => [c.connector_id, c]));
       
       return suppliers.map(s => {
         const score = scoreMap.get(s.id);
@@ -146,11 +129,11 @@ export function useSupplierOverview() {
             recommendation: score.recommendation || 'neutral',
           } : null,
           connection: conn ? {
-            id: (conn as any).id,
-            connector_id: (conn as any).connector_id,
-            status: (conn as any).status,
-            last_sync_at: (conn as any).last_sync_at,
-            sync_stats: (conn as any).sync_stats || {},
+            id: conn.id,
+            connector_id: conn.connector_id,
+            status: conn.status,
+            last_sync_at: conn.last_sync_at,
+            sync_stats: conn.sync_stats || {},
           } : null,
         } as SupplierOverview;
       });
@@ -169,7 +152,6 @@ export function useProductSourcingMap() {
     queryFn: async () => {
       if (!user?.id) return [];
       
-      // Get products with their supplier mappings
       const { data: products } = await supabase
         .from('products')
         .select('id, title, price, stock_quantity')
@@ -181,25 +163,16 @@ export function useProductSourcingMap() {
       
       const productIds = products.map(p => p.id);
       
-      const { data: mappings } = await supabase
-        .from('product_supplier_mapping')
-        .select('*')
-        .eq('user_id', user.id)
-        .in('product_id', productIds);
+      const [mapRes, suppRes] = await Promise.all([
+        supabase.from('product_supplier_mapping').select('*').eq('user_id', user.id).in('product_id', productIds),
+        supabase.from('suppliers').select('id, name').eq('user_id', user.id),
+      ]);
       
-      // Get supplier names
-      const { data: suppliers } = await supabase
-        .from('suppliers')
-        .select('id, name')
-        .eq('user_id', user.id);
-      
-      const supplierNames = new Map(suppliers?.map(s => [s.id, s.name]) || []);
-      
+      const supplierNames = new Map((suppRes.data || []).map(s => [s.id, s.name]));
       const mappingsByProduct = new Map<string, any[]>();
-      mappings?.forEach(m => {
-        const pid = (m as any).product_id;
-        if (!mappingsByProduct.has(pid)) mappingsByProduct.set(pid, []);
-        mappingsByProduct.get(pid)!.push(m);
+      (mapRes.data || []).forEach((m: any) => {
+        if (!mappingsByProduct.has(m.product_id)) mappingsByProduct.set(m.product_id, []);
+        mappingsByProduct.get(m.product_id)!.push(m);
       });
       
       return products
@@ -233,37 +206,48 @@ export function useProductSourcingMap() {
   });
 }
 
-// Hook: Sync logs for monitoring
-export function useSupplierSyncLogs() {
+// Hook: Sync jobs for monitoring
+export function useSupplierSyncJobs() {
   const { user } = useAuth();
   
   return useQuery({
-    queryKey: ['admin-supplier-sync-logs', user?.id],
+    queryKey: ['admin-supplier-sync-jobs', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
       
-      const { data: logs } = await supabase
-        .from('supplier_sync_logs')
-        .select('*, suppliers(name)')
+      const { data: jobs } = await supabase
+        .from('supplier_sync_jobs')
+        .select('*')
         .eq('user_id', user.id)
-        .order('started_at', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(50);
       
-      return (logs || []).map((l: any) => {
-        const started = l.started_at ? new Date(l.started_at).getTime() : 0;
-        const completed = l.completed_at ? new Date(l.completed_at).getTime() : 0;
+      // Get supplier names
+      const supplierIds = [...new Set((jobs || []).map(j => j.supplier_id).filter(Boolean))];
+      const { data: suppliers } = supplierIds.length
+        ? await supabase.from('suppliers').select('id, name').in('id', supplierIds as string[])
+        : { data: [] };
+      
+      const nameMap = new Map((suppliers || []).map(s => [s.id, s.name]));
+      
+      return (jobs || []).map(j => {
+        const started = j.started_at ? new Date(j.started_at).getTime() : 0;
+        const completed = j.completed_at ? new Date(j.completed_at).getTime() : 0;
         return {
-          id: l.id,
-          supplier_name: l.suppliers?.name || 'Inconnu',
-          sync_type: l.sync_type || 'products',
-          status: l.status || 'pending',
-          items_processed: l.items_processed || 0,
-          items_failed: l.items_failed || 0,
-          error_message: l.error_message,
-          started_at: l.started_at,
-          completed_at: l.completed_at,
+          id: j.id,
+          supplier_name: nameMap.get(j.supplier_id || '') || j.supplier_type || 'Inconnu',
+          supplier_type: j.supplier_type,
+          job_type: j.job_type,
+          status: j.status,
+          products_processed: j.products_processed || 0,
+          products_created: j.products_created || 0,
+          products_updated: j.products_updated || 0,
+          products_failed: j.products_failed || 0,
+          error_message: j.error_message,
+          started_at: j.started_at,
+          completed_at: j.completed_at,
           duration_seconds: started && completed ? Math.round((completed - started) / 1000) : null,
-        } as SyncLogEntry;
+        } as SyncJobEntry;
       });
     },
     enabled: !!user,
@@ -271,7 +255,7 @@ export function useSupplierSyncLogs() {
   });
 }
 
-// Hook: Supplier analytics (aggregated KPIs)
+// Hook: Supplier KPIs
 export function useSupplierAnalyticsKPIs() {
   const { user } = useAuth();
   
@@ -280,35 +264,32 @@ export function useSupplierAnalyticsKPIs() {
     queryFn: async () => {
       if (!user?.id) return null;
       
-      const [
-        { count: totalSuppliers },
-        { count: totalMappings },
-        { data: syncLogs },
-        { data: scores },
-        { data: connections },
-      ] = await Promise.all([
+      const [suppRes, mapRes, jobsRes, scoreRes, connRes] = await Promise.all([
         supabase.from('suppliers').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('product_supplier_mapping').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('supplier_sync_logs').select('status').eq('user_id', user.id).gte('started_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
+        supabase.from('supplier_sync_jobs').select('status').eq('user_id', user.id)
+          .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
         supabase.from('supplier_scores').select('overall_score').eq('user_id', user.id),
         supabase.from('supplier_connections').select('status').eq('user_id', user.id),
       ]);
       
-      const syncTotal = syncLogs?.length || 0;
-      const syncFailed = syncLogs?.filter(l => l.status === 'failed').length || 0;
-      const avgScore = scores?.length ? scores.reduce((a, s) => a + Number(s.overall_score), 0) / scores.length : 0;
-      const activeConnections = connections?.filter(c => (c as any).status === 'active').length || 0;
-      const errorConnections = connections?.filter(c => (c as any).status === 'error').length || 0;
+      const syncTotal = jobsRes.data?.length || 0;
+      const syncFailed = jobsRes.data?.filter(l => l.status === 'failed').length || 0;
+      const avgScore = scoreRes.data?.length 
+        ? scoreRes.data.reduce((a, s) => a + Number(s.overall_score), 0) / scoreRes.data.length 
+        : 0;
+      const activeConns = connRes.data?.filter((c: any) => c.status === 'active').length || 0;
+      const errorConns = connRes.data?.filter((c: any) => c.status === 'error').length || 0;
       
       return {
-        totalSuppliers: totalSuppliers || 0,
-        totalMappings: totalMappings || 0,
+        totalSuppliers: suppRes.count || 0,
+        totalMappings: mapRes.count || 0,
         syncSuccessRate: syncTotal > 0 ? Math.round(((syncTotal - syncFailed) / syncTotal) * 100) : 100,
         syncsLast24h: syncTotal,
         syncsFailed: syncFailed,
         avgSupplierScore: Math.round(avgScore * 100) / 100,
-        activeConnections,
-        errorConnections,
+        activeConnections: activeConns,
+        errorConnections: errorConns,
       };
     },
     enabled: !!user,
