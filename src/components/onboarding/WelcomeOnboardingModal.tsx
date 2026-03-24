@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
+import { useLocation } from 'react-router-dom'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -82,17 +84,39 @@ export function WelcomeOnboardingModal() {
   const [isOpen, setIsOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const navigate = useNavigate()
+  const location = useLocation()
+  const { user, loading } = useAuth()
+
+  const isAuthRoute =
+    location.pathname.startsWith('/auth') ||
+    location.pathname.startsWith('/reset-password')
+
+  const getOnboardingKey = () =>
+    user?.id ? `${ONBOARDING_KEY}-${user.id}` : ONBOARDING_KEY
 
   useEffect(() => {
-    const completed = localStorage.getItem(ONBOARDING_KEY)
+    if (loading || !user?.id || isAuthRoute) {
+      setIsOpen(false)
+      return
+    }
+
+    const scopedKey = getOnboardingKey()
+    const legacyCompleted = localStorage.getItem(ONBOARDING_KEY)
+    const completed = localStorage.getItem(scopedKey)
+
+    if (!completed && legacyCompleted === 'true') {
+      localStorage.setItem(scopedKey, 'true')
+      return
+    }
+
     if (!completed) {
       const timer = setTimeout(() => setIsOpen(true), 1500)
       return () => clearTimeout(timer)
     }
-  }, [])
+  }, [loading, user?.id, isAuthRoute])
 
   const handleComplete = () => {
-    localStorage.setItem(ONBOARDING_KEY, 'true')
+    localStorage.setItem(getOnboardingKey(), 'true')
     setIsOpen(false)
   }
 
