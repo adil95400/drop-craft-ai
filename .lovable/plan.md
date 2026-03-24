@@ -1,36 +1,32 @@
 
 
-## Plan : Activer le cron job pg_cron pour la récupération de paniers abandonnés
+## Plan : Activer les cron jobs d'automatisation
 
 ### Contexte
-La Edge Function `cart-recovery-cron` est déployée mais aucun job pg_cron n'existe pour l'appeler automatiquement. Le projet utilise déjà pg_cron + pg_net pour d'autres tâches (sync fournisseurs, monitoring prix, etc.).
+Les Edge Functions d'automatisation sont déployées mais aucun job `pg_cron` ne les appelle automatiquement. Le fichier temporaire `/tmp/setup-cron-jobs.sql` a été supprimé (stockage éphémère). Il faut recréer et exécuter le SQL.
 
-### Implémentation
+### Ce qui sera fait
 
-**Migration SQL** — Créer un cron job `cart-recovery-every-15min` qui appelle la Edge Function toutes les 15 minutes via `net.http_post` :
+**Exécution SQL directe** (pas une migration, car contient des clés projet-spécifiques) pour planifier 8 cron jobs via `pg_cron` + `pg_net` :
 
-```sql
-SELECT cron.schedule(
-  'cart-recovery-every-15min',
-  '*/15 * * * *',
-  $$
-  SELECT net.http_post(
-    url := 'https://jsmwckzrmqecwwrswwrz.supabase.co/functions/v1/cart-recovery-cron',
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key', true)
-    ),
-    body := '{}'::jsonb
-  ) AS request_id;
-  $$
-);
-```
+| Job | Fréquence | Edge Function |
+|-----|-----------|---------------|
+| `webhook-retry` | Toutes les 2 min | `webhook-retry` |
+| `automation-orchestrator` | Toutes les 10 min | `automation-orchestrator` (cycle complet) |
+| `cart-recovery-every-15min` | Toutes les 15 min | `cart-recovery-cron` |
+| `automation-alert-scan` | Toutes les 30 min | `automation-alert-engine` |
+| `supplier-sync-cron` | Toutes les 15 min | `supplier-sync-cron` |
+| `smart-inventory-cycle` | Toutes les 30 min | `smart-inventory-engine` |
+| `pricing-rules-apply` | Toutes les 20 min | `pricing-rules-engine` |
+| `security-engine-scan` | Toutes les 60 min | `automation-security-engine` |
 
-### Fichier modifié
-- **1 migration SQL** : planification du cron job toutes les 15 minutes
+Chaque job appellera sa Edge Function via `net.http_post` avec l'URL du projet et la clé anon pour l'authentification.
 
-### Résultat
-- Détection automatique des paniers abandonnés (>1h) toutes les 15 minutes
-- Envoi automatique d'emails Brevo + notifications push Firebase
-- Mise à jour du statut et compteur de tentatives (max 3)
+### Prérequis vérifiés
+- Extensions `pg_cron` et `pg_net` (déjà utilisées dans le projet)
+- Edge Functions déjà déployées
+
+### Fichiers modifiés
+- Aucun fichier du projet modifié
+- Exécution SQL directe dans la base de données
 
