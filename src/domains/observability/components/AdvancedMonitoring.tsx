@@ -33,14 +33,46 @@ export const AdvancedMonitoring = () => {
   const [metrics, setMetrics] = useState<Metric[]>([])
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [systemHealth, setSystemHealth] = useState<number>(0)
+  const [performanceData, setPerformanceData] = useState<any[]>([])
+  const [uptimeData, setUptimeData] = useState<any[]>([])
 
   useEffect(() => {
     if (user) {
       loadMonitoringData()
+      loadPerfData()
       const interval = setInterval(loadMonitoringData, 30000)
       return () => clearInterval(interval)
     }
   }, [user])
+
+  const loadPerfData = async () => {
+    try {
+      const { data: apiData } = await supabase
+        .from('api_analytics')
+        .select('date, avg_response_time_ms, total_requests, failed_requests')
+        .order('date', { ascending: true })
+        .limit(7)
+
+      if (apiData && apiData.length > 0) {
+        setPerformanceData(apiData.map((d: any) => ({
+          time: new Date(d.date).toLocaleDateString('fr-FR', { weekday: 'short' }),
+          responseTime: d.avg_response_time_ms || 0,
+          requests: d.total_requests || 0,
+          errors: d.failed_requests || 0
+        })))
+        setUptimeData(apiData.map((d: any) => {
+          const total = d.total_requests || 1
+          const failed = d.failed_requests || 0
+          return {
+            day: new Date(d.date).toLocaleDateString('fr-FR', { weekday: 'short' }),
+            uptime: Math.round(((total - failed) / total) * 1000) / 10
+          }
+        }))
+      }
+    } catch (e) {
+      console.error('Failed to load performance data', e)
+    }
+  }
 
   const loadMonitoringData = async () => {
     try {
@@ -117,42 +149,6 @@ export const AdvancedMonitoring = () => {
 
   const activeAlerts = alerts.filter(a => !a.acknowledged)
   const criticalAlerts = alerts.filter(a => a.severity === 'critical' && !a.acknowledged)
-
-  // Build performance data from real API analytics
-  const [performanceData, setPerformanceData] = useState<any[]>([])
-  const [uptimeData, setUptimeData] = useState<any[]>([])
-
-  useEffect(() => {
-    const loadPerfData = async () => {
-      try {
-        const { data: apiData } = await supabase
-          .from('api_analytics')
-          .select('date, avg_response_time_ms, total_requests, failed_requests')
-          .order('date', { ascending: true })
-          .limit(7)
-
-        if (apiData && apiData.length > 0) {
-          setPerformanceData(apiData.map((d: any) => ({
-            time: new Date(d.date).toLocaleDateString('fr-FR', { weekday: 'short' }),
-            responseTime: d.avg_response_time_ms || 0,
-            requests: d.total_requests || 0,
-            errors: d.failed_requests || 0
-          })))
-          setUptimeData(apiData.map((d: any) => {
-            const total = d.total_requests || 1
-            const failed = d.failed_requests || 0
-            return {
-              day: new Date(d.date).toLocaleDateString('fr-FR', { weekday: 'short' }),
-              uptime: Math.round(((total - failed) / total) * 1000) / 10
-            }
-          }))
-        }
-      } catch (e) {
-        console.error('Failed to load performance data', e)
-      }
-    }
-    if (user) loadPerfData()
-  }, [user])
 
   return (
     <div className="container mx-auto p-6 space-y-6">
