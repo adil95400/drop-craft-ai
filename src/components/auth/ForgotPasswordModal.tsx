@@ -128,7 +128,7 @@ export function ForgotPasswordModal({ open, onOpenChange }: ForgotPasswordModalP
             {step === 'success' && (
               <motion.div key="success-header" {...fadeVariants} className="relative z-10">
                 <motion.div
-                  className="w-14 h-14 rounded-2xl bg-green-100 dark:bg-green-900/50 flex items-center justify-center mb-4"
+                  className="w-14 h-14 rounded-2xl bg-success/10 flex items-center justify-center mb-4"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.1 }}
