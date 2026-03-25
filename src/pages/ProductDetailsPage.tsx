@@ -15,6 +15,7 @@ import { ProductPerformanceMetrics } from '@/components/products/ProductPerforma
 import { OptimizationHistory } from '@/components/products/OptimizationHistory'
 import { MultiChannelReadiness } from '@/components/products/MultiChannelReadiness'
 import { ProductImageEditor } from '@/components/products/ProductImageEditor'
+import { ProductMediaQualityPanel } from '@/components/products/ProductMediaQualityPanel'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -849,6 +850,10 @@ export default function ProductDetailsPage() {
                       <Images className="h-4 w-4" />
                       <span className="hidden sm:inline">Images</span>
                     </TabsTrigger>
+                    <TabsTrigger value="media-quality" className="gap-2 py-2">
+                      <Sparkles className="h-4 w-4" />
+                      <span className="hidden sm:inline">Qualité Média</span>
+                    </TabsTrigger>
                     <TabsTrigger value="videos" className="gap-2 py-2">
                       <Video className="h-4 w-4" />
                       <span className="hidden sm:inline">Vidéos</span>
@@ -942,6 +947,10 @@ export default function ProductDetailsPage() {
 
                   <TabsContent value="gallery">
                     <ProductImageManager productId={product.id} sourceUrl={product.source_url || (product as any).url} />
+                  </TabsContent>
+
+                  <TabsContent value="media-quality">
+                    <ProductMediaQualityPanel productId={product.id} onImagesUpdated={() => refetch()} />
                   </TabsContent>
 
                   <TabsContent value="videos">
