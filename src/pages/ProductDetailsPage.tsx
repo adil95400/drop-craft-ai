@@ -941,7 +941,7 @@ export default function ProductDetailsPage() {
                   </TabsContent>
 
                   <TabsContent value="gallery">
-                    <ProductImageManager productId={product.id} />
+                    <ProductImageManager productId={product.id} sourceUrl={product.source_url || (product as any).url} />
                   </TabsContent>
 
                   <TabsContent value="videos">
