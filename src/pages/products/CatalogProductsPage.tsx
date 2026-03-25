@@ -154,7 +154,9 @@ export default function CatalogProductsPage() {
     search: debouncedSearch || undefined,
     status: statusFilter !== 'all' ? statusFilter as any : undefined,
     category: categoryFilter !== 'all' ? categoryFilter : undefined,
-  }), [currentPage, itemsPerPage, debouncedSearch, statusFilter, categoryFilter]);
+    sortBy: sortField,
+    sortDirection: sortDirection,
+  }), [currentPage, itemsPerPage, debouncedSearch, statusFilter, categoryFilter, sortField, sortDirection]);
 
   // === DATA (reads via API V1 with server-side pagination, mutations via FastAPI) ===
   const { products: serverProducts, stats, isLoading, refetch } = useProductsUnified({ filters: serverFilters });
@@ -260,17 +262,13 @@ export default function CatalogProductsPage() {
     });
   }, [products, createProduct, handleRefresh]);
 
-  // Bulk delete via Supabase direct
+  // Bulk delete via API
+  const { bulkDelete } = useProductsUnified();
   const handleBulkDelete = useCallback(async () => {
     if (selectedProducts.length === 0) return;
     setIsBulkDeleting(true);
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .in('id', selectedProducts);
-      if (error) throw error;
+      bulkDelete(selectedProducts);
       toast({
         title: 'Produits supprimés',
         description: `${selectedProducts.length} produit(s) supprimé(s)`
@@ -283,7 +281,7 @@ export default function CatalogProductsPage() {
     } finally {
       setIsBulkDeleting(false);
     }
-  }, [selectedProducts, toast, handleRefresh]);
+  }, [selectedProducts, toast, handleRefresh, bulkDelete]);
 
   const handleBulkPublish = useCallback(() => {
     if (selectedProducts.length === 0) return;

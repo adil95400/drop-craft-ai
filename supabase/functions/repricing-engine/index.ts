@@ -348,11 +348,26 @@ async function updateProductPrice(supabaseClient: any, userId: string, product: 
     ? ((newPrice - product.cost_price) / newPrice * 100)
     : 0;
 
-  // Update product price
+  // Update supplier_products price
   await supabaseClient
     .from('supplier_products')
     .update({ price: newPrice })
     .eq('id', product.id);
+
+  // Also update the canonical products table if linked by SKU/name
+  if (product.sku || product.name) {
+    let productsQuery = supabaseClient
+      .from('products')
+      .update({ price: newPrice, updated_at: new Date().toISOString() })
+      .eq('user_id', userId);
+    
+    if (product.sku) {
+      productsQuery = productsQuery.eq('sku', product.sku);
+    } else {
+      productsQuery = productsQuery.eq('title', product.name);
+    }
+    await productsQuery;
+  }
 
   // Record in price history
   await supabaseClient
@@ -370,6 +385,24 @@ async function updateProductPrice(supabaseClient: any, userId: string, product: 
       new_cost: product.cost_price,
       previous_margin_percent: previousMargin.toFixed(2),
       new_margin_percent: newMargin.toFixed(2)
+    });
+
+  // Write audit log
+  await supabaseClient
+    .from('audit_logs')
+    .insert({
+      user_id: userId,
+      action: 'pricing_rule_applied',
+      action_category: 'pricing',
+      severity: 'info',
+      resource_type: 'product',
+      resource_id: product.id,
+      resource_name: product.name,
+      old_values: { price: previousPrice, margin_percent: previousMargin.toFixed(2) },
+      new_values: { price: newPrice, margin_percent: newMargin.toFixed(2) },
+      description: `Repricing rule "${rule.name || rule.id}" applied: ${previousPrice}€ → ${newPrice}€`,
+      metadata: { pricing_rule_id: rule.id, strategy: rule.strategy },
+      actor_type: 'system'
     });
 
   console.log(`[REPRICING] Updated ${product.name}: ${previousPrice}€ → ${newPrice}€`);

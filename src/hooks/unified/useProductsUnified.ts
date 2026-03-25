@@ -52,6 +52,8 @@ export interface ProductFilters {
   low_stock?: boolean
   page?: number
   pageSize?: number
+  sortBy?: string
+  sortDirection?: 'asc' | 'desc'
 }
 
 export interface ProductStats {
@@ -119,7 +121,7 @@ export function useProductsUnified(options: UseProductsUnifiedOptions = {}) {
   const { filters } = options
   const page = filters?.page ?? 1
   const pageSizeRaw = Number(filters?.pageSize ?? 30)
-  const pageSize = Math.min(30, Math.max(1, Number.isFinite(pageSizeRaw) ? Math.floor(pageSizeRaw) : 30))
+  const pageSize = Math.min(100, Math.max(1, Number.isFinite(pageSizeRaw) ? Math.floor(pageSizeRaw) : 30))
 
   // ── Fetch products via API V1 ─────────────────────────────────────────────
   const { data: productsData, isLoading, error, refetch } = useQuery({
@@ -133,6 +135,8 @@ export function useProductsUnified(options: UseProductsUnifiedOptions = {}) {
       if (filters?.category) params.category = filters.category
       if (filters?.status) params.status = filters.status
       if (filters?.low_stock) params.low_stock = 'true'
+      if (filters?.sortBy) params.sort_by = filters.sortBy
+      if (filters?.sortDirection) params.order = filters.sortDirection
 
       const resp = await productsApi.list(params as any)
       return {
