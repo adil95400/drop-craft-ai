@@ -194,26 +194,6 @@ Deno.serve(async (req) => {
       console.error('Error parsing AI response:', parseError)
     }
 
-    // If action is 'apply', execute the recommendation
-    if (request.action === 'apply' && request.recommendationId) {
-      const applyResult = await applyRecommendation(
-        supabaseClient,
-        user.id,
-        request.recommendationId,
-        request.productIds || [],
-        request.module
-      )
-      
-      return new Response(
-        JSON.stringify({
-          success: true,
-          action: 'applied',
-          result: applyResult
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
     // Store recommendations for tracking
     await supabaseClient
       .from('ai_optimization_jobs')
