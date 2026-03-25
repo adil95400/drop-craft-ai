@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
     if (action === 'health') {
       return json(corsHeaders, {
         success: true, status: 'healthy', uptime: Date.now(), authenticated_by: authenticatedBy,
-        subsystems: ['supplier-sync-cron', 'auto-reorder-engine', 'pricing-rules-engine', 'automation-alert-engine', 'workflow-executor', 'cart-recovery-cron'],
+        subsystems: ['supplier-sync-cron', 'auto-reorder-engine', 'pricing-rules-engine', 'automation-alert-engine', 'workflow-executor', 'cart-recovery-cron', 'event-bus-processor'],
       });
     }
 
@@ -110,6 +110,9 @@ Deno.serve(async (req) => {
     }
     if (action === 'run_all') {
       results.cart_recovery = await invokeWithRetry(supabaseUrl, supabaseKey, 'cart-recovery-cron', {});
+    }
+    if (action === 'run_all' || action === 'run_event_bus') {
+      results.event_bus = await invokeWithRetry(supabaseUrl, supabaseKey, 'event-bus-processor', { action: 'process_queue' });
     }
 
     const totalTime = Date.now() - startTime;
