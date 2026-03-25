@@ -154,7 +154,9 @@ export default function CatalogProductsPage() {
     search: debouncedSearch || undefined,
     status: statusFilter !== 'all' ? statusFilter as any : undefined,
     category: categoryFilter !== 'all' ? categoryFilter : undefined,
-  }), [currentPage, itemsPerPage, debouncedSearch, statusFilter, categoryFilter]);
+    sortBy: sortField,
+    sortDirection: sortDirection,
+  }), [currentPage, itemsPerPage, debouncedSearch, statusFilter, categoryFilter, sortField, sortDirection]);
 
   // === DATA (reads via API V1 with server-side pagination, mutations via FastAPI) ===
   const { products: serverProducts, stats, isLoading, refetch } = useProductsUnified({ filters: serverFilters });
