@@ -34,7 +34,7 @@ const handler = async (ctx: CronContext): Promise<Response> => {
 }
 
 async function syncAllIntegrations(
-  supabaseClient: ReturnType<typeof import('npm:@supabase/supabase-js@2
+  supabaseClient: ReturnType<typeof import('npm:@supabase/supabase-js@2')
   correlationId: string
 ): Promise<Response> {
   console.log(`[${correlationId}] Starting sync for all active integrations`)
@@ -74,7 +74,7 @@ async function syncAllIntegrations(
 }
 
 async function syncInventoryUpdates(
-  supabaseClient: ReturnType<typeof import('npm:@supabase/supabase-js@2
+  supabaseClient: ReturnType<typeof import('npm:@supabase/supabase-js@2')
   correlationId: string
 ): Promise<Response> {
   console.log(`[${correlationId}] Syncing inventory updates`)
@@ -94,7 +94,7 @@ async function syncInventoryUpdates(
 }
 
 async function syncPriceUpdates(
-  supabaseClient: ReturnType<typeof import('npm:@supabase/supabase-js@2
+  supabaseClient: ReturnType<typeof import('npm:@supabase/supabase-js@2')
   correlationId: string
 ): Promise<Response> {
   console.log(`[${correlationId}] Syncing price updates`)
