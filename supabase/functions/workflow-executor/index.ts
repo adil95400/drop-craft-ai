@@ -76,22 +76,22 @@ serve(async (req) => {
       throw new Error('Workflow is not active')
     }
 
-    // Create execution record - SCOPED to user
-    const { data: execution, error: executionError } = await supabase
-      .from('automation_executions')
+    // Create execution record - use activity_logs as execution tracker
+    // (automation_executions table consolidated into activity_logs)
+    const executionId = crypto.randomUUID()
+    await supabase
+      .from('activity_logs')
       .insert({
-        workflow_id: workflowId,
-        user_id: userId, // CRITICAL: from token only
-        status: 'running',
-        input_data: triggerData || {},
-        started_at: new Date().toISOString()
+        id: executionId,
+        user_id: userId,
+        action: 'workflow_execution_started',
+        entity_type: 'workflow',
+        entity_id: workflowId,
+        description: `Workflow "${workflow.name}" started`,
+        details: { input_data: triggerData || {}, manual: manualExecution },
+        source: 'workflow_executor',
+        severity: 'info',
       })
-      .select()
-      .single()
-
-    if (executionError) {
-      throw new Error('Failed to create execution record')
-    }
 
     // Execute workflow steps
     const executionResult = await executeWorkflowSteps(workflow, triggerData, execution.id, supabase, userId)

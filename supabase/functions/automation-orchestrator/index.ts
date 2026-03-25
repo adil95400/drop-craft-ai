@@ -267,7 +267,7 @@ async function executeScheduledWorkflows(supabase: any, supabaseUrl: string, ser
     }
 
     try {
-      await invokeSubsystem(supabaseUrl, serviceKey, 'workflow-executor', {
+      await invokeWithRetry(supabaseUrl, serviceKey, 'workflow-executor', {
         workflowId: wf.id,
         triggerData: { trigger: 'scheduled', timestamp: now.toISOString() },
         manualExecution: false,
