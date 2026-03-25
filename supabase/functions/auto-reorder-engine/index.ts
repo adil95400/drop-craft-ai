@@ -197,6 +197,27 @@ async function handleCheckAndReorder(supabase: any) {
 
     if (existingOrders && existingOrders.length > 0) { results.skipped++; continue; }
 
+    // ── IDEMPOTENCY CHECK: supplier_id + sku + day + qty ──
+    const today = new Date().toISOString().slice(0, 10);
+    const idempotencyKey = `reorder:${rule.supplier_id || 'auto'}:${product.id}:${today}:${rule.reorder_quantity || 10}`;
+    const { data: existingIdempotency } = await supabase
+      .from('idempotency_keys')
+      .select('id')
+      .eq('key', idempotencyKey)
+      .limit(1);
+
+    if (existingIdempotency && existingIdempotency.length > 0) {
+      results.skipped++;
+      continue;
+    }
+
+    // Register idempotency key
+    await supabase.from('idempotency_keys').insert({
+      key: idempotencyKey,
+      scope: 'auto_reorder',
+      metadata: { rule_id: rule.id, product_id: product.id, user_id: rule.user_id },
+    }).onConflict('key').merge();
+
     const bestSupplier = await selectBestSupplier(
       supabase, product.id, rule.user_id, rule.reorder_quantity || 10,
       rule.suppliers ? { id: rule.supplier_id, name: rule.suppliers.name, type: rule.suppliers.tier || rule.supplier_type || 'generic' } : undefined
