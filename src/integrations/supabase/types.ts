@@ -11408,6 +11408,96 @@ export type Database = {
           },
         ]
       }
+      product_supplier_links: {
+        Row: {
+          created_at: string
+          id: string
+          is_primary: boolean
+          last_checked_at: string | null
+          last_seen_currency: string
+          last_seen_price: number | null
+          last_seen_stock: number | null
+          lead_time_days: number | null
+          metadata: Json
+          min_order_qty: number
+          notes: string | null
+          priority: number
+          product_id: string
+          reliability_score: number
+          supplier_id: string | null
+          supplier_name: string | null
+          supplier_product_id: string | null
+          supplier_sku: string | null
+          supplier_url: string | null
+          updated_at: string
+          user_id: string
+          variant_key: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          last_checked_at?: string | null
+          last_seen_currency?: string
+          last_seen_price?: number | null
+          last_seen_stock?: number | null
+          lead_time_days?: number | null
+          metadata?: Json
+          min_order_qty?: number
+          notes?: string | null
+          priority?: number
+          product_id: string
+          reliability_score?: number
+          supplier_id?: string | null
+          supplier_name?: string | null
+          supplier_product_id?: string | null
+          supplier_sku?: string | null
+          supplier_url?: string | null
+          updated_at?: string
+          user_id: string
+          variant_key?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          last_checked_at?: string | null
+          last_seen_currency?: string
+          last_seen_price?: number | null
+          last_seen_stock?: number | null
+          lead_time_days?: number | null
+          metadata?: Json
+          min_order_qty?: number
+          notes?: string | null
+          priority?: number
+          product_id?: string
+          reliability_score?: number
+          supplier_id?: string | null
+          supplier_name?: string | null
+          supplier_product_id?: string | null
+          supplier_sku?: string | null
+          supplier_url?: string | null
+          updated_at?: string
+          user_id?: string
+          variant_key?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_supplier_links_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_supplier_links_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_supplier_mapping: {
         Row: {
           auto_switch_enabled: boolean | null

@@ -37,6 +37,7 @@ const KeywordResearch = lazy(() => import('@/pages/KeywordResearch'));
 const RankTracker = lazy(() => import('@/pages/RankTracker'));
 const SchemaGenerator = lazy(() => import('@/pages/SchemaGenerator'));
 const MultilingualSEOPage = lazy(() => import('@/pages/seo/MultilingualSEOPage'));
+const SEOContentHubPage = lazy(() => import('@/pages/seo/SEOContentHubPage'));
 
 export function MarketingRoutes() {
   return (
@@ -84,6 +85,7 @@ export function MarketingRoutes() {
       <Route path="seo/rank-tracker" element={<RankTracker />} />
       <Route path="seo/schema" element={<SchemaGenerator />} />
       <Route path="seo/multilingual" element={<MultilingualSEOPage />} />
+      <Route path="seo/content-hub" element={<SEOContentHubPage />} />
       
       {/* Creative Studio */}
       <Route path="creative-studio" element={<CreativeStudioPage />} />
