@@ -850,6 +850,10 @@ export default function ProductDetailsPage() {
                       <Images className="h-4 w-4" />
                       <span className="hidden sm:inline">Images</span>
                     </TabsTrigger>
+                    <TabsTrigger value="media-quality" className="gap-2 py-2">
+                      <Sparkles className="h-4 w-4" />
+                      <span className="hidden sm:inline">Qualité Média</span>
+                    </TabsTrigger>
                     <TabsTrigger value="videos" className="gap-2 py-2">
                       <Video className="h-4 w-4" />
                       <span className="hidden sm:inline">Vidéos</span>
