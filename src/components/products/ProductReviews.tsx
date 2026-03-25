@@ -139,7 +139,7 @@ export function ProductReviews({ productId, sourceUrl }: ProductReviewsProps) {
 
       if (error) throw error
 
-      const generated = data?.result || data?.content || data?.generated_content || ''
+      const generated = data?.content || data?.data?.content || data?.result || data?.generated_content || ''
       if (generated) {
         setNewReview(p => ({ ...p, [field]: generated.trim().replace(/^["']|["']$/g, '') }))
       } else {

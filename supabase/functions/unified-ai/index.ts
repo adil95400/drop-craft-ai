@@ -81,7 +81,11 @@ Deno.serve(async (req) => {
 
     switch (endpoint) {
       case 'optimize-product':
-        result = await handleProductOptimization(supabase, body, userId)
+        if (body.optimizationType === 'custom' && body.customPrompt) {
+          result = await handleCustomPrompt(body.customPrompt)
+        } else {
+          result = await handleProductOptimization(supabase, body, userId)
+        }
         break
       case 'generate-description':
         result = await handleDescriptionGeneration(supabase, body, userId)
@@ -133,6 +137,14 @@ Deno.serve(async (req) => {
     )
   }
 })
+
+// ─── CUSTOM PROMPT (for reviews AI, etc.) ──────────────────────
+async function handleCustomPrompt(customPrompt: string) {
+  const systemPrompt = `Tu es un assistant IA polyvalent. Réponds directement à la demande, sans formatage JSON sauf si demandé. Sois concis et naturel.`
+  const aiResult = await callAI(systemPrompt, customPrompt, { temperature: 0.8, maxTokens: 500 })
+  const content = typeof aiResult === 'string' ? aiResult : aiResult.content || JSON.stringify(aiResult)
+  return { success: true, content }
+}
 
 // ─── PRODUCT OPTIMIZATION ──────────────────────────────────────
 async function handleProductOptimization(supabase: any, body: any, userId: string) {
@@ -190,7 +202,7 @@ Retourne: {"recommended_price": 0, "min_price": 0, "max_price": 0, "margin_perce
 
   // Apply optimizations to product
   const updates: Record<string, any> = {}
-  if (aiResult.optimized_title) updates.name = aiResult.optimized_title
+  if (aiResult.optimized_title) updates.title = aiResult.optimized_title
   if (aiResult.optimized_description) updates.description = aiResult.optimized_description
   if (aiResult.seo_title) updates.seo_title = aiResult.seo_title
   if (aiResult.seo_description) updates.seo_description = aiResult.seo_description
