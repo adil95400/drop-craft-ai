@@ -32,7 +32,7 @@ export function useEventOutbox(options?: { limit?: number; status?: string }) {
   const query = useQuery({
     queryKey: ['event-outbox', options?.status, limit],
     queryFn: async () => {
-      let q = (supabase.from('event_outbox') as any)
+      const q = (supabase.from('event_outbox') as any)
         .select('*')
         .order('created_at', { ascending: false })
         .limit(limit);
