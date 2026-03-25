@@ -129,58 +129,56 @@ function QuickStatCard({
   
   const colorConfig = {
     primary: {
-      card: 'bg-gradient-to-br from-primary/[0.08] via-primary/[0.04] to-transparent border-primary/20 hover:border-primary/40',
+      card: 'bg-card border-border/60 hover:border-primary/30',
       icon: 'bg-primary/10 text-primary',
-      glow: 'group-hover:shadow-[0_8px_30px_hsl(221_83%_53%/0.12)]',
+      glow: 'group-hover:shadow-[0_8px_24px_hsl(234_85%_55%/0.1)]',
     },
     success: {
-      card: 'bg-gradient-to-br from-success/[0.08] via-success/[0.04] to-transparent border-success/20 hover:border-success/40',
+      card: 'bg-card border-border/60 hover:border-success/30',
       icon: 'bg-success/10 text-success',
-      glow: 'group-hover:shadow-[0_8px_30px_hsl(142_76%_36%/0.12)]',
+      glow: 'group-hover:shadow-[0_8px_24px_hsl(152_82%_39%/0.1)]',
     },
     warning: {
-      card: 'bg-gradient-to-br from-warning/[0.08] via-warning/[0.04] to-transparent border-warning/20 hover:border-warning/40',
+      card: 'bg-card border-border/60 hover:border-warning/30',
       icon: 'bg-warning/10 text-warning',
-      glow: 'group-hover:shadow-[0_8px_30px_hsl(38_92%_50%/0.12)]',
+      glow: 'group-hover:shadow-[0_8px_24px_hsl(38_92%_50%/0.1)]',
     },
     info: {
-      card: 'bg-gradient-to-br from-info/[0.08] via-info/[0.04] to-transparent border-info/20 hover:border-info/40',
+      card: 'bg-card border-border/60 hover:border-info/30',
       icon: 'bg-info/10 text-info',
-      glow: 'group-hover:shadow-[0_8px_30px_hsl(199_89%_48%/0.12)]',
+      glow: 'group-hover:shadow-[0_8px_24px_hsl(199_89%_48%/0.1)]',
     },
   };
 
   const cfg = colorConfig[color];
   const motionProps = prefersReducedMotion 
     ? {} 
-    : { whileHover: { scale: 1.03, y: -4 }, whileTap: { scale: 0.97 } };
+    : { whileHover: { scale: 1.02, y: -3 }, whileTap: { scale: 0.98 } };
 
   return (
     <motion.div
       {...motionProps}
       onClick={onClick}
       className={cn(
-        "group cursor-pointer relative overflow-hidden rounded-xl sm:rounded-2xl border p-3 sm:p-5 backdrop-blur-sm transition-all duration-300",
+        "group cursor-pointer relative overflow-hidden rounded-xl border p-4 sm:p-5 transition-all duration-300",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
         cfg.card, cfg.glow
       )}
+      style={{ boxShadow: 'var(--shadow-card)' }}
       role="button"
       tabIndex={0}
       aria-label={ariaLabel || `${label}: ${value}`}
       onKeyDown={(e) => e.key === 'Enter' && onClick?.()}
     >
-      {/* Subtle decorative element */}
-      <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-current/[0.04] to-transparent pointer-events-none" aria-hidden="true" />
-      
-      <div className="flex items-center justify-between mb-2 sm:mb-4">
-        <div className={cn("p-2 sm:p-2.5 rounded-lg sm:rounded-xl transition-transform duration-300 group-hover:scale-110", cfg.icon)} aria-hidden="true">
-          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+      <div className="flex items-center justify-between mb-3">
+        <div className={cn("p-2.5 rounded-xl transition-transform duration-300 group-hover:scale-110", cfg.icon)} aria-hidden="true">
+          <Icon className="h-4 w-4" />
         </div>
         {change && (
           <Badge 
             variant="outline" 
             className={cn(
-              "text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full",
+              "text-[10px] font-semibold px-2 py-0.5 rounded-full",
               changeType === 'positive' && 'text-success border-success/30 bg-success/10',
               changeType === 'negative' && 'text-destructive border-destructive/30 bg-destructive/10',
               changeType === 'neutral' && 'text-muted-foreground border-border bg-muted/50'
@@ -191,13 +189,13 @@ function QuickStatCard({
           </Badge>
         )}
       </div>
-      <div className="space-y-0.5 sm:space-y-1.5">
+      <div className="space-y-1">
         {isLoading ? (
-          <div className="h-6 sm:h-8 w-20 sm:w-28 rounded-lg shimmer" />
+          <div className="h-7 w-24 rounded-lg shimmer" />
         ) : (
-          <p className="text-lg sm:text-2xl font-bold tracking-tight text-foreground font-heading">{value}</p>
+          <p className="text-2xl font-bold tracking-tight text-foreground font-heading" style={{ fontVariantNumeric: 'tabular-nums' }}>{value}</p>
         )}
-        <p className="text-[10px] sm:text-xs font-medium text-muted-foreground tracking-wide uppercase">{label}</p>
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
       </div>
     </motion.div>
   );
