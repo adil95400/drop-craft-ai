@@ -24,7 +24,7 @@ const ImportSchema = z.object({
   })
 });
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });

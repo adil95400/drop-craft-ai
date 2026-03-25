@@ -17,7 +17,7 @@ const TranslationSchema = z.object({
   preserve_formatting: z.boolean().optional()
 });
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     if (req.method === "OPTIONS") {
       return new Response(null, { headers: corsHeaders });

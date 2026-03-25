@@ -17,7 +17,7 @@ const ApplyFixSchema = z.object({
   payload: z.record(z.unknown()).default({}),
 });
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     const preflight = handleCorsPreflightSecure(req);
     if (preflight) return preflight;

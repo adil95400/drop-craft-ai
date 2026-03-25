@@ -7,7 +7,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts';
 import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts';
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     const preflight = handleCorsPreflightSecure(req);
     if (preflight) return preflight;

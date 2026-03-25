@@ -24,7 +24,7 @@ const CreateAuditSchema = z.object({
   store_id: z.string().uuid().optional().nullable(),
 });
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     const preflight = handleCorsPreflightSecure(req);
     if (preflight) return preflight;

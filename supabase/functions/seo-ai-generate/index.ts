@@ -19,7 +19,7 @@ const GenerateSchema = z.object({
   variants: z.number().int().min(1).max(5).default(3),
 });
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     const preflight = handleCorsPreflightSecure(req);
     if (preflight) return preflight;

@@ -7,7 +7,7 @@ const BodySchema = z.object({
   integration_id: z.string().uuid('integration_id must be a valid UUID')
 })
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders })

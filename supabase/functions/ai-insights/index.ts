@@ -15,7 +15,7 @@ const BodySchema = z.object({
   metrics: z.array(z.string().max(50)).max(20).optional().default(['sales', 'conversion', 'traffic'])
 });
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 

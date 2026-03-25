@@ -12,7 +12,7 @@ const BodySchema = z.object({
   sync_type: z.enum(['full', 'products', 'inventory', 'orders']).optional().default('full'),
 })
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders })

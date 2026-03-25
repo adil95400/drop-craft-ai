@@ -67,7 +67,7 @@ async function fetchB2BProducts(userKey: string, authKey: string, page = 1, limi
   return await response.json()
 }
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders })

@@ -15,7 +15,7 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[STRIPE-PORTAL] ${step}${safeDetails ? ` - ${JSON.stringify(safeDetails)}` : ''}`);
 };
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     const corsHeaders = getSecureCorsHeaders(req);
     if (req.method === "OPTIONS") {
