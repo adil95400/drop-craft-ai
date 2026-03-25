@@ -12758,66 +12758,6 @@ export type Database = {
         }
         Relationships: []
       }
-      repricing_rules: {
-        Row: {
-          competitor_ids: string[] | null
-          created_at: string | null
-          description: string | null
-          id: string
-          is_active: boolean | null
-          last_executed_at: string | null
-          max_discount: number | null
-          min_margin: number | null
-          name: string
-          offset_type: string | null
-          price_offset: number | null
-          product_filter: Json | null
-          products_affected: number | null
-          schedule: string | null
-          strategy: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          competitor_ids?: string[] | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          last_executed_at?: string | null
-          max_discount?: number | null
-          min_margin?: number | null
-          name: string
-          offset_type?: string | null
-          price_offset?: number | null
-          product_filter?: Json | null
-          products_affected?: number | null
-          schedule?: string | null
-          strategy?: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          competitor_ids?: string[] | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          last_executed_at?: string | null
-          max_discount?: number | null
-          min_margin?: number | null
-          name?: string
-          offset_type?: string | null
-          price_offset?: number | null
-          product_filter?: Json | null
-          products_affected?: number | null
-          schedule?: string | null
-          strategy?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       return_automation_rules: {
         Row: {
           auto_actions: Json
@@ -13494,48 +13434,6 @@ export type Database = {
           name?: string
           product_count?: number | null
           sort_config?: Json | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      saved_workflows: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          last_run_at: string | null
-          name: string
-          nodes: Json
-          run_count: number | null
-          status: string
-          trigger_type: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          last_run_at?: string | null
-          name: string
-          nodes?: Json
-          run_count?: number | null
-          status?: string
-          trigger_type?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          last_run_at?: string | null
-          name?: string
-          nodes?: Json
-          run_count?: number | null
-          status?: string
-          trigger_type?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -18611,7 +18509,14 @@ export type Database = {
             foreignKeyName: "workflow_executions_workflow_id_fkey"
             columns: ["workflow_id"]
             isOneToOne: false
-            referencedRelation: "workflow_templates"
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_executions_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "automation_workflows"
             referencedColumns: ["id"]
           },
         ]
@@ -18649,57 +18554,6 @@ export type Database = {
           is_global?: boolean | null
           name?: string
           step_type?: string
-        }
-        Relationships: []
-      }
-      workflow_templates: {
-        Row: {
-          category: string | null
-          created_at: string
-          description: string | null
-          execution_count: number | null
-          id: string
-          is_active: boolean | null
-          is_template: boolean | null
-          last_executed_at: string | null
-          name: string
-          steps: Json | null
-          trigger_config: Json | null
-          trigger_type: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          category?: string | null
-          created_at?: string
-          description?: string | null
-          execution_count?: number | null
-          id?: string
-          is_active?: boolean | null
-          is_template?: boolean | null
-          last_executed_at?: string | null
-          name: string
-          steps?: Json | null
-          trigger_config?: Json | null
-          trigger_type: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          category?: string | null
-          created_at?: string
-          description?: string | null
-          execution_count?: number | null
-          id?: string
-          is_active?: boolean | null
-          is_template?: boolean | null
-          last_executed_at?: string | null
-          name?: string
-          steps?: Json | null
-          trigger_config?: Json | null
-          trigger_type?: string
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
