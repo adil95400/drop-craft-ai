@@ -47,6 +47,7 @@ Deno.serve(async (req) => {
       process_queue: () => handleProcessQueue(supabase),
       update_tracking: () => handleUpdateTracking(supabase),
       get_tracking: () => handleGetTracking(supabase, body),
+      reconcile: () => handleReconciliation(supabase),
     };
 
     const handler = handlers[action];
@@ -195,6 +196,27 @@ async function handleCheckAndReorder(supabase: any) {
       .limit(1);
 
     if (existingOrders && existingOrders.length > 0) { results.skipped++; continue; }
+
+    // ── IDEMPOTENCY CHECK: supplier_id + sku + day + qty ──
+    const today = new Date().toISOString().slice(0, 10);
+    const idempotencyKey = `reorder:${rule.supplier_id || 'auto'}:${product.id}:${today}:${rule.reorder_quantity || 10}`;
+    const { data: existingIdempotency } = await supabase
+      .from('idempotency_keys')
+      .select('id')
+      .eq('key', idempotencyKey)
+      .limit(1);
+
+    if (existingIdempotency && existingIdempotency.length > 0) {
+      results.skipped++;
+      continue;
+    }
+
+    // Register idempotency key
+    await supabase.from('idempotency_keys').insert({
+      key: idempotencyKey,
+      scope: 'auto_reorder',
+      metadata: { rule_id: rule.id, product_id: product.id, user_id: rule.user_id },
+    }).onConflict('key').merge();
 
     const bestSupplier = await selectBestSupplier(
       supabase, product.id, rule.user_id, rule.reorder_quantity || 10,
@@ -450,6 +472,78 @@ async function handleUpdateTracking(supabase: any) {
   }
 
   return new Response(JSON.stringify({ success: true, checked: completedOrders?.length || 0, updated }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+// ─── Reconciliation: detect desync between queue and actual stock ─────
+async function handleReconciliation(supabase: any) {
+  const results = { checked: 0, fixed: 0, alerts: 0, errors: [] as string[] };
+
+  // 1. Find completed orders older than 48h with no tracking
+  const cutoff48h = new Date(Date.now() - 48 * 3600000).toISOString();
+  const { data: staleOrders } = await supabase
+    .from('auto_order_queue')
+    .select('*, payload')
+    .eq('status', 'completed')
+    .is('tracking_number', null)
+    .lt('processed_at', cutoff48h)
+    .limit(50);
+
+  for (const order of (staleOrders || [])) {
+    results.checked++;
+    await supabase.from('active_alerts').insert({
+      user_id: order.user_id, alert_type: 'reorder_no_tracking', severity: 'warning',
+      title: `Commande sans tracking depuis 48h`,
+      message: `La commande ${order.supplier_order_id || order.id} pour "${(order.payload?.product_title || '').slice(0, 50)}" n'a toujours pas de numéro de suivi.`,
+      metadata: { queue_id: order.id, supplier_order_id: order.supplier_order_id, product_id: order.payload?.product_id },
+    });
+    results.alerts++;
+  }
+
+  // 2. Detect "completed" orders where product stock is still 0
+  const { data: completedRecent } = await supabase
+    .from('auto_order_queue')
+    .select('id, user_id, payload, supplier_order_id')
+    .eq('status', 'completed')
+    .not('tracking_number', 'is', null)
+    .gte('processed_at', new Date(Date.now() - 14 * 86400000).toISOString())
+    .limit(50);
+
+  for (const order of (completedRecent || [])) {
+    const productId = order.payload?.product_id;
+    if (!productId) continue;
+    results.checked++;
+
+    const { data: product } = await supabase
+      .from('products')
+      .select('stock_quantity')
+      .eq('id', productId)
+      .single();
+
+    if (product && (product.stock_quantity || 0) === 0) {
+      await supabase.from('active_alerts').insert({
+        user_id: order.user_id, alert_type: 'reorder_stock_desync', severity: 'high',
+        title: `Stock toujours à 0 après réapprovisionnement`,
+        message: `Le produit a été réapprovisionné (${order.supplier_order_id}) mais le stock est toujours à 0. Vérifiez la livraison.`,
+        metadata: { queue_id: order.id, product_id: productId },
+      });
+      results.fixed++;
+    }
+  }
+
+  // 3. Clean expired idempotency keys (older than 7 days)
+  const cutoff7d = new Date(Date.now() - 7 * 86400000).toISOString();
+  await supabase.from('idempotency_keys').delete().eq('scope', 'auto_reorder').lt('created_at', cutoff7d);
+
+  await supabase.from('activity_logs').insert({
+    action: 'auto_reorder_reconciliation', entity_type: 'system',
+    description: `Reconciliation: ${results.checked} checked, ${results.fixed} desync found, ${results.alerts} alerts created`,
+    source: 'auto_reorder_engine', severity: results.fixed > 0 ? 'warn' : 'info',
+    details: results,
+  });
+
+  return new Response(JSON.stringify({ success: true, results }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 }
