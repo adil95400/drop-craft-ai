@@ -52,6 +52,8 @@ export interface ProductFilters {
   low_stock?: boolean
   page?: number
   pageSize?: number
+  sortBy?: string
+  sortDirection?: 'asc' | 'desc'
 }
 
 export interface ProductStats {
