@@ -951,6 +951,7 @@ export default function ProductDetailsPage() {
 
                   <TabsContent value="media-quality">
                     <ProductMediaQualityPanel productId={product.id} onImagesUpdated={() => refetch()} />
+                  </TabsContent>
 
                   <TabsContent value="videos">
                     <ProductVideoPlayer
