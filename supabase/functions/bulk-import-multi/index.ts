@@ -3,7 +3,7 @@
  * P0.1: Delegates all import logic to unified pipeline.
  * Supports both JWT and extension token auth.
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

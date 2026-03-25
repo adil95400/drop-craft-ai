@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { callOpenAI, generateJSON, generateText } from '../_shared/ai-client.ts'
 
 const corsHeaders = {

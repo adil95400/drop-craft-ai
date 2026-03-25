@@ -10,7 +10,7 @@
  * - Audit logging for all operations
  * - Rate limiting
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 // Secure CORS configuration
 const ALLOWED_ORIGINS = [

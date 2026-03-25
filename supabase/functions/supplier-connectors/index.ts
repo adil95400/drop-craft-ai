@@ -9,7 +9,7 @@
  * 4. All DB queries scoped by authenticated user_id
  */
 
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts"
 
 import { authenticateUser } from "../_shared/secure-auth.ts"

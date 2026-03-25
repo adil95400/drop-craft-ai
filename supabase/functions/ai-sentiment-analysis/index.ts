@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 import { callOpenAI } from '../_shared/ai-client.ts'
 import { checkAndIncrementQuota, quotaExceededResponse } from '../_shared/ai-quota.ts'

@@ -2,7 +2,7 @@
  * Firebase Cloud Messaging (FCM) Push Notification Edge Function
  * Uses Firebase Admin SDK service account for HTTP v1 API
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

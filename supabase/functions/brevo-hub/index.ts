@@ -2,7 +2,7 @@
  * Brevo Hub — Email Marketing & Automation Edge Function
  * Handles: campaigns, transactional emails, abandoned cart recovery, welcome flows
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

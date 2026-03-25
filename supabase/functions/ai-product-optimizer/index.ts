@@ -1,7 +1,7 @@
 /**
  * AI Product Optimizer — Unified AI Client
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts';
 import { handleError, ValidationError } from '../_shared/error-handler.ts';
 import { callOpenAI } from '../_shared/ai-client.ts';

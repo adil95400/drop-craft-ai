@@ -9,7 +9,7 @@
  * - URL validation and sanitization
  * - Response size limits
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 // Secure CORS configuration
 const ALLOWED_ORIGINS = [

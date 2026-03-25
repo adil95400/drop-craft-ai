@@ -3,7 +3,7 @@
  * P1.1: Uses Lovable AI, auth obligatoire, rate limiting
  */
 import { createEdgeFunction, z } from '../_shared/create-edge-function.ts'
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 import { callOpenAI } from '../_shared/ai-client.ts';
 

@@ -4,7 +4,7 @@
  * P0.5 FIX: userId derived from JWT, not from body
  * P1: SSRF protection and input validation
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 // Secure CORS configuration
 const ALLOWED_ORIGINS = [

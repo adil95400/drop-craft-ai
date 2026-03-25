@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { authenticateUser } from '../_shared/secure-auth.ts'
 import { secureUpdate, secureDelete } from '../_shared/db-helpers.ts'
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'

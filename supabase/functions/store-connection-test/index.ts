@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 // Import our connector classes (adapted for Deno)
 interface ConnectorCredentials {

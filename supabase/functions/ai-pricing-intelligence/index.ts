@@ -1,7 +1,7 @@
 /**
  * AI Pricing Intelligence — Migrated to shared ai-client.ts
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { generateJSON } from '../_shared/ai-client.ts';
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 

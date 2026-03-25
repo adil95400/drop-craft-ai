@@ -7,7 +7,7 @@
  * - No user authentication needed (webhook from CJ servers)
  * - Signature verification recommended when CJ provides it
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 // Minimal CORS for webhooks (server-to-server)
 const webhookHeaders = {
