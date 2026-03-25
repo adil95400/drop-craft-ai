@@ -1,14 +1,24 @@
 /**
- * Client IA unifié — Lovable AI Gateway
- * Utilise le gateway Lovable (compatible OpenAI) avec LOVABLE_API_KEY
- * Inclut retry exponentiel, cache LRU, et gestion des erreurs 429/402
+ * Client IA unifié — Architecture multi-clés OpenAI par module
+ * V2: + Retry exponential backoff + Prompt hash caching + max_tokens defaults
+ *
+ * Chaque module (seo, product, marketing, chat, automation) utilise sa propre clé API
+ * pour un tracking précis des coûts et la possibilité de couper un module indépendamment.
  */
 
-const LOVABLE_AI_GATEWAY_URL = 'https://ai.gateway.lovable.dev/v1/chat/completions';
-const DEFAULT_MODEL = 'google/gemini-3-flash-preview';
+const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 
-/** Modules IA disponibles (pour tracking) */
+/** Modules IA disponibles */
 export type AIModule = 'seo' | 'product' | 'marketing' | 'chat' | 'automation';
+
+/** Mapping clé d'environnement par module */
+const MODULE_KEY_MAP: Record<AIModule, string> = {
+  seo: 'OPENAI_API_KEY_SEO',
+  product: 'OPENAI_API_KEY_PRODUCT',
+  marketing: 'OPENAI_API_KEY_MARKETING',
+  chat: 'OPENAI_API_KEY_CHAT',
+  automation: 'OPENAI_API_KEY_AUTOMATION',
+};
 
 /** Max tokens par défaut selon le module */
 const MODULE_MAX_TOKENS: Record<AIModule, number> = {
@@ -18,6 +28,22 @@ const MODULE_MAX_TOKENS: Record<AIModule, number> = {
   chat: 2000,
   automation: 2000,
 };
+
+function resolveApiKey(module?: AIModule): string {
+  if (module) {
+    const moduleKey = Deno.env.get(MODULE_KEY_MAP[module]);
+    if (moduleKey) return moduleKey;
+    console.warn(`[AI-CLIENT] No key for module "${module}", falling back to OPENAI_API_KEY`);
+  }
+  const globalKey = Deno.env.get('OPENAI_API_KEY');
+  if (!globalKey) {
+    throw new Error(
+      `No OpenAI API key configured${module ? ` for module "${module}"` : ''}. ` +
+      `Set ${module ? MODULE_KEY_MAP[module] + ' or ' : ''}OPENAI_API_KEY in your secrets.`
+    );
+  }
+  return globalKey;
+}
 
 export interface AIRequestOptions {
   model?: string;
@@ -98,7 +124,7 @@ async function fetchWithRetry(
         if (attempt < maxRetries) {
           const delay = initialDelayMs * Math.pow(2, attempt);
           const jitter = Math.random() * delay * 0.3;
-          console.warn(`[AI-CLIENT] Retry ${attempt + 1}/${maxRetries} after ${response.status} — waiting ${Math.round(delay + jitter)}ms`);
+          console.warn(`[AI-CLIENT] Retry ${attempt + 1}/${maxRetries} after ${response.status}`);
           await sleep(delay + jitter);
           continue;
         }
@@ -121,15 +147,11 @@ async function fetchWithRetry(
 
 // ── Main API ───────────────────────────────────────────────────────────
 
-/**
- * Appelle le Lovable AI Gateway (compatible OpenAI).
- * Utilise LOVABLE_API_KEY automatiquement.
- */
 export async function callOpenAI(
   messages: AIMessage[],
   options: AIRequestOptions = {}
 ): Promise<any> {
-  const model = options.model || DEFAULT_MODEL;
+  const model = options.model || 'gpt-4o-mini';
   const maxRetries = options.retries ?? 3;
   const retryDelay = options.retryDelayMs ?? 1000;
 
@@ -143,10 +165,7 @@ export async function callOpenAI(
     }
   }
 
-  const apiKey = Deno.env.get('LOVABLE_API_KEY');
-  if (!apiKey) {
-    throw new Error('LOVABLE_API_KEY is not configured. Lovable AI Gateway cannot be used.');
-  }
+  const apiKey = resolveApiKey(options.module);
 
   const defaultMaxTokens = options.module ? MODULE_MAX_TOKENS[options.module] : 1500;
 
@@ -163,7 +182,7 @@ export async function callOpenAI(
   if (options.response_format) body.response_format = options.response_format;
 
   const response = await fetchWithRetry(
-    LOVABLE_AI_GATEWAY_URL,
+    OPENAI_API_URL,
     {
       method: 'POST',
       headers: {
@@ -179,7 +198,7 @@ export async function callOpenAI(
   if (!response.ok) {
     const errorText = await response.text();
     const status = response.status;
-    console.error(`[AI-CLIENT][${options.module ?? 'global'}] Gateway error ${status}:`, errorText);
+    console.error(`[AI-CLIENT][${options.module ?? 'global'}] OpenAI error ${status}:`, errorText);
 
     if (status === 429) {
       const err = new Error('RATE_LIMITED');
@@ -192,7 +211,7 @@ export async function callOpenAI(
       throw err;
     }
 
-    throw new Error(`AI Gateway error (${status}): ${errorText}`);
+    throw new Error(`OpenAI API error (${status}): ${errorText}`);
   }
 
   if (options.stream) {
@@ -210,9 +229,6 @@ export async function callOpenAI(
   return result;
 }
 
-/**
- * Raccourci pour un appel IA simple retournant du texte.
- */
 export async function generateText(
   systemPrompt: string,
   userPrompt: string,
@@ -229,9 +245,6 @@ export async function generateText(
   return result.choices?.[0]?.message?.content ?? '';
 }
 
-/**
- * Raccourci pour un appel IA retournant du JSON parsé.
- */
 export async function generateJSON<T = any>(
   systemPrompt: string,
   userPrompt: string,
@@ -245,6 +258,7 @@ export async function generateJSON<T = any>(
     {
       ...options,
       temperature: options.temperature ?? 0.3,
+      response_format: options.response_format ?? { type: 'json_object' },
     }
   );
 
