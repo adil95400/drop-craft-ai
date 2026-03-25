@@ -45,7 +45,7 @@ export function DetailedPnLDashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('id, title, price, cost_price, buy_price, stock_quantity, status, sales_count, category')
+        .select('id, title, price, cost_price, stock_quantity, status, sales_count, category')
         .eq('user_id', user!.id)
         .not('cost_price', 'is', null)
         .gt('cost_price', 0)
