@@ -864,18 +864,34 @@ function AddSupplierDialog({ open, onOpenChange, onSubmit, isLoading, variantKey
                 onChange={e => setForm(f => ({ ...f, min_order_qty: e.target.value }))}
               />
             </div>
-            {variantKeys.length > 0 && (
+            {(variantLabels.length > 0 || variantKeys.length > 0) && (
               <div className="col-span-2">
                 <Label className="text-xs">Variante associée</Label>
                 <Select value={form.variant_key} onValueChange={v => setForm(f => ({ ...f, variant_key: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Toutes variantes" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Toutes variantes (produit entier)" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">Toutes variantes</SelectItem>
-                    {variantKeys.map(k => (
-                      <SelectItem key={k} value={k}>{k}</SelectItem>
-                    ))}
+                    {variantLabels.length > 0
+                      ? variantLabels.map(v => (
+                          <SelectItem key={v.key} value={v.key}>
+                            <div className="flex items-center gap-2">
+                              <span>{v.label}</span>
+                              {v.sku && <span className="text-muted-foreground text-[10px]">({v.sku})</span>}
+                              {v.price !== null && <span className="text-muted-foreground text-[10px]">{v.price}€</span>}
+                            </div>
+                          </SelectItem>
+                        ))
+                      : variantKeys.map(k => (
+                          <SelectItem key={k} value={k}>{k}</SelectItem>
+                        ))
+                    }
                   </SelectContent>
                 </Select>
+                {form.variant_key && (
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Ce fournisseur sera mappé uniquement à cette variante spécifique
+                  </p>
+                )}
               </div>
             )}
             <div className="col-span-2 flex items-center justify-between rounded-lg border p-3">
