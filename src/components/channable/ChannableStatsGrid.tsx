@@ -88,16 +88,12 @@ export function ChannableStatsGrid({
                         <span className="text-xs font-semibold tabular-nums">
                           {stat.change > 0 ? '+' : ''}{stat.change}%
                         </span>
-                        {stat.subtitle && (
+                        {stat.changeLabel && (
                           <span className="text-xs text-muted-foreground ml-0.5">
-                            {stat.subtitle}
+                            {stat.changeLabel}
                           </span>
                         )}
                       </div>
-                    )}
-
-                    {!stat.change && stat.subtitle && (
-                      <p className="text-xs text-muted-foreground mt-1">{stat.subtitle}</p>
                     )}
                   </div>
 

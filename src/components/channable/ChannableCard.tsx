@@ -87,7 +87,7 @@ export function ChannableCard({
         {/* Popular badge */}
         {popular && (
           <div className="absolute top-3 right-3 z-10">
-            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-[10px] font-bold uppercase tracking-wide shadow-sm">
+            <Badge className="bg-gradient-to-r from-warning to-warning/80 text-warning-foreground border-0 text-[10px] font-bold uppercase tracking-wide shadow-sm">
               Populaire
             </Badge>
           </div>
