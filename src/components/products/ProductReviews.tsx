@@ -151,7 +151,6 @@ export function ProductReviews({ productId, sourceUrl }: ProductReviewsProps) {
       setter(false)
     }
   }
-  }
 
   const handleDeleteReview = async (reviewId: string) => {
     try {
