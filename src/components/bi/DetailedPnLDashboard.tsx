@@ -95,14 +95,11 @@ export function DetailedPnLDashboard() {
   const productProfitability = useMemo(() => {
     if (!productsWithCost?.length) return [];
     return productsWithCost.map(p => {
-      const cost = p.cost_price || p.buy_price || 0;
+      const cost = p.cost_price || 0;
       const price = p.price || 0;
-      const sold = p.sales_count || 0;
-      const revenue = price * sold;
-      const cogs = cost * sold;
-      const overhead = revenue * OVERHEAD_RATE;
-      const netProfit = revenue - cogs - overhead;
-      const margin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
+      const unitMargin = price - cost;
+      const marginPct = price > 0 ? ((unitMargin - (price * OVERHEAD_RATE)) / price) * 100 : 0;
+      const netPerUnit = unitMargin - (price * OVERHEAD_RATE);
 
       return {
         id: p.id,
@@ -110,15 +107,13 @@ export function DetailedPnLDashboard() {
         category: p.category || '—',
         price,
         cost,
-        sold,
-        revenue,
-        cogs,
-        netProfit,
-        margin,
+        unitMargin,
+        netPerUnit,
+        margin: marginPct,
         stock: p.stock_quantity || 0,
-        status: margin < 5 ? 'danger' : margin < 15 ? 'warning' : 'healthy',
+        status: marginPct < 5 ? 'danger' as const : marginPct < 15 ? 'warning' as const : 'healthy' as const,
       };
-    }).sort((a, b) => b.netProfit - a.netProfit);
+    }).sort((a, b) => b.netPerUnit - a.netPerUnit);
   }, [productsWithCost]);
 
   // P&L line items enhanced with COGS
