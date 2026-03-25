@@ -922,7 +922,7 @@ export default function ProductDetailsPage() {
                     <ProductSuppliersPanel 
                       productId={product.id}
                       productPrice={product.price || 0}
-                      productTitle={product.name || product.title}
+                      productTitle={product.name || (product as any).title}
                       variantKeys={(product.variants || [])
                         .map((v: any) => v.attributes ? Object.values(v.attributes).join(' / ') : null)
                         .filter(Boolean) as string[]}
