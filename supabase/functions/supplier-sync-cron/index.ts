@@ -504,6 +504,74 @@ async function createNotification(
   });
 }
 
+/**
+ * Sync supplier_products data → product_supplier_links (unified mapping table)
+ * Upserts based on (user_id, product_id, supplier_id) to keep both tables in sync
+ */
+async function syncSupplierLink(supabase: any, userId: string, product: any, now: Date) {
+  const linkData = {
+    user_id: userId,
+    product_id: product.product_id,
+    supplier_id: product.supplier_id,
+    supplier_product_id: product.external_product_id || product.sku || null,
+    supplier_sku: product.sku || null,
+    supplier_name: product.name || product.supplier_name || null,
+    supplier_url: product.supplier_url || null,
+    last_seen_price: product.cost_price || product.price || null,
+    last_seen_stock: product.stock_quantity ?? null,
+    last_seen_currency: product.currency || "EUR",
+    last_checked_at: now.toISOString(),
+    is_primary: product.is_primary !== false,
+    reliability_score: product.reliability_score || 0.5,
+    lead_time_days: product.delivery_days || null,
+    min_order_qty: product.min_order_qty || 1,
+  };
+
+  // Try to find existing link
+  const { data: existing } = await supabase
+    .from("product_supplier_links")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("product_id", product.product_id)
+    .eq("supplier_id", product.supplier_id)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase.from("product_supplier_links")
+      .update({
+        last_seen_price: linkData.last_seen_price,
+        last_seen_stock: linkData.last_seen_stock,
+        last_checked_at: linkData.last_checked_at,
+        is_primary: linkData.is_primary,
+        reliability_score: linkData.reliability_score,
+        supplier_name: linkData.supplier_name,
+      })
+      .eq("id", existing.id);
+  } else {
+    await supabase.from("product_supplier_links")
+      .insert(linkData);
+  }
+}
+
+/**
+ * Update product_supplier_links when a fallback switch occurs
+ */
+async function syncFallbackToLinks(supabase: any, userId: string, productId: string, oldSupplierId: string, newSupplierId: string) {
+  // Demote old primary in links
+  await supabase.from("product_supplier_links")
+    .update({ is_primary: false })
+    .eq("user_id", userId)
+    .eq("product_id", productId)
+    .eq("supplier_id", oldSupplierId);
+
+  // Promote new primary in links
+  await supabase.from("product_supplier_links")
+    .update({ is_primary: true })
+    .eq("user_id", userId)
+    .eq("product_id", productId)
+    .eq("supplier_id", newSupplierId);
+}
+
 function json(data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
