@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 export function useApplyPricingRules() {
   return useMutation({
-    mutationFn: async (options?: { platformFeePercent?: number }) => {
+    mutationFn: async (options: { platformFeePercent?: number } | void = undefined) => {
       const { data, error } = await supabase.functions.invoke('pricing-rules-engine', {
         body: { action: 'apply_pricing_rules', ...options },
       });
