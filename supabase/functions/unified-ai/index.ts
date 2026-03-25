@@ -202,7 +202,7 @@ Retourne: {"recommended_price": 0, "min_price": 0, "max_price": 0, "margin_perce
 
   // Apply optimizations to product
   const updates: Record<string, any> = {}
-  if (aiResult.optimized_title) updates.name = aiResult.optimized_title
+  if (aiResult.optimized_title) updates.title = aiResult.optimized_title
   if (aiResult.optimized_description) updates.description = aiResult.optimized_description
   if (aiResult.seo_title) updates.seo_title = aiResult.seo_title
   if (aiResult.seo_description) updates.seo_description = aiResult.seo_description
