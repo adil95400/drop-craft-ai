@@ -191,10 +191,16 @@ async function syncConnection(supabase: any, conn: any, now: Date) {
       await evaluateOptimalSupplier(supabase, userId, product);
     }
 
-    // Update last_synced_at
+    // Update last_synced_at on supplier_products
     await supabase.from("supplier_products")
       .update({ last_synced_at: now.toISOString() })
       .eq("id", product.id);
+
+    // ═══ SYNC product_supplier_links ═══
+    // Mirror supplier_products data into the unified mapping table
+    if (product.product_id) {
+      await syncSupplierLink(supabase, userId, product, now);
+    }
   }
 
   // Update connection
