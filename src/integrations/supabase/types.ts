@@ -5543,6 +5543,66 @@ export type Database = {
         }
         Relationships: []
       }
+      event_outbox: {
+        Row: {
+          aggregate_id: string
+          aggregate_type: string
+          completed_at: string | null
+          correlation_id: string | null
+          created_at: string | null
+          error_message: string | null
+          event_type: string
+          id: string
+          max_retries: number | null
+          new_data: Json | null
+          old_data: Json | null
+          payload: Json | null
+          priority: number | null
+          processed_at: string | null
+          retry_count: number | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          aggregate_id: string
+          aggregate_type: string
+          completed_at?: string | null
+          correlation_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          event_type: string
+          id?: string
+          max_retries?: number | null
+          new_data?: Json | null
+          old_data?: Json | null
+          payload?: Json | null
+          priority?: number | null
+          processed_at?: string | null
+          retry_count?: number | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          aggregate_id?: string
+          aggregate_type?: string
+          completed_at?: string | null
+          correlation_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          max_retries?: number | null
+          new_data?: Json | null
+          old_data?: Json | null
+          payload?: Json | null
+          priority?: number | null
+          processed_at?: string | null
+          retry_count?: number | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       exchange_rate_history: {
         Row: {
           base_currency: string
