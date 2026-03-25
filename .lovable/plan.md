@@ -1,79 +1,45 @@
 
 
-# Plan d'industrialisation Drop-Craft AI — Parité concurrents
+## Plan : Connecter le frontend au système event_outbox
 
-## Verdict du rapport (résumé)
+### Contexte
+La table `event_outbox` existe maintenant en DB avec des triggers sur `products`, `orders`, `customers` et `pricing_rules`. Le hook `useEventOutbox.ts` existe déjà mais référence une Edge Function `event-bus-processor` qui doit être alignée.
 
-Le front-end est riche mais le back-end a 3 problemes structurants :
-1. **Incohérences de schema** : tables/workflows dupliqués, Edge Functions qui référencent des tables supprimées
-2. **Securité multi-tenant** : service_role + userId dans le body = risque cross-tenant
-3. **Pas de surveillance continue réelle** : monitoring concurrentiel partiellement simulé, orchestration batch et non event-driven
+### Étapes
 
-## Ce qui manque pour la parité (par priorité)
+**1. Mettre à jour le hook `useEventOutbox.ts`**
+- Aligner l'interface `OutboxEvent` avec le schéma réel de la table (vérifier les colonnes `payload` vs `old_data`/`new_data`)
+- S'assurer que le realtime subscription pointe sur `event_outbox`
 
-### P0 — Sécurisation + Stabilisation (bloquant)
+**2. Créer/mettre à jour l'Edge Function `event-bus-processor`**
+- Traiter les événements `pending` par lots (batch de 25)
+- Router vers les services appropriés selon `aggregate_type` (orders → order-hub, products → pricing pipeline)
+- Implémenter le DLQ : après 3 échecs → status `dlq`
+- Action `stats` : compter par status/event_type
+- Action `dlq_retry` : remettre les événements DLQ en `pending`
+- Action `cleanup` : purger les événements `completed` > N jours
 
-**1. Sécuriser les Edge Functions cron/internes**
-- Ajouter vérification `CRON_SECRET` sur toutes les fonctions internes (supplier-sync-cron, auto-reorder-engine, smart-inventory-engine, pricing-rules-engine)
-- Supprimer `userId` du body — extraire depuis JWT pour les fonctions user-facing
-- Restreindre CORS sur les fonctions internes
+**3. Ajouter le trigger sur `pricing_rules`**
+- Le SQL exécuté ne contenait que products/orders/customers
+- Ajouter le trigger manquant via SQL editor
 
-**2. Aligner schéma DB ↔ Edge Functions**
-- Corriger `workflow-executor` qui écrit dans `automation_executions` (table supprimée)
-- Unifier `repricing_rules` vs `pricing_rules` → un seul modèle canonique
-- Consolider les 3 systèmes de workflows en 1 seul (automation_workflows + workflow_templates + saved_workflows)
+**4. Activer Realtime sur `event_outbox`**
+- Migration : `ALTER PUBLICATION supabase_realtime ADD TABLE public.event_outbox;`
 
-### P1 — MVP opérationnel
+### Fichiers modifiés
+| Fichier | Action |
+|---|---|
+| `src/hooks/useEventOutbox.ts` | Aligner types avec schéma réel |
+| `supabase/functions/event-bus-processor/index.ts` | Créer/refactorer le processeur |
 
-**3. Auto-reorder + tracking production-safe**
-- Scoper par JWT (plus de userId body)
-- Ajouter idempotency key (supplier_id + sku + day + qty)
-- Job de réconciliation pour les cas de désynchronisation
+### SQL supplémentaire (à coller dans l'éditeur)
+```sql
+-- Trigger pricing_rules
+CREATE TRIGGER outbox_pricing_rules
+  AFTER INSERT OR UPDATE OR DELETE ON public.pricing_rules
+  FOR EACH ROW EXECUTE FUNCTION public.emit_outbox_event();
 
-**4. Moteur de pricing unifié + P&L**
-- Fusionner pricing-rules-engine + cross-module-sync repricing en un seul pipeline
-- Ajouter calcul marge nette (cost + fees + shipping + ads)
-- Confidence scoring avant auto-apply
-- Historique cohérent dans une seule table
-
-**5. Ingestion fournisseur via API réelle (1-2 connecteurs)**
-- Implémenter un vrai pull API sur CJ Dropshipping ou BigBuy (les 2 déjà câblés dans auto-reorder)
-- Remplacer le fallback simulé du competitor-tracker par une collecte réelle via Firecrawl
-
-### P2 — Industrialisation
-
-**6. Event bus + queue durable (pgmq)**
-- Créer table `event_outbox` avec triggers sur tables critiques
-- Implémenter des consumers Edge Function pour traiter les événements
-- Remplacer le batch polling par du event-driven
-
-**7. Dashboard P&L unifié**
-- Ajouter bloc profitabilité au Automation Control Center (marge nette par produit, fees, ads)
-- Bloc "confiance data" (fraîcheur des syncs, fiabilité fournisseurs)
-
-**8. Veille concurrents réelle + auto-apply**
-- Collecte prix concurrents via Firecrawl (remplacer le fallback hash)
-- Règles auto-apply avec confidence threshold
-
-## Estimation d'effort (du rapport)
-
-| Lot | Effort |
-|-----|--------|
-| P0 Sécurisation + alignement | 18-27 JH |
-| P1 Auto-reorder + pricing + 1-2 APIs | 28-44 JH |
-| P2 Event bus + P&L + veille | 50-85 JH |
-
-## Approche recommandée
-
-Commencer par **P0** (sécurisation des Edge Functions + alignement schéma) car c'est **bloquant pour la production**. Ensuite P1 pour le MVP opérationnel. P2 pour la différenciation.
-
-## Section technique
-
-Les modifications toucheront principalement :
-- **Edge Functions** : supplier-sync-cron, auto-reorder-engine, smart-inventory-engine, pricing-rules-engine, workflow-executor, automation-orchestrator
-- **Migrations SQL** : unification tables pricing, event_outbox, audit_logs
-- **Hooks React** : useAutomationPolling, usePricingIntelligence, useSupplierSync (adapter aux nouveaux endpoints sécurisés)
-- **Config Supabase** : verify_jwt alignement, pg_cron scheduling
-
-**Voulez-vous que je commence par P0 (sécurisation des Edge Functions) ?**
+-- Activer Realtime
+ALTER PUBLICATION supabase_realtime ADD TABLE public.event_outbox;
+```
 
