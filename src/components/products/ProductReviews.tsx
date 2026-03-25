@@ -216,6 +216,30 @@ export function ProductReviews({ productId, sourceUrl }: ProductReviewsProps) {
             Ajouter un avis
           </Button>
         </div>
+      </div>
+
+      {/* Scrape URL Input */}
+      {showScrapeInput && !sourceUrl && (
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="https://aliexpress.com/item/... ou URL du produit"
+                value={scrapeUrlInput}
+                onChange={(e) => setScrapeUrlInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleScrapeReviews()}
+              />
+              <Button onClick={() => handleScrapeReviews()} disabled={!scrapeUrlInput.trim() || isScraping}>
+                {isScraping ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
+                Scraper
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Collez l'URL du produit source pour extraire automatiquement les avis clients via l'IA
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Card */}
       <Card>
