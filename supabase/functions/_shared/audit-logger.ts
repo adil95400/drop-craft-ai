@@ -3,7 +3,7 @@
  * Provides structured audit logging with consistent format
  */
 
-import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 
 export type AuditCategory = 
   | 'auth' 

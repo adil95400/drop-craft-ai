@@ -4,7 +4,7 @@
  * Provides robust authentication with rate limiting and security logging
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { createClient } from 'npm:@supabase/supabase-js@2'
 import { AuthenticationError } from './error-handler.ts'
 import { logSecurityEvent } from './security-logger.ts'
 

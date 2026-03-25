@@ -3,7 +3,7 @@
  * Ensures proper search_path and tenant isolation
  */
 
-import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 
 /**
  * Execute RPC with proper search_path and tenant isolation

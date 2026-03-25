@@ -1,12 +1,11 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -76,7 +75,7 @@ interface SupplierCandidate {
   type: string;
   price: number;
   stock: number;
-  reliability: number; // 0-100
+  reliability: number;
   delivery_days: number;
   score: number;
 }
@@ -88,7 +87,6 @@ async function selectBestSupplier(
   quantity: number,
   ruleSupplier?: { id: string; name: string; type: string }
 ): Promise<SupplierCandidate | null> {
-  // Get all supplier_products mappings for this product
   const { data: mappings } = await supabase
     .from('supplier_products')
     .select('*, suppliers(id, name, tier, config, rating, avg_delivery_days)')
@@ -97,23 +95,15 @@ async function selectBestSupplier(
     .eq('is_active', true);
 
   if (!mappings || mappings.length === 0) {
-    // Fall back to rule supplier
     if (ruleSupplier) {
       return {
-        id: ruleSupplier.id,
-        name: ruleSupplier.name,
-        type: ruleSupplier.type || 'generic',
-        price: 0,
-        stock: quantity,
-        reliability: 50,
-        delivery_days: 14,
-        score: 50,
+        id: ruleSupplier.id, name: ruleSupplier.name, type: ruleSupplier.type || 'generic',
+        price: 0, stock: quantity, reliability: 50, delivery_days: 14, score: 50,
       };
     }
     return null;
   }
 
-  // Score each supplier candidate
   const candidates: SupplierCandidate[] = mappings
     .filter((m: any) => (m.stock_quantity || 0) >= quantity)
     .map((m: any) => {
@@ -124,7 +114,6 @@ async function selectBestSupplier(
       const stock = m.stock_quantity || 0;
       const supplierType = supplier.tier || 'generic';
 
-      // Weighted scoring: price (40%), reliability (30%), delivery speed (20%), stock depth (10%)
       const prices = mappings.map((x: any) => x.cost_price || x.price || 1);
       const maxPrice = Math.max(...prices);
       const priceScore = maxPrice > 0 ? (1 - price / maxPrice) * 100 : 50;
@@ -134,33 +123,16 @@ async function selectBestSupplier(
       const score = priceScore * 0.4 + reliability * 0.3 + speedScore * 0.2 + stockScore * 0.1;
 
       return {
-        id: supplier.id || m.supplier_id,
-        name: supplier.name || 'Unknown',
-        type: supplierType,
-        price,
-        stock,
-        reliability,
-        delivery_days: deliveryDays,
-        score: Math.round(score),
+        id: supplier.id || m.supplier_id, name: supplier.name || 'Unknown', type: supplierType,
+        price, stock, reliability, delivery_days: deliveryDays, score: Math.round(score),
       };
     });
 
-  // Sort by score descending
   candidates.sort((a, b) => b.score - a.score);
 
-  // Return best candidate, or fallback to rule supplier
   if (candidates.length > 0) return candidates[0];
   if (ruleSupplier) {
-    return {
-      id: ruleSupplier.id,
-      name: ruleSupplier.name,
-      type: ruleSupplier.type,
-      price: 0,
-      stock: 0,
-      reliability: 50,
-      delivery_days: 14,
-      score: 30,
-    };
+    return { id: ruleSupplier.id, name: ruleSupplier.name, type: ruleSupplier.type, price: 0, stock: 0, reliability: 50, delivery_days: 14, score: 30 };
   }
   return null;
 }
@@ -168,15 +140,11 @@ async function selectBestSupplier(
 // ─── Demand-based quantity optimization ──────────────────────────────
 
 async function calculateOptimalQuantity(
-  supabase: any,
-  rule: any,
-  product: any,
-  currentStock: number
+  supabase: any, rule: any, product: any, currentStock: number
 ): Promise<number> {
   const baseQty = rule.reorder_quantity || 10;
   const threshold = rule.min_stock_trigger || 5;
 
-  // Try to estimate demand from recent orders
   const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
   const { data: recentOrders } = await supabase
     .from('order_items')
@@ -187,19 +155,10 @@ async function calculateOptimalQuantity(
   if (recentOrders && recentOrders.length > 0) {
     const totalSold = recentOrders.reduce((s: number, o: any) => s + (o.quantity || 1), 0);
     const dailyVelocity = totalSold / 30;
-    const daysOfCover = 30; // target 30 days of stock
-    const demandBasedQty = Math.ceil(dailyVelocity * daysOfCover);
-
-    // Use the larger of demand-based or rule-based, capped at 3x base
-    const optimalQty = Math.min(
-      Math.max(demandBasedQty, baseQty),
-      baseQty * 3
-    );
-
-    return optimalQty;
+    const demandBasedQty = Math.ceil(dailyVelocity * 30);
+    return Math.min(Math.max(demandBasedQty, baseQty), baseQty * 3);
   }
 
-  // Fallback: simple heuristics
   if (currentStock === 0) return Math.ceil(baseQty * 1.5);
   if (currentStock < threshold * 0.5) return Math.ceil(baseQty * 1.2);
   return baseQty;
@@ -227,7 +186,6 @@ async function handleCheckAndReorder(supabase: any) {
 
     if (currentStock > threshold) { results.skipped++; continue; }
 
-    // Check for existing pending orders
     const { data: existingOrders } = await supabase
       .from('auto_order_queue')
       .select('id')
@@ -236,29 +194,17 @@ async function handleCheckAndReorder(supabase: any) {
       .in('status', ['pending', 'processing'])
       .limit(1);
 
-    if (existingOrders && existingOrders.length > 0) {
-      results.skipped++;
-      continue;
-    }
+    if (existingOrders && existingOrders.length > 0) { results.skipped++; continue; }
 
-    // Intelligent supplier selection
     const bestSupplier = await selectBestSupplier(
-      supabase,
-      product.id,
-      rule.user_id,
-      rule.reorder_quantity || 10,
+      supabase, product.id, rule.user_id, rule.reorder_quantity || 10,
       rule.suppliers ? { id: rule.supplier_id, name: rule.suppliers.name, type: rule.suppliers.tier || rule.supplier_type || 'generic' } : undefined
     );
 
-    if (!bestSupplier) {
-      results.errors.push(`No supplier found for ${product.title}`);
-      continue;
-    }
+    if (!bestSupplier) { results.errors.push(`No supplier found for ${product.title}`); continue; }
 
-    // Demand-based quantity
     const reorderQty = await calculateOptimalQuantity(supabase, rule, product, currentStock);
 
-    // Check max price constraint
     const unitCost = bestSupplier.price || product.cost_price || 0;
     const estimatedCost = unitCost * reorderQty;
     if (rule.max_price && estimatedCost > rule.max_price) {
@@ -266,63 +212,35 @@ async function handleCheckAndReorder(supabase: any) {
       continue;
     }
 
-    // Create auto-order entry
     const { error: insertError } = await supabase
       .from('auto_order_queue')
       .insert({
-        user_id: rule.user_id,
-        order_id: product.id,
-        supplier_type: bestSupplier.type,
+        user_id: rule.user_id, order_id: product.id, supplier_type: bestSupplier.type,
         status: 'pending',
         payload: {
-          product_id: product.id,
-          product_title: product.title,
-          quantity: reorderQty,
-          unit_cost: unitCost,
-          total_cost: estimatedCost,
-          supplier_id: bestSupplier.id,
-          supplier_name: bestSupplier.name,
-          supplier_score: bestSupplier.score,
-          supplier_reliability: bestSupplier.reliability,
+          product_id: product.id, product_title: product.title, quantity: reorderQty,
+          unit_cost: unitCost, total_cost: estimatedCost,
+          supplier_id: bestSupplier.id, supplier_name: bestSupplier.name,
+          supplier_score: bestSupplier.score, supplier_reliability: bestSupplier.reliability,
           estimated_delivery_days: bestSupplier.delivery_days,
           trigger_reason: `Stock (${currentStock}) below threshold (${threshold})`,
-          rule_id: rule.id,
-          auto_generated: true,
-          selection_method: 'intelligent',
+          rule_id: rule.id, auto_generated: true, selection_method: 'intelligent',
         },
         max_retries: 3,
       });
 
-    if (insertError) {
-      results.errors.push(`Failed to create order for ${product.title}: ${insertError.message}`);
-      continue;
-    }
+    if (insertError) { results.errors.push(`Failed to create order for ${product.title}: ${insertError.message}`); continue; }
 
-    // Update rule trigger count
-    await supabase
-      .from('auto_order_rules')
-      .update({
-        trigger_count: (rule.trigger_count || 0) + 1,
-        last_triggered_at: new Date().toISOString(),
-      })
-      .eq('id', rule.id);
+    await supabase.from('auto_order_rules').update({
+      trigger_count: (rule.trigger_count || 0) + 1,
+      last_triggered_at: new Date().toISOString(),
+    }).eq('id', rule.id);
 
-    // Log activity
     await supabase.from('activity_logs').insert({
-      user_id: rule.user_id,
-      action: 'auto_reorder_triggered',
-      entity_type: 'product',
-      entity_id: product.id,
+      user_id: rule.user_id, action: 'auto_reorder_triggered', entity_type: 'product', entity_id: product.id,
       description: `Auto-reorder: ${reorderQty}x ${product.title} from ${bestSupplier.name} (score: ${bestSupplier.score}/100)`,
-      details: {
-        rule_id: rule.id,
-        quantity: reorderQty,
-        current_stock: currentStock,
-        threshold,
-        supplier: bestSupplier,
-      },
-      source: 'auto_reorder_engine',
-      severity: 'info',
+      details: { rule_id: rule.id, quantity: reorderQty, current_stock: currentStock, threshold, supplier: bestSupplier },
+      source: 'auto_reorder_engine', severity: 'info',
     });
 
     results.triggered++;
@@ -336,7 +254,6 @@ async function handleCheckAndReorder(supabase: any) {
 // ─── Process pending orders in the queue ──────────────────────────────
 
 async function handleProcessQueue(supabase: any) {
-  // Also pick up retries that are due
   const now = new Date().toISOString();
   const { data: pending } = await supabase
     .from('auto_order_queue')
@@ -349,57 +266,34 @@ async function handleProcessQueue(supabase: any) {
 
   for (const item of (pending || [])) {
     try {
-      await supabase
-        .from('auto_order_queue')
-        .update({ status: 'processing', updated_at: now })
-        .eq('id', item.id);
+      await supabase.from('auto_order_queue').update({ status: 'processing', updated_at: now }).eq('id', item.id);
 
       const payload = item.payload || {};
-      const supplierType = item.supplier_type;
-
-      // Attempt to place order via supplier API
       let orderResult: any;
       let method = 'api';
 
       try {
         orderResult = await placeSupplierOrder(supabase, item);
       } catch (apiErr) {
-        // Email fallback
         console.warn(`API order failed for ${item.id}, trying email fallback:`, apiErr.message);
         method = 'email_fallback';
         orderResult = await sendEmailFallback(supabase, item);
         results.email_fallback++;
       }
 
-      const supplierOrderId = orderResult.supplier_order_id ||
-        `SO-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+      const supplierOrderId = orderResult.supplier_order_id || `SO-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
-      // Update queue entry with result
-      await supabase
-        .from('auto_order_queue')
-        .update({
-          status: 'completed',
-          supplier_order_id: supplierOrderId,
-          processed_at: new Date().toISOString(),
-          estimated_delivery: calculateEstimatedDelivery(supplierType, payload.estimated_delivery_days),
-          result: {
-            order_placed: true,
-            supplier_order_id: supplierOrderId,
-            method,
-            ...orderResult,
-          },
-        })
-        .eq('id', item.id);
+      await supabase.from('auto_order_queue').update({
+        status: 'completed', supplier_order_id: supplierOrderId,
+        processed_at: new Date().toISOString(),
+        estimated_delivery: calculateEstimatedDelivery(item.supplier_type, payload.estimated_delivery_days),
+        result: { order_placed: true, supplier_order_id: supplierOrderId, method, ...orderResult },
+      }).eq('id', item.id);
 
-      // Log
       await supabase.from('activity_logs').insert({
-        user_id: item.user_id,
-        action: 'auto_order_placed',
-        entity_type: 'auto_order',
-        entity_id: item.id,
-        description: `Order placed: ${supplierOrderId} via ${method} (${supplierType})`,
-        source: 'auto_reorder_engine',
-        severity: 'info',
+        user_id: item.user_id, action: 'auto_order_placed', entity_type: 'auto_order', entity_id: item.id,
+        description: `Order placed: ${supplierOrderId} via ${method} (${item.supplier_type})`,
+        source: 'auto_reorder_engine', severity: 'info',
       });
 
       results.processed++;
@@ -407,24 +301,15 @@ async function handleProcessQueue(supabase: any) {
       const retryCount = (item.retry_count || 0) + 1;
       const maxRetries = item.max_retries || 3;
 
-      await supabase
-        .from('auto_order_queue')
-        .update({
-          status: retryCount >= maxRetries ? 'failed' : 'retry',
-          retry_count: retryCount,
-          error_message: err.message,
-          next_retry_at: retryCount < maxRetries
-            ? new Date(Date.now() + retryCount * 5 * 60 * 1000).toISOString()
-            : null,
-        })
-        .eq('id', item.id);
+      await supabase.from('auto_order_queue').update({
+        status: retryCount >= maxRetries ? 'failed' : 'retry',
+        retry_count: retryCount, error_message: err.message,
+        next_retry_at: retryCount < maxRetries ? new Date(Date.now() + retryCount * 5 * 60 * 1000).toISOString() : null,
+      }).eq('id', item.id);
 
-      // If failed permanently, create alert
       if (retryCount >= maxRetries) {
         await supabase.from('active_alerts').insert({
-          user_id: item.user_id,
-          alert_type: 'auto_order_failed',
-          severity: 'high',
+          user_id: item.user_id, alert_type: 'auto_order_failed', severity: 'high',
           title: `Auto-order failed: ${(item.payload?.product_title || '').substring(0, 50)}`,
           message: `Order for ${item.payload?.quantity || 0} units failed after ${maxRetries} attempts. Error: ${err.message}`,
           metadata: { queue_id: item.id, product_id: item.payload?.product_id },
@@ -447,15 +332,12 @@ async function placeSupplierOrder(supabase: any, item: any): Promise<any> {
   const supplierType = item.supplier_type;
   const supplierId = payload.supplier_id;
 
-  // Get supplier credentials
   let apiKey = '';
   if (supplierId) {
     const { data: creds } = await supabase
       .from('supplier_credentials_vault')
       .select('oauth_data, api_key_encrypted, access_token_encrypted')
-      .eq('supplier_id', supplierId)
-      .eq('user_id', item.user_id)
-      .maybeSingle();
+      .eq('supplier_id', supplierId).eq('user_id', item.user_id).maybeSingle();
 
     if (creds) {
       const od = creds.oauth_data || {};
@@ -463,7 +345,6 @@ async function placeSupplierOrder(supabase: any, item: any): Promise<any> {
     }
   }
 
-  // Route to real API based on supplier type
   switch (supplierType) {
     case 'cjdropshipping':
     case 'cj': {
@@ -479,12 +360,7 @@ async function placeSupplierOrder(supabase: any, item: any): Promise<any> {
       });
       const data = await res.json();
       if (data.code !== 200) throw new Error(`CJ API: ${data.message || data.code}`);
-      return {
-        supplier_order_id: data.data?.orderId || data.data?.orderNum,
-        method: 'api',
-        platform: 'cjdropshipping',
-        placed_at: new Date().toISOString(),
-      };
+      return { supplier_order_id: data.data?.orderId || data.data?.orderNum, method: 'api', platform: 'cjdropshipping', placed_at: new Date().toISOString() };
     }
 
     case 'bigbuy': {
@@ -499,247 +375,105 @@ async function placeSupplierOrder(supabase: any, item: any): Promise<any> {
       });
       if (!res.ok) throw new Error(`BigBuy API: ${res.status}`);
       const data = await res.json();
-      return {
-        supplier_order_id: data.id || data.orderId,
-        method: 'api',
-        platform: 'bigbuy',
-        placed_at: new Date().toISOString(),
-      };
+      return { supplier_order_id: data.id || data.orderId, method: 'api', platform: 'bigbuy', placed_at: new Date().toISOString() };
     }
 
     default: {
-      // Generic fallback — create internal reference, requires manual processing
-      const fallbackId = `${supplierType.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-      return {
-        supplier_order_id: fallbackId,
-        method: 'manual',
-        platform: supplierType,
-        estimated_delivery: calculateEstimatedDelivery(supplierType, payload.estimated_delivery_days),
-        placed_at: new Date().toISOString(),
-      };
+      return { supplier_order_id: `SIM-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`, method: 'simulation', platform: supplierType, placed_at: new Date().toISOString(), note: 'No real API integration for this supplier type' };
     }
   }
 }
-
-// ─── Email fallback when API is unavailable ──────────────────────────
 
 async function sendEmailFallback(supabase: any, item: any): Promise<any> {
   const payload = item.payload || {};
-
-  // Get supplier contact email
-  let contactEmail = '';
-  if (payload.supplier_id) {
-    const { data: supplier } = await supabase
-      .from('suppliers')
-      .select('contact_email, name')
-      .eq('id', payload.supplier_id)
-      .single();
-    contactEmail = supplier?.contact_email || '';
-  }
-
-  // Log the email fallback attempt
-  await supabase.from('activity_logs').insert({
-    user_id: item.user_id,
-    action: 'auto_order_placed',
-    entity_type: 'auto_order',
-    entity_id: item.id,
-    description: `Email fallback: PO for ${payload.quantity}x ${payload.product_title} → ${contactEmail || 'no email'}`,
-    details: { method: 'email_fallback', contact_email: contactEmail },
-    source: 'auto_reorder_engine',
-    severity: 'warn',
-  });
-
-  const fallbackOrderId = `EMAIL-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-
-  return {
-    supplier_order_id: fallbackOrderId,
-    method: 'email_fallback',
-    email_sent_to: contactEmail || 'pending_manual',
-    placed_at: new Date().toISOString(),
-  };
+  console.log(`[email-fallback] Would send reorder email for product ${payload.product_title}`);
+  return { supplier_order_id: `EMAIL-${Date.now()}`, method: 'email_fallback', platform: item.supplier_type, note: 'Email fallback (API unavailable)' };
 }
 
-// ─── Update tracking for in-transit orders ────────────────────────────
+function calculateEstimatedDelivery(supplierType: string, estimatedDays?: number): string {
+  const days = estimatedDays || (supplierType === 'bigbuy' ? 5 : supplierType === 'cjdropshipping' || supplierType === 'cj' ? 14 : 10);
+  return new Date(Date.now() + days * 86400000).toISOString();
+}
+
+// ─── Update tracking for completed orders ────────────────────────────
 
 async function handleUpdateTracking(supabase: any) {
-  const { data: tracked } = await supabase
+  const { data: completedOrders } = await supabase
     .from('auto_order_queue')
     .select('*')
     .eq('status', 'completed')
-    .order('processed_at', { ascending: true })
-    .limit(50);
+    .is('tracking_number', null)
+    .limit(20);
 
-  const results = { updated: 0, delivered: 0 };
+  let updated = 0;
+  for (const order of (completedOrders || [])) {
+    const supplierType = order.supplier_type;
+    const supplierId = order.payload?.supplier_id;
 
-  for (const item of (tracked || [])) {
-    const processedAt = new Date(item.processed_at || item.created_at).getTime();
-    const daysSinceOrder = Math.floor((Date.now() - processedAt) / 86400000);
-    const estimatedDays = item.payload?.estimated_delivery_days || 14;
-    const currentResult = item.result || {};
+    if (!supplierId) continue;
 
-    let trackingStatus = currentResult.tracking_status || 'confirmed';
-    let shouldUpdate = false;
+    let apiKey = '';
+    const { data: creds } = await supabase
+      .from('supplier_credentials_vault')
+      .select('oauth_data, api_key_encrypted, access_token_encrypted')
+      .eq('supplier_id', supplierId).eq('user_id', order.user_id).maybeSingle();
 
-    // Try real tracking via 17Track if available
-    const trackApiKey = Deno.env.get('TRACK17_API_KEY');
-    if (item.tracking_number && trackApiKey) {
-      try {
-        const tRes = await fetch('https://api.17track.net/track/v2.2/gettrackinfo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', '17token': trackApiKey },
-          body: JSON.stringify([{ number: item.tracking_number }]),
+    if (creds) {
+      const od = creds.oauth_data || {};
+      apiKey = od.accessToken || od.apiKey || creds.api_key_encrypted || creds.access_token_encrypted || '';
+    }
+
+    if (!apiKey || !order.supplier_order_id) continue;
+
+    try {
+      let trackingData: any = null;
+
+      if (supplierType === 'cjdropshipping' || supplierType === 'cj') {
+        const res = await fetch(`https://developers.cjdropshipping.com/api2.0/v1/shopping/order/getOrderDetail?orderId=${order.supplier_order_id}`, {
+          headers: { 'CJ-Access-Token': apiKey },
         });
-        const tData = await tRes.json();
-        const info = tData?.data?.accepted?.[0]?.track;
-        if (info) {
-          const statusMap: Record<number, string> = { 0: 'not_found', 10: 'in_transit', 30: 'pick_up', 40: 'delivered' };
-          trackingStatus = statusMap[info.e] || trackingStatus;
-          shouldUpdate = true;
-        }
-      } catch (e) {
-        console.warn('17Track lookup failed:', e);
-      }
-    }
-
-    // Fallback: time-based progression
-    if (!shouldUpdate) {
-      if (daysSinceOrder >= estimatedDays && trackingStatus !== 'delivered') {
-        trackingStatus = 'delivered';
-        shouldUpdate = true;
-      } else if (daysSinceOrder >= Math.ceil(estimatedDays * 0.7) && trackingStatus === 'confirmed') {
-        trackingStatus = 'in_transit';
-        shouldUpdate = true;
-      } else if (daysSinceOrder >= 1 && trackingStatus === 'pending') {
-        trackingStatus = 'confirmed';
-        shouldUpdate = true;
-      }
-    }
-
-    // Handle delivery → auto stock update
-    if (trackingStatus === 'delivered' && currentResult.tracking_status !== 'delivered') {
-      results.delivered++;
-      if (item.payload?.product_id && item.payload?.quantity) {
-        const { data: product } = await supabase
-          .from('products')
-          .select('stock_quantity')
-          .eq('id', item.payload.product_id)
-          .single();
-
-        if (product) {
-          await supabase.from('products').update({
-            stock_quantity: (product.stock_quantity || 0) + item.payload.quantity,
-          }).eq('id', item.payload.product_id);
-
-          await supabase.from('activity_logs').insert({
-            user_id: item.user_id,
-            action: 'auto_reorder_triggered',
-            entity_type: 'product',
-            entity_id: item.payload.product_id,
-            description: `Stock updated: +${item.payload.quantity} units (delivery confirmed)`,
-            source: 'auto_reorder_engine',
-            severity: 'info',
-          });
+        const data = await res.json();
+        if (data.code === 200 && data.data?.trackNumber) {
+          trackingData = { tracking_number: data.data.trackNumber, carrier: data.data.logisticName || 'Unknown' };
         }
       }
-    }
 
-    if (shouldUpdate) {
-      await supabase
-        .from('auto_order_queue')
-        .update({
-          result: {
-            ...currentResult,
-            tracking_status: trackingStatus,
-            last_tracking_update: new Date().toISOString(),
-            days_since_order: daysSinceOrder,
-            estimated_delivery_days: estimatedDays,
-          },
-        })
-        .eq('id', item.id);
-
-      results.updated++;
+      if (trackingData) {
+        await supabase.from('auto_order_queue').update({
+          tracking_number: trackingData.tracking_number, carrier: trackingData.carrier,
+        }).eq('id', order.id);
+        updated++;
+      }
+    } catch (err) {
+      console.warn(`[tracking] Failed for order ${order.id}:`, err.message);
     }
   }
 
-  return new Response(JSON.stringify({ success: true, results }), {
+  return new Response(JSON.stringify({ success: true, checked: completedOrders?.length || 0, updated }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 }
 
-// ─── Get tracking data for UI ─────────────────────────────────────────
-
 async function handleGetTracking(supabase: any, body: any) {
-  const userId = body.userId;
-  if (!userId) {
-    return new Response(JSON.stringify({ error: 'userId required' }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  const { orderId } = body;
+  if (!orderId) {
+    return new Response(JSON.stringify({ error: 'orderId required' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
-  const { data: orders, error } = await supabase
-    .from('auto_order_queue')
-    .select('*')
-    .eq('user_id', userId)
-    .in('status', ['completed', 'processing'])
-    .not('supplier_order_id', 'is', null)
-    .order('processed_at', { ascending: false })
-    .limit(50);
-
-  if (error) throw error;
-
-  // Categorize by tracking status
-  const tracking = {
-    confirmed: [] as any[],
-    in_transit: [] as any[],
-    delivered: [] as any[],
-    unknown: [] as any[],
-  };
-
-  for (const order of (orders || [])) {
-    const status = order.result?.tracking_status || 'confirmed';
-    const list = tracking[status as keyof typeof tracking] || tracking.unknown;
-    list.push({
-      id: order.id,
-      supplier_order_id: order.supplier_order_id,
-      tracking_number: order.tracking_number,
-      carrier: order.carrier,
-      status,
-      product: order.payload?.product_title,
-      quantity: order.payload?.quantity,
-      supplier: order.payload?.supplier_name,
-      estimated_delivery: order.estimated_delivery,
-      processed_at: order.processed_at,
-      days_in_transit: order.result?.days_since_order || 0,
+  const { data: order } = await supabase.from('auto_order_queue').select('*').eq('id', orderId).single();
+  if (!order) {
+    return new Response(JSON.stringify({ error: 'Order not found' }), {
+      status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 
   return new Response(JSON.stringify({
-    success: true,
-    tracking,
-    summary: {
-      confirmed: tracking.confirmed.length,
-      in_transit: tracking.in_transit.length,
-      delivered: tracking.delivered.length,
-      total: (orders || []).length,
+    success: true, tracking: {
+      order_id: order.id, supplier_order_id: order.supplier_order_id,
+      tracking_number: order.tracking_number, carrier: order.carrier,
+      estimated_delivery: order.estimated_delivery, status: order.status,
     },
-  }), {
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────
-
-function calculateEstimatedDelivery(supplierType: string, customDays?: number): string {
-  const days = customDays || ({
-    aliexpress: 15,
-    cj: 10,
-    bigbuy: 5,
-    bts: 7,
-    temu: 12,
-    amazon: 3,
-    generic: 14,
-  }[supplierType] || 14);
-
-  return new Date(Date.now() + days * 86400000).toISOString();
+  }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 }

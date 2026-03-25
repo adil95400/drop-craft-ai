@@ -3,7 +3,7 @@
  * CRITICAL: All security events must be logged for audit trail
  */
 
-import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 
 /**
  * Log security event to database
