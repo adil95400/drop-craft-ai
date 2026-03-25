@@ -33,6 +33,7 @@ interface Review {
 
 interface ProductReviewsProps {
   productId: string
+  sourceUrl?: string
 }
 
 export function ProductReviews({ productId }: ProductReviewsProps) {
