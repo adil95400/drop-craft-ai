@@ -741,12 +741,13 @@ function DetailCell({ label, value }: { label: string; value: string }) {
 }
 
 // ─── Add Dialog ──────────────────────────────────────────────────────
-function AddSupplierDialog({ open, onOpenChange, onSubmit, isLoading, variantKeys }: {
+function AddSupplierDialog({ open, onOpenChange, onSubmit, isLoading, variantKeys, variantLabels = [] }: {
   open: boolean
   onOpenChange: (v: boolean) => void
   onSubmit: (data: Partial<SupplierLink>) => void
   isLoading: boolean
   variantKeys: string[]
+  variantLabels?: Array<{ key: string; label: string; sku: string | null; price: number | null; stock: number | null }>
 }) {
   const [form, setForm] = useState({
     supplier_name: '',
