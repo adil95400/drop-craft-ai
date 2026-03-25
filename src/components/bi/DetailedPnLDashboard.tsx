@@ -45,11 +45,11 @@ export function DetailedPnLDashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('id, title, price, cost_price, stock_quantity, status, sales_count, category')
+        .select('id, title, price, cost_price, stock_quantity, status, category, view_count')
         .eq('user_id', user!.id)
         .not('cost_price', 'is', null)
         .gt('cost_price', 0)
-        .order('sales_count', { ascending: false })
+        .order('view_count', { ascending: false, nullsFirst: false })
         .limit(50);
       if (error) throw error;
       return data;
