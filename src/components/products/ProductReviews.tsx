@@ -36,7 +36,7 @@ interface ProductReviewsProps {
   sourceUrl?: string
 }
 
-export function ProductReviews({ productId }: ProductReviewsProps) {
+export function ProductReviews({ productId, sourceUrl }: ProductReviewsProps) {
   const { toast } = useToast()
   const { user } = useAuth()
   const [reviews, setReviews] = useState<Review[]>([])
@@ -46,6 +46,9 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [filterRating, setFilterRating] = useState<number | null>(null)
+  const [isScraping, setIsScraping] = useState(false)
+  const [showScrapeInput, setShowScrapeInput] = useState(false)
+  const [scrapeUrlInput, setScrapeUrlInput] = useState(sourceUrl || '')
 
   // New review form
   const [newReview, setNewReview] = useState({
