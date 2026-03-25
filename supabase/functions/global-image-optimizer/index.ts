@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'npm:@supabase/supabase-js@2
 
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
@@ -20,7 +19,7 @@ interface ImageAuditResult {
   source: 'products' | 'blog' | 'pages' | 'other';
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(req)
   if (req.method === 'OPTIONS') {
     return handleCorsPreflightSecure(req)

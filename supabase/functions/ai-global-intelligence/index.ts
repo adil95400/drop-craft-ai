@@ -2,11 +2,10 @@
  * AI Global Intelligence — Phase 5.1
  * Market analysis, trend prediction, multi-region insights
  */
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { requireAuth, handlePreflight, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
 import { generateJSON } from '../_shared/ai-client.ts'
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const preflight = handlePreflight(req)
   if (preflight) return preflight
 

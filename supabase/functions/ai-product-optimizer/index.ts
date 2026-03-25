@@ -1,7 +1,6 @@
 /**
  * AI Product Optimizer — Unified AI Client
  */
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'npm:@supabase/supabase-js@2
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts';
 import { handleError, ValidationError } from '../_shared/error-handler.ts';
@@ -31,7 +30,7 @@ function validateRequest(body: any) {
   };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return handleCorsPreflightSecure(req);
   const corsHeaders = getSecureCorsHeaders(req);
 

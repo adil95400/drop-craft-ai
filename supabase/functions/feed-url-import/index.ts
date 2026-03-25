@@ -4,7 +4,6 @@
  * P0.5 FIX: userId derived from JWT, not from body
  * P1: SSRF protection and input validation
  */
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2
 
 // Secure CORS configuration
@@ -71,7 +70,7 @@ function validateFeedUrl(urlString: string): URL {
 // Allowed presets
 const ALLOWED_PRESETS = new Set(['auto', 'shopify', 'google', 'matterhorn', 'custom']);
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const origin = req.headers.get('Origin');
   const corsHeaders = getSecureCorsHeaders(origin);
   

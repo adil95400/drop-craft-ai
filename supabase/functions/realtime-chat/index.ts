@@ -4,7 +4,6 @@
  * P0.1: JWT authentication required before WebSocket upgrade
  */
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "npm:@supabase/supabase-js@2"
 import { callOpenAI, generateJSON, generateText } from '../_shared/ai-client.ts'
 
@@ -19,7 +18,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   console.log('🚀 Realtime chat function called')
   
   // Handle CORS preflight

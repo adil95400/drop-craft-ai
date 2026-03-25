@@ -4,7 +4,6 @@
  * P0.4: Secure CORS with allowlist
  * P0.5: Input validation
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "npm:stripe@14";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, isAllowedOrigin } from '../_shared/secure-cors.ts';
@@ -26,7 +25,7 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(req);
   
   if (req.method === "OPTIONS") {

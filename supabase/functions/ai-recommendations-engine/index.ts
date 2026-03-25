@@ -6,13 +6,12 @@
  * - Proactive inventory & pricing alerts
  * - Bundle recommendations
  */
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { requireAuth, handlePreflight, errorResponse, successResponse } from "../_shared/jwt-auth.ts";
 
 import { callOpenAI } from '../_shared/ai-client.ts';
 
 // API key resolved by ai-client.ts (module: automation)
-serve(async (req) => {
+Deno.serve(async (req) => {
   const preflight = handlePreflight(req);
   if (preflight) return preflight;
 

@@ -2,11 +2,10 @@
  * AI Automation Orchestrator — Phase 5.2
  * Migrated to shared ai-client.ts with retry + cache
  */
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { requireAuth, handlePreflight, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
 import { generateJSON } from '../_shared/ai-client.ts'
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const preflight = handlePreflight(req)
   if (preflight) return preflight
 

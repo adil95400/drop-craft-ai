@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2
 import { authenticateUser } from '../_shared/secure-auth.ts'
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
@@ -30,7 +29,7 @@ async function shopifyFetch(url: string, headers: Record<string, string>, maxRet
   throw new Error('Shopify API rate limit exceeded after retries')
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return handleCorsPreflightSecure(req)
   }

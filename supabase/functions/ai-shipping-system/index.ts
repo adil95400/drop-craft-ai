@@ -1,4 +1,3 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2
 import { generateJSON } from '../_shared/ai-client.ts';
 
@@ -57,7 +56,7 @@ const CARRIER_PROFILES: Record<string, { name: string; base_rate: number; per_kg
   fedex_priority: { name: 'FedEx Priority', base_rate: 20.00, per_kg: 4.50, delivery_days_min: 1, delivery_days_max: 2, tracking: true },
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {

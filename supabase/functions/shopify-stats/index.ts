@@ -3,7 +3,6 @@
  * P0.1: JWT authentication required
  * P0.2: Verify integration belongs to authenticated user
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from "npm:@supabase/supabase-js@2"
 
 const corsHeaders = {
@@ -15,7 +14,7 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }

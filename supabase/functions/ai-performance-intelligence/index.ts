@@ -2,11 +2,10 @@
  * AI Performance Intelligence — Phase 5.3
  * System monitoring analysis, bottleneck detection, scaling recommendations
  */
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { requireAuth, handlePreflight, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
 import { generateJSON } from '../_shared/ai-client.ts'
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const preflight = handlePreflight(req)
   if (preflight) return preflight
 

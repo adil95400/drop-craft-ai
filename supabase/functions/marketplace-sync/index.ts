@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { handlePreflight, requireAuth, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
 
 const MARKETPLACE_APIS = {
@@ -21,7 +20,7 @@ const MARKETPLACE_APIS = {
   }
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const preflight = handlePreflight(req)
   if (preflight) return preflight
 

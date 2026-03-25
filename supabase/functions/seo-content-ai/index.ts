@@ -2,7 +2,6 @@
  * SEO Content AI Edge Function
  * Uses Lovable AI to generate real SEO content (meta descriptions, titles, H1s, etc.)
  */
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 import { callOpenAI } from '../_shared/ai-client.ts';
@@ -29,7 +28,7 @@ Be specific and include relevant keywords. Return a JSON array of objects: [{tex
 Make them helpful for SEO with natural keyword inclusion. Return a JSON array of objects: [{question: string, answer: string}].`,
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2
 import { authenticateUser } from '../_shared/secure-auth.ts'
 import { getCorsHeaders, handleCorsPreflightRequest } from '../_shared/secure-cors.ts'
@@ -13,7 +12,7 @@ import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared
  * - User data scoping for DB lookups
  */
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req)
   
   const preflightResponse = handleCorsPreflightRequest(req, corsHeaders)

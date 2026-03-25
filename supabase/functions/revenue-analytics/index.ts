@@ -2,7 +2,6 @@
  * Revenue Analytics - Stripe-powered SaaS metrics
  * Returns MRR, ARR, Churn, LTV, subscriber counts, and monthly trends
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "npm:stripe@14";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts';
@@ -11,7 +10,7 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[REVENUE-ANALYTICS] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const preflight = handleCorsPreflightSecure(req);
   if (preflight) return preflight;
 

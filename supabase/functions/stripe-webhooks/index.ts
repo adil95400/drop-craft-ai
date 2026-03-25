@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "npm:stripe@14";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
@@ -13,7 +12,7 @@ const PRODUCT_TO_PLAN: Record<string, string> = {
   "prod_T3RTMipVwUA7Ud": "ultra_pro",
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
   }

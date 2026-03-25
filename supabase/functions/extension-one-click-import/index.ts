@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts';
 import { handleError, ValidationError } from '../_shared/error-handler.ts';
@@ -317,7 +316,7 @@ function normalizeProductData(rawData: any, options: OneClickImportRequest): any
   };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const preflightResponse = handleCorsPreflightSecure(req);
   if (preflightResponse) return preflightResponse;
 

@@ -3,7 +3,6 @@
 // Generates and serves the complete Chrome extension ZIP
 // ============================================
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import JSZip from "npm:jszip@3.10.1"
 
 const corsHeaders = {
@@ -215,7 +214,7 @@ function generateFallbackContent(filePath: string): string | null {
   return null
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })

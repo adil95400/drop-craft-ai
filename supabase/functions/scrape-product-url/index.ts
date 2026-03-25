@@ -8,7 +8,6 @@
  * - Rate limiting (20 scrapes/hour)
  * - Input validation
  */
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'npm:@supabase/supabase-js@2
 
 // Secure CORS configuration
@@ -202,7 +201,7 @@ function generateProductData(url: string, platform: string): ScrapedProduct {
   };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   
   if (req.method === 'OPTIONS') {

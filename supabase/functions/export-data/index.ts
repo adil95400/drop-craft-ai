@@ -1,4 +1,3 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { requireAuth, handlePreflight, errorResponse } from '../_shared/jwt-auth.ts'
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
@@ -18,7 +17,7 @@ const ExportRequestSchema = z.object({
   filters: FiltersSchema,
 })
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const preflight = handlePreflight(req)
   if (preflight) return preflight
 

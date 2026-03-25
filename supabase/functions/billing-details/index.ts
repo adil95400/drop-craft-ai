@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "npm:stripe@14";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
@@ -10,7 +9,7 @@ const corsHeaders = {
 const log = (step: string, details?: unknown) =>
   console.log(`[BILLING-DETAILS] ${step}${details ? ` – ${JSON.stringify(details)}` : ""}`);
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

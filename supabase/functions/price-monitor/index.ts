@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { requireAuth, handlePreflight, errorResponse } from '../_shared/jwt-auth.ts'
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
@@ -14,7 +13,7 @@ const CreateMonitorSchema = z.object({
   alertOnDecrease: z.boolean().default(true),
 })
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const preflight = handlePreflight(req)
   if (preflight) return preflight
 
