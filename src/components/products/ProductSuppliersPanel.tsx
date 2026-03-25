@@ -212,11 +212,11 @@ export function ProductSuppliersPanel({
     queryFn: async (): Promise<ProductVariant[]> => {
       const { data, error } = await supabase
         .from('product_variants')
-        .select('id, variant_name, sku, price, stock_quantity, option1_name, option1_value, option2_name, option2_value')
+        .select('id, name, sku, price, stock_quantity, option1_name, option1_value, option2_name, option2_value')
         .eq('product_id', productId)
         .order('created_at', { ascending: true })
       if (error) return []
-      return (data || []) as ProductVariant[]
+      return (data || []) as unknown as ProductVariant[]
     },
     enabled: !!productId,
     staleTime: 5 * 60 * 1000,
