@@ -176,11 +176,21 @@ export function ProductReviews({ productId, sourceUrl }: ProductReviewsProps) {
           <h3 className="text-lg font-semibold">Avis Clients</h3>
           <p className="text-sm text-muted-foreground">{stats.total} avis au total</p>
         </div>
-        <Button onClick={() => setShowAddForm(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Ajouter un avis
-        </Button>
-      </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => sourceUrl ? handleScrapeReviews() : setShowScrapeInput(!showScrapeInput)} 
+            className="gap-2"
+            disabled={isScraping}
+          >
+            {isScraping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+            Scraper des avis
+          </Button>
+          <Button onClick={() => setShowAddForm(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Ajouter un avis
+          </Button>
+        </div>
 
       {/* Stats Card */}
       <Card>
