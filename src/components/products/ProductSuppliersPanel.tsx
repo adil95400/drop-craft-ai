@@ -65,6 +65,18 @@ interface ProductSuppliersPanelProps {
   variantKeys?: string[]
 }
 
+interface ProductVariant {
+  id: string
+  variant_name: string | null
+  sku: string | null
+  price: number | null
+  stock_quantity: number | null
+  option1_name: string | null
+  option1_value: string | null
+  option2_name: string | null
+  option2_value: string | null
+}
+
 // ─── Scoring Weights ─────────────────────────────────────────────────
 const SCORE_WEIGHTS = {
   price: 0.40,
