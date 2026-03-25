@@ -11,3 +11,12 @@ export {
   type RuleImpactPreview,
   type PriceRulesAIStats,
 } from './usePriceRulesAI';
+
+// Unified pipeline hooks (P&L, confidence, batch)
+export {
+  useApplyPricingRules,
+  useSyncStockAlerts,
+  useAutoRepriceFromCompetitors,
+  useCalculatePnL,
+  useBatchPnL,
+} from '../useCrossModuleSync';
