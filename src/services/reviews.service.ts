@@ -26,7 +26,7 @@ export class ReviewsService {
 
     if (error || !reviews) return [];
 
-    return reviews.map((review) => ({
+    return reviews.map((review: any) => ({
       id: review.id,
       customer_name: review.author || 'Client anonyme',
       rating: review.rating,
