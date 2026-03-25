@@ -111,6 +111,9 @@ Deno.serve(async (req) => {
     if (action === 'run_all') {
       results.cart_recovery = await invokeWithRetry(supabaseUrl, supabaseKey, 'cart-recovery-cron', {});
     }
+    if (action === 'run_all' || action === 'run_event_bus') {
+      results.event_bus = await invokeWithRetry(supabaseUrl, supabaseKey, 'event-bus-processor', { action: 'process_queue' });
+    }
 
     const totalTime = Date.now() - startTime;
     const failedSubsystems = Object.entries(results).filter(([_, v]) => v?.status === 'error').map(([k]) => k);
