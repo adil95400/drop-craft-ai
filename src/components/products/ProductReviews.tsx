@@ -465,7 +465,20 @@ export function ProductReviews({ productId, sourceUrl }: ProductReviewsProps) {
 
             {/* Author */}
             <div className="space-y-2">
-              <Label htmlFor="review-author" className="text-sm font-semibold">Nom du client *</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="review-author" className="text-sm font-semibold">Nom du client *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs gap-1 text-primary"
+                  onClick={() => generateWithAI('author')}
+                  disabled={isGeneratingName}
+                >
+                  {isGeneratingName ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                  Générer avec IA
+                </Button>
+              </div>
               <Input
                 id="review-author"
                 value={newReview.author}
@@ -476,7 +489,20 @@ export function ProductReviews({ productId, sourceUrl }: ProductReviewsProps) {
 
             {/* Text */}
             <div className="space-y-2">
-              <Label htmlFor="review-text" className="text-sm font-semibold">Commentaire *</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="review-text" className="text-sm font-semibold">Commentaire *</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs gap-1 text-primary"
+                  onClick={() => generateWithAI('text')}
+                  disabled={isGeneratingComment}
+                >
+                  {isGeneratingComment ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  Générer avec IA
+                </Button>
+              </div>
               <Textarea
                 id="review-text"
                 value={newReview.text}
