@@ -61,11 +61,10 @@ export function DetailedPnLDashboard() {
   const cogsData = useMemo(() => {
     if (!productsWithCost?.length) return null;
 
-    const totalCOGS = productsWithCost.reduce((sum, p) => {
-      const cost = p.cost_price || p.buy_price || 0;
-      const sold = p.sales_count || 0;
-      return sum + (cost * sold);
-    }, 0);
+    // Estimate COGS from total orders: avg cost * order count
+    const avgCost = productsWithCost.reduce((s, p) => s + (p.cost_price || 0), 0) / productsWithCost.length;
+    const estimatedUnitsSold = pnl.orderCount > 0 ? pnl.orderCount : 0;
+    const totalCOGS = avgCost * estimatedUnitsSold;
 
     const revenue = pnl.revenue;
     const grossProfit = revenue - totalCOGS;
