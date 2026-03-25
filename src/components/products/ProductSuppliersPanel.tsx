@@ -206,6 +206,37 @@ export function ProductSuppliersPanel({
     staleTime: 2 * 60 * 1000,
   })
 
+  // ─── Load product variants for mapping ────────────────────────────
+  const { data: variants = [] } = useQuery({
+    queryKey: ['product-variants-for-mapping', productId],
+    queryFn: async (): Promise<ProductVariant[]> => {
+      const { data, error } = await supabase
+        .from('product_variants')
+        .select('id, variant_name, sku, price, stock_quantity, option1_name, option1_value, option2_name, option2_value')
+        .eq('product_id', productId)
+        .order('created_at', { ascending: true })
+      if (error) return []
+      return (data || []) as ProductVariant[]
+    },
+    enabled: !!productId,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const variantLabels = useMemo(() => {
+    return variants.map(v => {
+      const parts: string[] = []
+      if (v.option1_value) parts.push(`${v.option1_name || 'Option 1'}: ${v.option1_value}`)
+      if (v.option2_value) parts.push(`${v.option2_name || 'Option 2'}: ${v.option2_value}`)
+      return {
+        key: v.id,
+        label: parts.length > 0 ? parts.join(' / ') : v.variant_name || v.sku || v.id.slice(0, 8),
+        sku: v.sku,
+        price: v.price,
+        stock: v.stock_quantity,
+      }
+    })
+  }, [variants])
+
   // ─── Mutations ───────────────────────────────────────────────────
   const addLink = useMutation({
     mutationFn: async (newLink: Partial<SupplierLink>) => {
