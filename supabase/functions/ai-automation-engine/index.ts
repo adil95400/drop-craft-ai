@@ -9,7 +9,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, handleCorsPreflightSecure, isAllowedOrigin } from '../_shared/secure-cors.ts';
 import { checkRateLimit } from '../_shared/rate-limiter.ts';
-import { z } from 'https://esm.sh/zod@3.22.4';
+import { z } from 'npm:zod@3.22.4';
 
 import { callOpenAI } from '../_shared/ai-client.ts';
 

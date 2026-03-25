@@ -6,7 +6,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2
 import { getSecureCorsHeaders, isAllowedOrigin } from '../_shared/secure-cors.ts';
 import { checkRateLimit } from '../_shared/rate-limiter.ts';
 import { callOpenAI } from '../_shared/ai-client.ts';
-import { z } from 'https://esm.sh/zod@3.22.4';
+import { z } from 'npm:zod@3.22.4';
 
 const InputSchema = z.object({
   contentType: z.enum(['email', 'social', 'ad', 'blog']),

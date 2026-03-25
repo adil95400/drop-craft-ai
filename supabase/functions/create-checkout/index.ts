@@ -8,7 +8,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "npm:stripe@14";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, isAllowedOrigin } from '../_shared/secure-cors.ts';
-import { z } from 'https://esm.sh/zod@3.22.4';
+import { z } from 'npm:zod@3.22.4';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
