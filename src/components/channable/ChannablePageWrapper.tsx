@@ -1,6 +1,6 @@
 /**
- * Wrapper de page Channable avec hero image et design professionnel
- * Performance: hero images are lazy-loaded on demand instead of eagerly imported
+ * Wrapper de page Channable — Premium hero with refined gradient overlay
+ * Performance: hero images are lazy-loaded on demand
  */
 
 import { ReactNode, useState, useEffect } from 'react';
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Lazy-load hero images on demand to avoid importing all 17 at once
+// Lazy-load hero images on demand
 const heroImageImports: Record<string, () => Promise<{ default: string }>> = {
   dashboard: () => import('@/assets/images/hero-dashboard.png'),
   stock: () => import('@/assets/images/hero-stock.png'),
@@ -30,17 +30,12 @@ const heroImageImports: Record<string, () => Promise<{ default: string }>> = {
   notifications: () => import('@/assets/images/hero-notifications.png'),
 };
 
-// Cache loaded images to avoid re-fetching
 const imageCache: Record<string, string> = {};
 
 function useHeroImage(key: string) {
   const [src, setSrc] = useState<string | undefined>(imageCache[key]);
-  
   useEffect(() => {
-    if (imageCache[key]) {
-      setSrc(imageCache[key]);
-      return;
-    }
+    if (imageCache[key]) { setSrc(imageCache[key]); return; }
     const loader = heroImageImports[key];
     if (loader) {
       loader().then(mod => {
@@ -49,12 +44,12 @@ function useHeroImage(key: string) {
       });
     }
   }, [key]);
-  
   return src;
 }
 
 export const heroImageKeys = Object.keys(heroImageImports);
 export type HeroImageKey = keyof typeof heroImageImports;
+
 interface ChannablePageWrapperProps {
   children: ReactNode;
   title: string;
@@ -69,6 +64,7 @@ interface ChannablePageWrapperProps {
   actions?: ReactNode;
   className?: string;
 }
+
 export function ChannablePageWrapper({
   children,
   title,
@@ -80,18 +76,18 @@ export function ChannablePageWrapper({
   className
 }: ChannablePageWrapperProps) {
   const backgroundImage = useHeroImage(heroImage);
-  return <div className={cn("space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden", className)}>
-      {/* Hero Section avec image de fond */}
-      <motion.div initial={{
-      opacity: 0,
-      y: -20
-    }} animate={{
-      opacity: 1,
-      y: 0
-    }} transition={{
-      duration: 0.5
-    }} className="relative overflow-hidden rounded-xl sm:rounded-2xl">
-        {/* Background Image - lazy loaded */}
+  const BadgeIcon = badge?.icon;
+
+  return (
+    <div className={cn("space-y-5 w-full max-w-full overflow-x-hidden", className)}>
+      {/* Hero Section — cleaner, more pro */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="relative overflow-hidden rounded-xl border border-border/30"
+      >
+        {/* Background Image */}
         <div 
           className={cn(
             "absolute inset-0 bg-cover bg-center transition-opacity duration-500",
@@ -99,102 +95,82 @@ export function ChannablePageWrapper({
           )}
           style={backgroundImage ? { backgroundImage: `url(${backgroundImage})` } : undefined}
         />
-        {/* Fallback gradient while image loads */}
         {!backgroundImage && (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-background to-secondary/8" />
         )}
         
-        {/* Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background/98 via-background/90 to-background/60 sm:from-background/95 sm:via-background/80 sm:to-background/40" />
-        
-        {/* Hexagon Pattern Overlay */}
-        <div className="absolute inset-0 opacity-10">
-          <svg width="100%" height="100%" className="absolute inset-0">
-            <defs>
-              <pattern id="hexagons-wrapper" width="50" height="43.4" patternUnits="userSpaceOnUse" patternTransform="scale(2)">
-                <polygon points="25,0 50,12.5 50,37.5 25,50 0,37.5 0,12.5" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-primary" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#hexagons-wrapper)" />
-          </svg>
-        </div>
+        {/* Refined overlay — more solid for readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/[0.97] via-background/[0.92] to-background/70" />
         
         {/* Content */}
-        <div className="relative z-10 p-4 sm:p-6 md:p-8 lg:p-10">
+        <div className="relative z-10 p-5 sm:p-6 md:p-8">
           <div className="max-w-3xl">
             {/* Badge */}
-            {badge && <motion.div initial={{
-            opacity: 0,
-            x: -20
-          }} animate={{
-            opacity: 1,
-            x: 0
-          }} transition={{
-            delay: 0.1
-          }}>
-                
-              </motion.div>}
+            {badge && (
+              <motion.div
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="mb-3"
+              >
+                <Badge variant={badge.variant || "secondary"} className="text-[11px] font-medium gap-1.5 rounded-lg px-2.5 py-1">
+                  {BadgeIcon && <BadgeIcon className="h-3 w-3" />}
+                  {badge.label}
+                </Badge>
+              </motion.div>
+            )}
             
-            {/* Subtitle */}
-            {subtitle}
+            {subtitle && (
+              <p className="text-sm text-muted-foreground mb-1">{subtitle}</p>
+            )}
             
             {/* Title */}
-            <motion.h1 initial={{
-            opacity: 0,
-            y: 10
-          }} animate={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            delay: 0.2
-          }} className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-3 sm:mb-4">
-              <span className="text-foreground">
-                {title}
-              </span>
+            <motion.h1
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground"
+              style={{ textWrap: 'balance' } as any}
+            >
+              {title}
             </motion.h1>
             
-            {/* Description */}
-            {description && <motion.p initial={{
-            opacity: 0
-          }} animate={{
-            opacity: 1
-          }} transition={{
-            delay: 0.25
-          }} className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-2xl leading-relaxed">
+            {description && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.15 }}
+                className="text-muted-foreground text-sm sm:text-base max-w-2xl leading-relaxed mt-2"
+              >
                 {description}
-              </motion.p>}
+              </motion.p>
+            )}
             
-            {/* Actions */}
-            {actions && <motion.div initial={{
-            opacity: 0,
-            y: 10
-          }} animate={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            delay: 0.3
-          }} className="mt-6 flex flex-wrap gap-3">
+            {actions && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mt-5 flex flex-wrap gap-2"
+              >
                 {actions}
-              </motion.div>}
+              </motion.div>
+            )}
           </div>
         </div>
         
-        {/* Bottom Fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent" />
+        {/* Bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background to-transparent" />
       </motion.div>
       
       {/* Main Content */}
-      <motion.div initial={{
-      opacity: 0,
-      y: 20
-    }} animate={{
-      opacity: 1,
-      y: 0
-    }} transition={{
-      delay: 0.35,
-      duration: 0.4
-    }}>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.3 }}
+      >
         {children}
       </motion.div>
-    </div>;
+    </div>
+  );
 }
