@@ -114,6 +114,9 @@ Deno.serve(async (req) => {
     if (action === 'run_all' || action === 'run_event_bus') {
       results.event_bus = await invokeWithRetry(supabaseUrl, supabaseKey, 'event-bus-processor', { action: 'process_queue' });
     }
+    if (action === 'run_all' || action === 'run_competitor_tracker') {
+      results.competitor_auto_apply = await invokeWithRetry(supabaseUrl, supabaseKey, 'competitor-tracker', { action: 'auto_apply_check' });
+    }
 
     const totalTime = Date.now() - startTime;
     const failedSubsystems = Object.entries(results).filter(([_, v]) => v?.status === 'error').map(([k]) => k);
