@@ -81,7 +81,7 @@ function computeSupplierScore(link: SupplierLink, allLinks: SupplierLink[]): num
   const priceRange = worstPrice - bestPrice || 1
 
   const priceScore = link.last_seen_price
-    ? 100 - ((link.last_seen_price - bestPrice) / priceRange) * 100
+    ? Math.max(0, 100 - ((link.last_seen_price - bestPrice) / priceRange) * 100)
     : 0
 
   const leadTimes = allLinks.map(l => l.lead_time_days || 30).filter(d => d > 0)
