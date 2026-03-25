@@ -131,6 +131,16 @@ export function ProductImageManager({ productId, sourceUrl }: ProductImageManage
           </p>
         </div>
         <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => sourceUrl ? handleScrapeImages() : setShowScrapeInput(!showScrapeInput)} 
+            className="gap-2"
+            disabled={isScraping}
+          >
+            {isScraping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+            Scraper images
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowUrlInput(!showUrlInput)} className="gap-2">
             <LinkIcon className="h-4 w-4" />
             URL
