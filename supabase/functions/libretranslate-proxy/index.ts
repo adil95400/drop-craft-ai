@@ -169,7 +169,7 @@ async function translateBatch(
   return { translations, cached: cachedCount, translated: translatedCount }
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
