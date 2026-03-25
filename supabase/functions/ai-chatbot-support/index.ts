@@ -1,7 +1,7 @@
 /**
  * AI Chatbot Support — Streaming via Unified AI Client
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { getSecureCorsHeaders, isAllowedOrigin } from '../_shared/secure-cors.ts';
 import { checkRateLimit } from '../_shared/rate-limiter.ts';
 import { callOpenAI } from '../_shared/ai-client.ts';

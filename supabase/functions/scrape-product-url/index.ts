@@ -8,7 +8,7 @@
  * - Rate limiting (20 scrapes/hour)
  * - Input validation
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 // Secure CORS configuration
 const ALLOWED_ORIGINS = [

@@ -4,7 +4,7 @@
  * 
  * Actions: audit, optimize, generate, fix, issues, translate, score
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!

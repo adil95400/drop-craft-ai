@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts'
 import { validateInput, profitCalculatorSchema } from '../_shared/input-validation.ts'
 import { withErrorHandler, AuthenticationError } from '../_shared/error-handler.ts'

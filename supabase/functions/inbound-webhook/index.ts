@@ -5,7 +5,7 @@
  * URL pattern: /inbound-webhook?endpoint_id=<uuid>
  * Or: /inbound-webhook/<endpoint_id>
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

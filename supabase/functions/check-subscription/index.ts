@@ -6,7 +6,7 @@
  * their own plan column. The auth check itself uses getClaims() (no round-trip).
  */
 
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { getSecureCorsHeaders } from '../_shared/cors.ts'
 import Stripe from 'npm:stripe@14
 

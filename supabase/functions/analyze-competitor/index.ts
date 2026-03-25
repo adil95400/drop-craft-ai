@@ -5,7 +5,7 @@
  * P0.5 Fix: Strict SSRF protection, no userId in body
  */
 
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { authenticateUser } from '../_shared/secure-auth.ts'
 import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from '../_shared/rate-limit.ts'
 import { handleError, ValidationError, AuthenticationError } from '../_shared/error-handler.ts'

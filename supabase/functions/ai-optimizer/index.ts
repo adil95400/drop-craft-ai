@@ -1,7 +1,7 @@
 /**
  * AI Optimizer — Unified AI Client for SEO sub-module
  */
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 import { generateJSON } from '../_shared/ai-client.ts'
 

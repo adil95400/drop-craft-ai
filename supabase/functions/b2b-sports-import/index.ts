@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts'
 import { parseJsonValidated, z } from '../_shared/validators.ts'
 

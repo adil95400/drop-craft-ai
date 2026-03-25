@@ -3,7 +3,7 @@
  * Exécuté par un cron ou manuellement pour maintenir les données à jour
  */
 
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts'
 
 interface SyncResult {

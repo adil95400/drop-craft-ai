@@ -4,7 +4,7 @@
  */
 import { createEdgeFunction, z } from '../_shared/create-edge-function.ts'
 import { callOpenAI } from '../_shared/ai-client.ts'
-import { createClient } from 'npm:@supabase/supabase-js@2
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const forecastSchema = z.object({
   period: z.enum(['30', '60', '90']).default('30'),
