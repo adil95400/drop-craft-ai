@@ -949,6 +949,9 @@ export default function ProductDetailsPage() {
                     <ProductImageManager productId={product.id} sourceUrl={product.source_url || (product as any).url} />
                   </TabsContent>
 
+                  <TabsContent value="media-quality">
+                    <ProductMediaQualityPanel productId={product.id} onImagesUpdated={() => refetch()} />
+
                   <TabsContent value="videos">
                     <ProductVideoPlayer
                       videos={product.videos || []}
