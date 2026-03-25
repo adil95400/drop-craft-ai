@@ -15,6 +15,7 @@ import { ProductPerformanceMetrics } from '@/components/products/ProductPerforma
 import { OptimizationHistory } from '@/components/products/OptimizationHistory'
 import { MultiChannelReadiness } from '@/components/products/MultiChannelReadiness'
 import { ProductImageEditor } from '@/components/products/ProductImageEditor'
+import { ProductMediaQualityPanel } from '@/components/products/ProductMediaQualityPanel'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'

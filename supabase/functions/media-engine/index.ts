@@ -578,6 +578,9 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { action } = body;
 
+    // Ensure tables exist on first call
+    await ensureTables();
+
     let result: any;
 
     switch (action) {
