@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 
 interface ProductImageManagerProps {
   productId: string
+  sourceUrl?: string
 }
 
 export function ProductImageManager({ productId }: ProductImageManagerProps) {
