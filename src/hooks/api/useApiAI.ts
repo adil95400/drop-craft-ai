@@ -26,7 +26,7 @@ export function useApiAI() {
       const { data, error } = await supabase.functions.invoke('unified-ai/optimize-product', {
         body: {
           productId: params.productId,
-          targets: params.contentTypes,
+          optimizationType: params.contentTypes.length === 1 ? params.contentTypes[0] : 'full',
           language: params.language || 'fr',
           tone: params.tone || 'professional',
         },
