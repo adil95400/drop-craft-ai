@@ -151,7 +151,7 @@ export class ProductsUnifiedService {
    */
   static async upsertProduct(_userId: string, product: Partial<UnifiedProduct> & { id?: string }): Promise<UnifiedProduct> {
     const body: any = {
-      title: product.title || product.name,
+      title: (product as any).title || product.name,
       description: product.description,
       sku: product.sku,
       barcode: product.barcode,
