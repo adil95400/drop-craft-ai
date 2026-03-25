@@ -262,17 +262,13 @@ export default function CatalogProductsPage() {
     });
   }, [products, createProduct, handleRefresh]);
 
-  // Bulk delete via Supabase direct
+  // Bulk delete via API
+  const { bulkDelete } = useProductsUnified();
   const handleBulkDelete = useCallback(async () => {
     if (selectedProducts.length === 0) return;
     setIsBulkDeleting(true);
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .in('id', selectedProducts);
-      if (error) throw error;
+      bulkDelete(selectedProducts);
       toast({
         title: 'Produits supprimés',
         description: `${selectedProducts.length} produit(s) supprimé(s)`
@@ -285,7 +281,7 @@ export default function CatalogProductsPage() {
     } finally {
       setIsBulkDeleting(false);
     }
-  }, [selectedProducts, toast, handleRefresh]);
+  }, [selectedProducts, toast, handleRefresh, bulkDelete]);
 
   const handleBulkPublish = useCallback(() => {
     if (selectedProducts.length === 0) return;

@@ -135,6 +135,8 @@ export function useProductsUnified(options: UseProductsUnifiedOptions = {}) {
       if (filters?.category) params.category = filters.category
       if (filters?.status) params.status = filters.status
       if (filters?.low_stock) params.low_stock = 'true'
+      if (filters?.sortBy) params.sort_by = filters.sortBy
+      if (filters?.sortDirection) params.order = filters.sortDirection
 
       const resp = await productsApi.list(params as any)
       return {
