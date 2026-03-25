@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { 
   Star, ThumbsUp, MessageCircle, Flag, Plus,
-  Loader2, Trash2, CheckCircle, Globe, Search
+  Loader2, Trash2, CheckCircle, Globe, Search, Sparkles, Wand2
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { getDateFnsLocale } from '@/utils/dateFnsLocale'
