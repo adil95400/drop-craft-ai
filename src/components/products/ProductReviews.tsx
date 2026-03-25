@@ -131,6 +131,31 @@ export function ProductReviews({ productId, sourceUrl }: ProductReviewsProps) {
     }
   }
 
+  const handleScrapeReviews = async (scrapeUrl?: string) => {
+    const targetUrl = scrapeUrl || scrapeUrlInput || sourceUrl
+    if (!targetUrl) {
+      setShowScrapeInput(true)
+      return
+    }
+    setIsScraping(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const { data, error } = await supabase.functions.invoke('scrape-product-media', {
+        body: { url: targetUrl, productId, scrapeType: 'reviews' },
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+      })
+      if (error) throw error
+      const count = data?.scraped?.reviews || 0
+      toast({ title: `${count} avis scrapé${count > 1 ? 's' : ''} avec succès` })
+      loadReviews()
+      setShowScrapeInput(false)
+    } catch (e: any) {
+      toast({ title: 'Erreur de scraping', description: e.message || 'Échec', variant: 'destructive' })
+    } finally {
+      setIsScraping(false)
+    }
+  }
+
   const filteredReviews = filterRating
     ? reviews.filter(r => r.rating === filterRating)
     : reviews
