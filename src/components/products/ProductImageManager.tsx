@@ -18,7 +18,7 @@ interface ProductImageManagerProps {
   sourceUrl?: string
 }
 
-export function ProductImageManager({ productId }: ProductImageManagerProps) {
+export function ProductImageManager({ productId, sourceUrl }: ProductImageManagerProps) {
   const { 
     images, isLoading, addImage, deleteImage, setPrimaryImage, uploadImage, isAdding, isDeleting 
   } = useProductImages(productId)
@@ -28,6 +28,35 @@ export function ProductImageManager({ productId }: ProductImageManagerProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [urlInput, setUrlInput] = useState('')
   const [showUrlInput, setShowUrlInput] = useState(false)
+  const [isScraping, setIsScraping] = useState(false)
+  const [scrapeUrlInput, setScrapeUrlInput] = useState(sourceUrl || '')
+  const [showScrapeInput, setShowScrapeInput] = useState(false)
+
+  const handleScrapeImages = async (scrapeUrl?: string) => {
+    const targetUrl = scrapeUrl || scrapeUrlInput || sourceUrl
+    if (!targetUrl) {
+      setShowScrapeInput(true)
+      return
+    }
+    setIsScraping(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const { data, error } = await supabase.functions.invoke('scrape-product-media', {
+        body: { url: targetUrl, productId, scrapeType: 'images' },
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+      })
+      if (error) throw error
+      const count = data?.scraped?.images || 0
+      toast.success(`${count} image${count > 1 ? 's' : ''} scrapée${count > 1 ? 's' : ''} avec succès`)
+      // Reload images
+      window.location.reload()
+    } catch (e: any) {
+      toast.error(`Erreur de scraping: ${e.message || 'Échec'}`)
+    } finally {
+      setIsScraping(false)
+      setShowScrapeInput(false)
+    }
+  }
 
   const formatFileSize = (bytes: number | undefined): string => {
     if (!bytes || bytes === 0) return '—'
