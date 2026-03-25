@@ -94,21 +94,27 @@ serve(async (req) => {
       })
 
     // Execute workflow steps
-    const executionResult = await executeWorkflowSteps(workflow, triggerData, execution.id, supabase, userId)
+    const executionResult = await executeWorkflowSteps(workflow, triggerData, executionId, supabase, userId)
 
-    // Update execution record - SCOPED to user
+    // Log completion to activity_logs
     await supabase
-      .from('automation_executions')
-      .update({
-        status: executionResult.success ? 'completed' : 'failed',
-        completed_at: new Date().toISOString(),
-        execution_time_ms: executionResult.executionTime,
-        step_results: executionResult.stepResults,
-        output_data: executionResult.outputData,
-        error_message: executionResult.error
+      .from('activity_logs')
+      .insert({
+        user_id: userId,
+        action: executionResult.success ? 'workflow_execution_completed' : 'workflow_execution_failed',
+        entity_type: 'workflow',
+        entity_id: workflowId,
+        description: `Workflow "${workflow.name}" ${executionResult.success ? 'completed' : 'failed'} in ${executionResult.executionTime}ms`,
+        details: {
+          execution_id: executionId,
+          execution_time_ms: executionResult.executionTime,
+          step_results: executionResult.stepResults,
+          output_data: executionResult.outputData,
+          error: executionResult.error,
+        },
+        source: 'workflow_executor',
+        severity: executionResult.success ? 'info' : 'warn',
       })
-      .eq('id', execution.id)
-      .eq('user_id', userId) // SECURE: scope to user
 
     // Update workflow stats - SCOPED to user
     if (executionResult.success) {
@@ -120,7 +126,7 @@ serve(async (req) => {
           last_executed_at: new Date().toISOString()
         })
         .eq('id', workflowId)
-        .eq('user_id', userId) // SECURE: scope to user
+        .eq('user_id', userId)
     } else {
       await supabase
         .from('automation_workflows')
@@ -130,19 +136,19 @@ serve(async (req) => {
           last_executed_at: new Date().toISOString()
         })
         .eq('id', workflowId)
-        .eq('user_id', userId) // SECURE: scope to user
+        .eq('user_id', userId)
     }
 
     // Log security event
     await logSecurityEvent(supabase, userId, 'workflow_executed', 'info', {
       workflow_id: workflowId,
-      execution_id: execution.id,
+      execution_id: executionId,
       success: executionResult.success
     })
 
     return new Response(JSON.stringify({
       success: executionResult.success,
-      executionId: execution.id,
+      executionId,
       executionTime: executionResult.executionTime,
       stepResults: executionResult.stepResults,
       outputData: executionResult.outputData,
