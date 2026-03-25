@@ -14,6 +14,30 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const CRON_SECRET = Deno.env.get('CRON_SECRET');
+
+    // ── SECURITY: Require CRON_SECRET or valid service_role JWT ──
+    const cronSecret = req.headers.get('x-cron-secret');
+    const authHeader = req.headers.get('Authorization');
+    const isServiceRole = authHeader?.includes(supabaseKey);
+
+    if (!cronSecret && !isServiceRole) {
+      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (cronSecret && CRON_SECRET && cronSecret !== CRON_SECRET) {
+      const logClient = createClient(supabaseUrl, supabaseKey);
+      await logClient.from('activity_logs').insert({
+        action: 'reorder_auth_failed', entity_type: 'security',
+        description: 'Unauthorized auto-reorder-engine trigger attempt',
+        severity: 'warn', source: 'auto_reorder_engine',
+      });
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const body = await req.json().catch(() => ({}));

@@ -14,10 +14,46 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const CRON_SECRET = Deno.env.get('CRON_SECRET');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const body = await req.json().catch(() => ({}));
     const action = body.action || 'forecast';
+
+    // ── SECURITY: Dual auth ──
+    // Cron/batch actions → require CRON_SECRET or service_role
+    // User-facing actions → require JWT and extract userId from token
+    const cronActions = ['cron_full_cycle', 'check_and_reorder', 'auto_reorder_check'];
+    const cronSecret = req.headers.get('x-cron-secret');
+    const authHeader = req.headers.get('Authorization');
+
+    if (cronActions.includes(action)) {
+      const isServiceRole = authHeader?.includes(supabaseKey);
+      if (!cronSecret && !isServiceRole) {
+        return json({ error: 'Authentication required for cron actions' }, 401);
+      }
+      if (cronSecret && CRON_SECRET && cronSecret !== CRON_SECRET) {
+        await supabase.from('activity_logs').insert({
+          action: 'inventory_auth_failed', entity_type: 'security',
+          description: 'Unauthorized smart-inventory-engine trigger attempt',
+          severity: 'warn', source: 'smart_inventory_engine',
+        });
+        return json({ error: 'Unauthorized' }, 403);
+      }
+    } else {
+      // User-facing actions: extract userId from JWT instead of body
+      if (authHeader && !authHeader.includes(supabaseKey)) {
+        const token = authHeader.replace('Bearer ', '');
+        const { data, error: authError } = await supabase.auth.getClaims(token);
+        if (authError || !data?.claims?.sub) {
+          return json({ error: 'Invalid token' }, 401);
+        }
+        // Override body.userId with JWT-derived userId (prevents spoofing)
+        body.userId = data.claims.sub;
+      } else if (!body.userId) {
+        return json({ error: 'Authentication required' }, 401);
+      }
+    }
 
     const handlers: Record<string, () => Promise<Response>> = {
       forecast: () => handleDemandForecast(supabase, body),

@@ -21,15 +21,51 @@ Deno.serve(async (req) => {
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const CRON_SECRET = Deno.env.get('CRON_SECRET')
     const body = await req.json() as RuleEngineRequest
 
-    // ── Batch mode: apply_all ──
+    // ── SECURITY: Dual auth ──
+    const cronSecret = req.headers.get('x-cron-secret')
+    const authHeader = req.headers.get('Authorization')
+
     if (body.action === 'apply_all') {
+      // Batch mode: require CRON_SECRET or service_role
+      const isServiceRole = authHeader?.includes(supabaseServiceKey)
+      if (!cronSecret && !isServiceRole) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Authentication required for batch mode' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+        )
+      }
+      if (cronSecret && CRON_SECRET && cronSecret !== CRON_SECRET) {
+        await supabase.from('activity_logs').insert({
+          action: 'pricing_auth_failed', entity_type: 'security',
+          description: 'Unauthorized pricing-rules-engine batch trigger attempt',
+          severity: 'warn', source: 'pricing_rules_engine',
+        })
+        return new Response(
+          JSON.stringify({ success: false, error: 'Unauthorized' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+        )
+      }
       return await handleApplyAll(supabase)
     }
 
-    // ── Single product mode (existing) ──
-    const { userId, productId, currentPrice, costPrice, category, applyRules = false } = body
+    // ── Single product mode: extract userId from JWT ──
+    let userId = body.userId
+    if (authHeader && !authHeader.includes(supabaseServiceKey)) {
+      const token = authHeader.replace('Bearer ', '')
+      const { data, error: authError } = await supabase.auth.getClaims(token)
+      if (authError || !data?.claims?.sub) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Invalid token' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+        )
+      }
+      userId = data.claims.sub // Override body userId with JWT-derived one
+    }
+
+    const { productId, currentPrice, costPrice, category, applyRules = false } = body
 
     if (!userId || !productId) {
       return new Response(
