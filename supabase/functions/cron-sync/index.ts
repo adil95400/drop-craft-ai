@@ -74,7 +74,7 @@ async function syncAllIntegrations(
 }
 
 async function syncInventoryUpdates(
-  supabaseClient: ReturnType<typeof import('npm:@supabase/supabase-js@2')
+  supabaseClient: any,
   correlationId: string
 ): Promise<Response> {
   console.log(`[${correlationId}] Syncing inventory updates`)
