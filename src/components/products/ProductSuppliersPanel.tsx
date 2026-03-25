@@ -675,6 +675,7 @@ export function ProductSuppliersPanel({
           onSubmit={(data) => addLink.mutate(data)}
           isLoading={addLink.isPending}
           variantKeys={variantKeys}
+          variantLabels={variantLabels}
         />
       </div>
     </TooltipProvider>
