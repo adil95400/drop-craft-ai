@@ -76,7 +76,8 @@ export function useEventBusStats() {
       });
       if (error) throw error;
       return data as {
-        outbox: { total: number; by_status: Record<string, number>; by_event_type: Record<string, number> };
+        outbox: { total: number; by_status: Record<string, number>; by_event_type: Record<string, number>; by_aggregate: Record<string, number> };
+        legacy: { total: number; by_status: Record<string, number>; by_type: Record<string, number> };
       };
     },
     refetchInterval: 30000,
