@@ -23,10 +23,10 @@ export function useApiAI() {
       language?: string
       tone?: string
     }) => {
-      const { data, error } = await supabase.functions.invoke('ai-content-generator', {
+      const { data, error } = await supabase.functions.invoke('unified-ai/optimize-product', {
         body: {
-          product_id: params.productId,
-          content_types: params.contentTypes,
+          productId: params.productId,
+          targets: params.contentTypes,
           language: params.language || 'fr',
           tone: params.tone || 'professional',
         },
@@ -35,10 +35,19 @@ export function useApiAI() {
       return { success: true, data }
     },
     onSuccess: () => {
-      toast({ title: 'Contenu IA généré' })
+      toast({ title: '✨ Optimisation IA lancée avec succès' })
       invalidateAfterJob()
     },
-    onError: () => toast({ title: 'Erreur', description: 'Génération impossible', variant: 'destructive' }),
+    onError: (error: any) => {
+      const msg = error?.message || 'Génération impossible'
+      if (msg.includes('429') || msg.includes('rate')) {
+        toast({ title: 'Limite atteinte', description: 'Trop de requêtes, réessayez dans quelques minutes', variant: 'destructive' })
+      } else if (msg.includes('402')) {
+        toast({ title: 'Crédits épuisés', description: 'Ajoutez des crédits dans Settings > Workspace > Usage', variant: 'destructive' })
+      } else {
+        toast({ title: 'Erreur', description: msg, variant: 'destructive' })
+      }
+    },
   })
 
   const optimizeSeo = useMutation({
