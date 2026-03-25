@@ -3,7 +3,7 @@
  * Uses in-memory tracking with fallback to Supabase
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 interface RateLimitResult {
   allowed: boolean;

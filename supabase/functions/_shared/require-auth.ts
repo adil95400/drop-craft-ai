@@ -3,7 +3,7 @@
  * P0.1/P0.2 Fix: Mandatory JWT verification before any sensitive operation
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { createClient } from 'npm:@supabase/supabase-js@2'
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from './secure-cors.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!

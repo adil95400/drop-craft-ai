@@ -8,7 +8,7 @@
  * - Includes rate limiting via in-memory tracker
  */
 
-import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { getSecureCorsHeaders } from './cors.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!

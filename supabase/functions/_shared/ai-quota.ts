@@ -2,7 +2,7 @@
  * AI Quota Checking - Integrates with check_user_quota before AI calls
  * P1: Prevents uncontrolled consumption
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const QUOTA_KEY_MAP: Record<string, string> = {
   seo: 'ai_seo_generations',
