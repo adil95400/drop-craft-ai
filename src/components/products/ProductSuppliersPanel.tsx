@@ -394,7 +394,7 @@ export function ProductSuppliersPanel({
           {scoredLinks.map((link, idx) => {
             const platform = getPlatform(link.supplier_name)
             const isExpanded = expandedId === link.id
-            const scoreColor = link.score >= 75 ? 'text-emerald-500' : link.score >= 50 ? 'text-amber-500' : 'text-destructive'
+            const scoreColor = link.score >= 75 ? 'text-success' : link.score >= 50 ? 'text-warning' : 'text-destructive'
 
             return (
               <motion.div
@@ -465,8 +465,8 @@ export function ProductSuppliersPanel({
                         <div className="text-center">
                           <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Marge</p>
                           <p className={cn("text-sm font-bold", 
-                            link.margin !== null && link.margin >= 30 ? "text-emerald-500" :
-                            link.margin !== null && link.margin >= 15 ? "text-amber-500" : "text-destructive"
+                            link.margin !== null && link.margin >= 30 ? "text-success" :
+                            link.margin !== null && link.margin >= 15 ? "text-warning" : "text-destructive"
                           )}>
                             {link.margin !== null ? `${link.margin.toFixed(0)}%` : '—'}
                           </p>
@@ -477,7 +477,7 @@ export function ProductSuppliersPanel({
                           <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Stock</p>
                           <p className={cn("text-sm font-bold",
                             (link.last_seen_stock || 0) > 10 ? "text-foreground" :
-                            (link.last_seen_stock || 0) > 0 ? "text-amber-500" : "text-destructive"
+                            (link.last_seen_stock || 0) > 0 ? "text-warning" : "text-destructive"
                           )}>
                             {link.last_seen_stock !== null ? link.last_seen_stock.toLocaleString() : '—'}
                           </p>
@@ -498,7 +498,7 @@ export function ProductSuppliersPanel({
                             <div className="w-8 h-1.5 rounded-full bg-muted overflow-hidden">
                               <div
                                 className={cn("h-full rounded-full transition-all",
-                                  link.score >= 75 ? "bg-emerald-500" : link.score >= 50 ? "bg-amber-500" : "bg-destructive"
+                                  link.score >= 75 ? "bg-success" : link.score >= 50 ? "bg-warning" : "bg-destructive"
                                 )}
                                 style={{ width: `${link.score}%` }}
                               />
@@ -562,7 +562,7 @@ export function ProductSuppliersPanel({
                     <div className="md:hidden flex items-center gap-3 px-4 pb-3 text-xs overflow-x-auto">
                       <MetricPill label="Coût" value={link.last_seen_price ? `${link.last_seen_price.toFixed(2)}€` : '—'} />
                       <MetricPill label="Marge" value={link.margin !== null ? `${link.margin.toFixed(0)}%` : '—'}
-                        color={link.margin !== null && link.margin >= 30 ? 'text-emerald-500' : link.margin !== null && link.margin < 15 ? 'text-destructive' : undefined}
+                        color={link.margin !== null && link.margin >= 30 ? 'text-success' : link.margin !== null && link.margin < 15 ? 'text-destructive' : undefined}
                       />
                       <MetricPill label="Stock" value={link.last_seen_stock?.toLocaleString() || '—'} />
                       <MetricPill label="Score" value={`${link.score}`} color={scoreColor} />
@@ -646,14 +646,14 @@ function KpiCard({ icon, label, value, sub, highlight, alert }: {
   return (
     <div className={cn(
       "p-3 rounded-xl border bg-card transition-colors",
-      highlight && "border-emerald-500/30 bg-emerald-500/5",
+      highlight && "border-success/30 bg-success/5",
       alert && "border-destructive/30 bg-destructive/5"
     )}>
       <div className="flex items-center gap-2 text-muted-foreground mb-1">
         {icon}
         <span className="text-[11px] font-medium uppercase tracking-wider">{label}</span>
       </div>
-      <p className={cn("text-lg font-bold", highlight && "text-emerald-500", alert && "text-destructive")}>{value}</p>
+      <p className={cn("text-lg font-bold", highlight && "text-success", alert && "text-destructive")}>{value}</p>
       {sub && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{sub}</p>}
     </div>
   )
@@ -678,7 +678,7 @@ function ScoreBar({ label, weight, score }: { label: string; weight: number; sco
       <div className="h-1.5 rounded-full bg-muted overflow-hidden">
         <div
           className={cn("h-full rounded-full transition-all",
-            score >= 70 ? "bg-emerald-500" : score >= 40 ? "bg-amber-500" : "bg-destructive"
+            score >= 70 ? "bg-success" : score >= 40 ? "bg-warning" : "bg-destructive"
           )}
           style={{ width: `${Math.min(100, score)}%` }}
         />
