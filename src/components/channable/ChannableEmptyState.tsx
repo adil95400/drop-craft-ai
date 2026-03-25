@@ -1,5 +1,5 @@
 /**
- * État vide style Channable
+ * État vide style Channable — Premium, minimal, pro
  */
 
 import { motion } from 'framer-motion'
@@ -45,51 +45,46 @@ export function ChannableEmptyState({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.3 }}
       className={cn(
-        "flex flex-col items-center justify-center text-center py-16 px-6",
+        "flex flex-col items-center justify-center text-center py-14 px-6",
         className
       )}
     >
-      {/* Icon */}
+      {/* Icon — cleaner, more refined */}
       <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
-        className="relative mb-6"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 20, delay: 0.05 }}
+        className="mb-5"
       >
-        <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-          <Icon className="h-10 w-10 text-muted-foreground" />
+        <div className="h-16 w-16 rounded-2xl bg-muted/60 border border-border/30 flex items-center justify-center">
+          <Icon className="h-7 w-7 text-muted-foreground/60" />
         </div>
-        {/* Decorative circles */}
-        <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-primary/10" />
-        <div className="absolute -bottom-1 -left-3 h-4 w-4 rounded-full bg-primary/20" />
       </motion.div>
 
-      {/* Title */}
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <h3 className="text-base font-semibold mb-1.5">{title}</h3>
 
-      {/* Description */}
       {description && (
-        <p className="text-muted-foreground max-w-md mb-6">{description}</p>
+        <p className="text-[13px] text-muted-foreground max-w-sm mb-5 leading-relaxed">{description}</p>
       )}
 
-      {/* Actions */}
       {(action || secondaryAction) && (
-        <div className="flex flex-wrap gap-3 justify-center">
+        <div className="flex flex-wrap gap-2.5 justify-center">
           {action && (
             <Button 
               onClick={action.onClick}
-              className="bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg shadow-primary/20"
+              size="sm"
+              className="rounded-xl gap-2 shadow-sm h-9"
             >
-              <ActionIcon className="h-4 w-4 mr-2" />
+              <ActionIcon className="h-3.5 w-3.5" />
               {action.label}
             </Button>
           )}
           {secondaryAction && (
-            <Button variant="outline" onClick={secondaryAction.onClick}>
+            <Button variant="outline" size="sm" onClick={secondaryAction.onClick} className="rounded-xl h-9">
               {secondaryAction.label}
             </Button>
           )}
