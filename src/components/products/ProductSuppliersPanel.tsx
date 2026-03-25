@@ -160,7 +160,7 @@ export function ProductSuppliersPanel({
     queryKey: ['product-supplier-links', productId],
     queryFn: async (): Promise<SupplierLink[]> => {
       // Try product_supplier_links table first
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('product_supplier_links')
         .select('*')
         .eq('product_id', productId)
@@ -200,7 +200,7 @@ export function ProductSuppliersPanel({
         }))
       }
 
-      return data || []
+      return (data || []) as SupplierLink[]
     },
     enabled: !!productId,
     staleTime: 2 * 60 * 1000,
