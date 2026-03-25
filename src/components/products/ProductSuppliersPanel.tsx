@@ -2,7 +2,7 @@
  * ProductSuppliersPanel — Ultra Pro Multi-Supplier Mapping
  * DSers-level: scoring engine, primary/fallback, variant mapping, real-time metrics
  */
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
