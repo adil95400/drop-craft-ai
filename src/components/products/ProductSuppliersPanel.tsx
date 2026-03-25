@@ -89,7 +89,7 @@ function computeSupplierScore(link: SupplierLink, allLinks: SupplierLink[]): num
   const worstLead = Math.max(...leadTimes)
   const leadRange = worstLead - bestLead || 1
   const leadScore = link.lead_time_days
-    ? 100 - ((link.lead_time_days - bestLead) / leadRange) * 100
+    ? Math.max(0, 100 - ((link.lead_time_days - bestLead) / leadRange) * 100)
     : 50
 
   const reliabilityScore = (link.reliability_score || 0) * 100
