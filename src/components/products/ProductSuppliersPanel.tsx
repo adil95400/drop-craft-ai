@@ -2,7 +2,7 @@
  * ProductSuppliersPanel — Ultra Pro Multi-Supplier Mapping
  * DSers-level: scoring engine, primary/fallback, variant mapping, real-time metrics
  */
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -63,6 +63,18 @@ interface ProductSuppliersPanelProps {
   productPrice: number
   productTitle?: string
   variantKeys?: string[]
+}
+
+interface ProductVariant {
+  id: string
+  name: string | null
+  sku: string | null
+  price: number | null
+  stock_quantity: number | null
+  option1_name: string | null
+  option1_value: string | null
+  option2_name: string | null
+  option2_value: string | null
 }
 
 // ─── Scoring Weights ─────────────────────────────────────────────────
@@ -148,7 +160,7 @@ export function ProductSuppliersPanel({
     queryKey: ['product-supplier-links', productId],
     queryFn: async (): Promise<SupplierLink[]> => {
       // Try product_supplier_links table first
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('product_supplier_links')
         .select('*')
         .eq('product_id', productId)
@@ -188,11 +200,42 @@ export function ProductSuppliersPanel({
         }))
       }
 
-      return data || []
+      return (data || []) as SupplierLink[]
     },
     enabled: !!productId,
     staleTime: 2 * 60 * 1000,
   })
+
+  // ─── Load product variants for mapping ────────────────────────────
+  const { data: variants = [] } = useQuery({
+    queryKey: ['product-variants-for-mapping', productId],
+    queryFn: async (): Promise<ProductVariant[]> => {
+      const { data, error } = await supabase
+        .from('product_variants')
+        .select('id, name, sku, price, stock_quantity, option1_name, option1_value, option2_name, option2_value')
+        .eq('product_id', productId)
+        .order('created_at', { ascending: true })
+      if (error) return []
+      return (data || []) as unknown as ProductVariant[]
+    },
+    enabled: !!productId,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const variantLabels = useMemo(() => {
+    return variants.map(v => {
+      const parts: string[] = []
+      if (v.option1_value) parts.push(`${v.option1_name || 'Option 1'}: ${v.option1_value}`)
+      if (v.option2_value) parts.push(`${v.option2_name || 'Option 2'}: ${v.option2_value}`)
+      return {
+        key: v.id,
+        label: parts.length > 0 ? parts.join(' / ') : v.name || v.sku || v.id.slice(0, 8),
+        sku: v.sku,
+        price: v.price,
+        stock: v.stock_quantity,
+      }
+    })
+  }, [variants])
 
   // ─── Mutations ───────────────────────────────────────────────────
   const addLink = useMutation({
@@ -632,6 +675,7 @@ export function ProductSuppliersPanel({
           onSubmit={(data) => addLink.mutate(data)}
           isLoading={addLink.isPending}
           variantKeys={variantKeys}
+          variantLabels={variantLabels}
         />
       </div>
     </TooltipProvider>
@@ -697,12 +741,13 @@ function DetailCell({ label, value }: { label: string; value: string }) {
 }
 
 // ─── Add Dialog ──────────────────────────────────────────────────────
-function AddSupplierDialog({ open, onOpenChange, onSubmit, isLoading, variantKeys }: {
+function AddSupplierDialog({ open, onOpenChange, onSubmit, isLoading, variantKeys, variantLabels = [] }: {
   open: boolean
   onOpenChange: (v: boolean) => void
   onSubmit: (data: Partial<SupplierLink>) => void
   isLoading: boolean
   variantKeys: string[]
+  variantLabels?: Array<{ key: string; label: string; sku: string | null; price: number | null; stock: number | null }>
 }) {
   const [form, setForm] = useState({
     supplier_name: '',
@@ -819,18 +864,34 @@ function AddSupplierDialog({ open, onOpenChange, onSubmit, isLoading, variantKey
                 onChange={e => setForm(f => ({ ...f, min_order_qty: e.target.value }))}
               />
             </div>
-            {variantKeys.length > 0 && (
+            {(variantLabels.length > 0 || variantKeys.length > 0) && (
               <div className="col-span-2">
                 <Label className="text-xs">Variante associée</Label>
                 <Select value={form.variant_key} onValueChange={v => setForm(f => ({ ...f, variant_key: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Toutes variantes" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Toutes variantes (produit entier)" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">Toutes variantes</SelectItem>
-                    {variantKeys.map(k => (
-                      <SelectItem key={k} value={k}>{k}</SelectItem>
-                    ))}
+                    {variantLabels.length > 0
+                      ? variantLabels.map(v => (
+                          <SelectItem key={v.key} value={v.key}>
+                            <div className="flex items-center gap-2">
+                              <span>{v.label}</span>
+                              {v.sku && <span className="text-muted-foreground text-[10px]">({v.sku})</span>}
+                              {v.price !== null && <span className="text-muted-foreground text-[10px]">{v.price}€</span>}
+                            </div>
+                          </SelectItem>
+                        ))
+                      : variantKeys.map(k => (
+                          <SelectItem key={k} value={k}>{k}</SelectItem>
+                        ))
+                    }
                   </SelectContent>
                 </Select>
+                {form.variant_key && (
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Ce fournisseur sera mappé uniquement à cette variante spécifique
+                  </p>
+                )}
               </div>
             )}
             <div className="col-span-2 flex items-center justify-between rounded-lg border p-3">
