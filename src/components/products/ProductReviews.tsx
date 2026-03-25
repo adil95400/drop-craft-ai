@@ -115,6 +115,7 @@ export function ProductReviews({ productId, sourceUrl }: ProductReviewsProps) {
       toast({ title: 'Erreur', description: error.message, variant: 'destructive' })
     } finally {
       setIsSubmitting(false)
+    }
   }
 
   const generateWithAI = async (field: 'author' | 'text') => {
