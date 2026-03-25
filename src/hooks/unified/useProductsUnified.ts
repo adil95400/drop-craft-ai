@@ -121,7 +121,7 @@ export function useProductsUnified(options: UseProductsUnifiedOptions = {}) {
   const { filters } = options
   const page = filters?.page ?? 1
   const pageSizeRaw = Number(filters?.pageSize ?? 30)
-  const pageSize = Math.min(30, Math.max(1, Number.isFinite(pageSizeRaw) ? Math.floor(pageSizeRaw) : 30))
+  const pageSize = Math.min(100, Math.max(1, Number.isFinite(pageSizeRaw) ? Math.floor(pageSizeRaw) : 30))
 
   // ── Fetch products via API V1 ─────────────────────────────────────────────
   const { data: productsData, isLoading, error, refetch } = useQuery({
