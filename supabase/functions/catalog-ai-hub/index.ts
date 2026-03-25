@@ -18,11 +18,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not configured')
-    }
-
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -50,6 +45,27 @@ Deno.serve(async (req) => {
     const request: CatalogAIRequest = await req.json()
     console.log('[Catalog AI Hub] Request:', request.module, request.action)
 
+    // Handle 'apply' action early — no AI needed
+    if (request.action === 'apply' && request.recommendationId) {
+      const applyResult = await applyRecommendation(
+        supabaseClient,
+        user.id,
+        request.recommendationId,
+        request.productIds || [],
+        request.module
+      )
+      return new Response(
+        JSON.stringify({ success: true, action: 'applied', result: applyResult }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // AI analysis path — requires API key
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY_PRODUCT') || Deno.env.get('OPENAI_API_KEY')
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured')
+    }
+
     // Fetch products for analysis
     const { data: products, error: productsError } = await supabaseClient
       .from('products')
@@ -62,7 +78,6 @@ Deno.serve(async (req) => {
       throw productsError
     }
 
-    // Also fetch imported products
     const { data: importedProducts } = await supabaseClient
       .from('imported_products')
       .select('*')
@@ -72,7 +87,6 @@ Deno.serve(async (req) => {
     const allProducts = [...(products || []), ...(importedProducts || [])]
     console.log('[Catalog AI Hub] Analyzing', allProducts.length, 'products')
 
-    // Build context for AI analysis
     const catalogContext = buildCatalogContext(allProducts, request.module)
 
     // Generate AI recommendations using Lovable AI
@@ -178,26 +192,6 @@ Deno.serve(async (req) => {
       }
     } catch (parseError) {
       console.error('Error parsing AI response:', parseError)
-    }
-
-    // If action is 'apply', execute the recommendation
-    if (request.action === 'apply' && request.recommendationId) {
-      const applyResult = await applyRecommendation(
-        supabaseClient,
-        user.id,
-        request.recommendationId,
-        request.productIds || [],
-        request.module
-      )
-      
-      return new Response(
-        JSON.stringify({
-          success: true,
-          action: 'applied',
-          result: applyResult
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
     }
 
     // Store recommendations for tracking
