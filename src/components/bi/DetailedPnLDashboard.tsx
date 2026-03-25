@@ -329,10 +329,9 @@ export function DetailedPnLDashboard() {
                         <TableHead>Produit</TableHead>
                         <TableHead className="text-right">Prix</TableHead>
                         <TableHead className="text-right">Coût</TableHead>
-                        <TableHead className="text-right">Vendus</TableHead>
-                        <TableHead className="text-right">CA</TableHead>
-                        <TableHead className="text-right">Profit Net</TableHead>
-                        <TableHead className="text-right">Marge</TableHead>
+                        <TableHead className="text-right">Marge/u</TableHead>
+                        <TableHead className="text-right">Net/u</TableHead>
+                        <TableHead className="text-right">Marge %</TableHead>
                         <TableHead>Statut</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -342,10 +341,9 @@ export function DetailedPnLDashboard() {
                           <TableCell className="max-w-[200px] truncate font-medium">{p.title}</TableCell>
                           <TableCell className="text-right font-mono">{fmt(p.price)}</TableCell>
                           <TableCell className="text-right font-mono text-muted-foreground">{fmt(p.cost)}</TableCell>
-                          <TableCell className="text-right">{p.sold}</TableCell>
-                          <TableCell className="text-right font-mono">{fmt(p.revenue)}</TableCell>
-                          <TableCell className={`text-right font-mono ${p.netProfit >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                            {fmt(p.netProfit)}
+                          <TableCell className="text-right font-mono">{fmt(p.unitMargin)}</TableCell>
+                          <TableCell className={`text-right font-mono ${p.netPerUnit >= 0 ? 'text-primary' : 'text-destructive'}`}>
+                            {fmt(p.netPerUnit)}
                           </TableCell>
                           <TableCell className={`text-right font-mono ${p.margin >= 15 ? 'text-primary' : p.margin >= 5 ? 'text-yellow-600' : 'text-destructive'}`}>
                             {p.margin.toFixed(1)}%
