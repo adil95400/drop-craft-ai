@@ -229,7 +229,7 @@ export function ProductSuppliersPanel({
       if (v.option2_value) parts.push(`${v.option2_name || 'Option 2'}: ${v.option2_value}`)
       return {
         key: v.id,
-        label: parts.length > 0 ? parts.join(' / ') : v.variant_name || v.sku || v.id.slice(0, 8),
+        label: parts.length > 0 ? parts.join(' / ') : v.name || v.sku || v.id.slice(0, 8),
         sku: v.sku,
         price: v.price,
         stock: v.stock_quantity,
