@@ -138,6 +138,14 @@ Deno.serve(async (req) => {
   }
 })
 
+// ─── CUSTOM PROMPT (for reviews AI, etc.) ──────────────────────
+async function handleCustomPrompt(customPrompt: string) {
+  const systemPrompt = `Tu es un assistant IA polyvalent. Réponds directement à la demande, sans formatage JSON sauf si demandé. Sois concis et naturel.`
+  const aiResult = await callAI(systemPrompt, customPrompt, { temperature: 0.8, maxTokens: 500 })
+  const content = typeof aiResult === 'string' ? aiResult : aiResult.content || JSON.stringify(aiResult)
+  return { success: true, content }
+}
+
 // ─── PRODUCT OPTIMIZATION ──────────────────────────────────────
 async function handleProductOptimization(supabase: any, body: any, userId: string) {
   const { productId, optimizationType } = body
