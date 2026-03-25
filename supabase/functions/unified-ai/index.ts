@@ -81,7 +81,11 @@ Deno.serve(async (req) => {
 
     switch (endpoint) {
       case 'optimize-product':
-        result = await handleProductOptimization(supabase, body, userId)
+        if (body.optimizationType === 'custom' && body.customPrompt) {
+          result = await handleCustomPrompt(body.customPrompt)
+        } else {
+          result = await handleProductOptimization(supabase, body, userId)
+        }
         break
       case 'generate-description':
         result = await handleDescriptionGeneration(supabase, body, userId)
