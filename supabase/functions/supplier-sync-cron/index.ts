@@ -22,6 +22,26 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const CRON_SECRET = Deno.env.get("CRON_SECRET");
+
+    // ── SECURITY: Require CRON_SECRET or valid service_role JWT ──
+    const cronSecret = req.headers.get("x-cron-secret");
+    const authHeader = req.headers.get("Authorization");
+    const isServiceRole = authHeader?.includes(supabaseKey);
+
+    if (!cronSecret && !isServiceRole) {
+      return json({ error: "Authentication required" }, 401);
+    }
+    if (cronSecret && CRON_SECRET && cronSecret !== CRON_SECRET) {
+      const logClient = createClient(supabaseUrl, supabaseKey);
+      await logClient.from("activity_logs").insert({
+        action: "supplier_sync_auth_failed", entity_type: "security",
+        description: "Unauthorized supplier-sync-cron trigger attempt",
+        severity: "warn", source: "supplier_sync_cron",
+      });
+      return json({ error: "Unauthorized" }, 403);
+    }
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     console.log("[supplier-sync-cron] Starting enhanced sync v2...");
