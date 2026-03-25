@@ -2,7 +2,7 @@
  * Notification Hub — Cascading delivery: Push → Email → SMS (critical only)
  * Central dispatcher that routes notifications through the optimal channel
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

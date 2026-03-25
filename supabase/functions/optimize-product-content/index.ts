@@ -1,5 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { corsHeaders } from '../_shared/cors.ts'
 
 import { callOpenAI } from '../_shared/ai-client.ts';

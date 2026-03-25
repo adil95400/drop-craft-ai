@@ -3,7 +3,7 @@
  * Scans for stock low, price anomalies, quota warnings, and sync failures
  * Inserts alerts into user_notifications table
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

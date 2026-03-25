@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { generateJSON } from '../_shared/ai-client.ts'
 import { checkAndIncrementQuota, quotaExceededResponse } from '../_shared/ai-quota.ts'
 

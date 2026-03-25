@@ -8,7 +8,7 @@
  * 3. Update cart status and attempt count
  * 4. Send push notification via notification-hub
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

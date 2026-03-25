@@ -2,7 +2,7 @@
  * AI Enrich Import — Migrated to shared ai-client.ts with retry + module keys
  */
 import { handlePreflight, requireAuth, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { callOpenAI } from '../_shared/ai-client.ts'
 
 const PROMPT_VERSION = '1.4.0'

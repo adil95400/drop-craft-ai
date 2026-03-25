@@ -4,8 +4,8 @@
  * P0.4: Secure CORS with allowlist
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import Stripe from "npm:stripe@14";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, isAllowedOrigin } from '../_shared/secure-cors.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

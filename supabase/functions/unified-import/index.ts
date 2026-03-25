@@ -3,7 +3,7 @@
  * This function is deprecated. All import operations should use `robust-import-pipeline`.
  * This stub redirects requests to robust-import-pipeline for backward compatibility.
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 

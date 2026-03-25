@@ -2,7 +2,7 @@
  * Carrier Tracking Fetch - Secure Implementation
  * P1.1: Auth obligatoire, rate limiting, validation Zod, scoping user_id
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { authenticateUser, logSecurityEvent, checkRateLimit } from '../_shared/secure-auth.ts'
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'

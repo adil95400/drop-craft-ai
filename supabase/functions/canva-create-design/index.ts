@@ -3,7 +3,7 @@
  * Actions: create_design, list_designs, export_design, create_from_product
  * Uses CANVA_API_KEY for authentication
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
+import { createClient } from 'npm:@supabase/supabase-js@2
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

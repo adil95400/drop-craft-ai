@@ -8,7 +8,7 @@
  * - Ownership always from JWT, never from body
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { corsHeaders } from '../_shared/cors.ts';
 import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts';
 import { parseJsonValidated, z } from '../_shared/validators.ts';

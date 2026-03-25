@@ -3,7 +3,7 @@
  * Accepts base64 or URL, uploads to Cloudinary, saves metadata to product_media table.
  * Generates eager transforms: thumbnail, gallery, ads_square, ads_story + f_auto/q_auto.
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import {
   uploadToCloudinary,
   getOptimizedUrl,
