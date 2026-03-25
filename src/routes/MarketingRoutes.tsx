@@ -37,6 +37,7 @@ const KeywordResearch = lazy(() => import('@/pages/KeywordResearch'));
 const RankTracker = lazy(() => import('@/pages/RankTracker'));
 const SchemaGenerator = lazy(() => import('@/pages/SchemaGenerator'));
 const MultilingualSEOPage = lazy(() => import('@/pages/seo/MultilingualSEOPage'));
+const SEOContentHubPage = lazy(() => import('@/pages/seo/SEOContentHubPage'));
 
 export function MarketingRoutes() {
   return (
