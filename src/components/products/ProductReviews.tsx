@@ -49,6 +49,8 @@ export function ProductReviews({ productId, sourceUrl }: ProductReviewsProps) {
   const [isScraping, setIsScraping] = useState(false)
   const [showScrapeInput, setShowScrapeInput] = useState(false)
   const [scrapeUrlInput, setScrapeUrlInput] = useState(sourceUrl || '')
+  const [isGeneratingName, setIsGeneratingName] = useState(false)
+  const [isGeneratingComment, setIsGeneratingComment] = useState(false)
 
   // New review form
   const [newReview, setNewReview] = useState({
