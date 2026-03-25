@@ -67,7 +67,7 @@ interface ProductSuppliersPanelProps {
 
 interface ProductVariant {
   id: string
-  variant_name: string | null
+  name: string | null
   sku: string | null
   price: number | null
   stock_quantity: number | null
