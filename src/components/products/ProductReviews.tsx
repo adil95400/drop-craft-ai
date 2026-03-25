@@ -115,7 +115,41 @@ export function ProductReviews({ productId, sourceUrl }: ProductReviewsProps) {
       toast({ title: 'Erreur', description: error.message, variant: 'destructive' })
     } finally {
       setIsSubmitting(false)
+  }
+
+  const generateWithAI = async (field: 'author' | 'text') => {
+    const setter = field === 'author' ? setIsGeneratingName : setIsGeneratingComment
+    setter(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const prompt = field === 'author'
+        ? `Génère un nom de client réaliste (prénom + nom) pour un avis produit e-commerce. Le pays est: ${newReview.country || 'France'}. Réponds UNIQUEMENT avec le nom, rien d'autre.`
+        : `Génère un avis client réaliste de 2-4 phrases pour un produit e-commerce avec une note de ${newReview.rating}/5. Le ton doit être naturel et authentique, comme un vrai acheteur. ${newReview.rating >= 4 ? 'Avis positif.' : newReview.rating <= 2 ? 'Avis négatif constructif.' : 'Avis mitigé.'} Réponds UNIQUEMENT avec le texte de l'avis.`
+
+      const { data, error } = await supabase.functions.invoke('unified-ai/optimize-product', {
+        body: {
+          productId,
+          optimizationType: 'custom',
+          customPrompt: prompt,
+          language: 'fr',
+        },
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+      })
+
+      if (error) throw error
+
+      const generated = data?.result || data?.content || data?.generated_content || ''
+      if (generated) {
+        setNewReview(p => ({ ...p, [field]: generated.trim().replace(/^["']|["']$/g, '') }))
+      } else {
+        throw new Error('Pas de contenu généré')
+      }
+    } catch (e: any) {
+      toast({ title: 'Erreur IA', description: e.message || 'Impossible de générer', variant: 'destructive' })
+    } finally {
+      setter(false)
     }
+  }
   }
 
   const handleDeleteReview = async (reviewId: string) => {
