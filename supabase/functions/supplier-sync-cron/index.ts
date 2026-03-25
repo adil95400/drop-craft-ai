@@ -278,6 +278,9 @@ async function tryFallback(
   await supabase.from("supplier_products")
     .update({ is_primary: true }).eq("id", best.id);
 
+  // Sync fallback to product_supplier_links
+  await syncFallbackToLinks(supabase, userId, product.product_id, product.supplier_id, best.supplier_id);
+
   // Update catalog product cost_price
   await supabase.from("products")
     .update({ cost_price: best.price, status: "active" })
