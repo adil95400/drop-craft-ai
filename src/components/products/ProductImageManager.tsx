@@ -6,16 +6,19 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useProductImages } from '@/hooks/useProductImages'
-import { Loader2, Upload, Image as ImageIcon, Trash2, Star, Eye, Download, Link as LinkIcon, Plus, GripVertical } from 'lucide-react'
+import { Loader2, Upload, Image as ImageIcon, Trash2, Star, Eye, Download, Link as LinkIcon, Plus, GripVertical, Globe, Search } from 'lucide-react'
+import { supabase } from '@/integrations/supabase/client'
+import { toast } from 'sonner'
 import { useDropzone } from 'react-dropzone'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 interface ProductImageManagerProps {
   productId: string
+  sourceUrl?: string
 }
 
-export function ProductImageManager({ productId }: ProductImageManagerProps) {
+export function ProductImageManager({ productId, sourceUrl }: ProductImageManagerProps) {
   const { 
     images, isLoading, addImage, deleteImage, setPrimaryImage, uploadImage, isAdding, isDeleting 
   } = useProductImages(productId)
@@ -25,6 +28,35 @@ export function ProductImageManager({ productId }: ProductImageManagerProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [urlInput, setUrlInput] = useState('')
   const [showUrlInput, setShowUrlInput] = useState(false)
+  const [isScraping, setIsScraping] = useState(false)
+  const [scrapeUrlInput, setScrapeUrlInput] = useState(sourceUrl || '')
+  const [showScrapeInput, setShowScrapeInput] = useState(false)
+
+  const handleScrapeImages = async (scrapeUrl?: string) => {
+    const targetUrl = scrapeUrl || scrapeUrlInput || sourceUrl
+    if (!targetUrl) {
+      setShowScrapeInput(true)
+      return
+    }
+    setIsScraping(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const { data, error } = await supabase.functions.invoke('scrape-product-media', {
+        body: { url: targetUrl, productId, scrapeType: 'images' },
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+      })
+      if (error) throw error
+      const count = data?.scraped?.images || 0
+      toast.success(`${count} image${count > 1 ? 's' : ''} scrapée${count > 1 ? 's' : ''} avec succès`)
+      // Reload images
+      window.location.reload()
+    } catch (e: any) {
+      toast.error(`Erreur de scraping: ${e.message || 'Échec'}`)
+    } finally {
+      setIsScraping(false)
+      setShowScrapeInput(false)
+    }
+  }
 
   const formatFileSize = (bytes: number | undefined): string => {
     if (!bytes || bytes === 0) return '—'
@@ -99,6 +131,16 @@ export function ProductImageManager({ productId }: ProductImageManagerProps) {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => sourceUrl ? handleScrapeImages() : setShowScrapeInput(!showScrapeInput)} 
+            className="gap-2"
+            disabled={isScraping}
+          >
+            {isScraping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+            Scraper images
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowUrlInput(!showUrlInput)} className="gap-2">
             <LinkIcon className="h-4 w-4" />
             URL
@@ -121,6 +163,31 @@ export function ProductImageManager({ productId }: ProductImageManagerProps) {
           </label>
         </div>
       </div>
+
+      {/* Scrape URL Input */}
+      {showScrapeInput && !sourceUrl && (
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="https://aliexpress.com/item/... ou URL du produit source"
+                  value={scrapeUrlInput}
+                  onChange={(e) => setScrapeUrlInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleScrapeImages()}
+                />
+                <Button onClick={() => handleScrapeImages()} disabled={!scrapeUrlInput.trim() || isScraping}>
+                  {isScraping ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
+                  Scraper
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Collez l'URL du produit source (AliExpress, Amazon, Shopify...) pour extraire automatiquement les images
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* URL Input */}
       {showUrlInput && (

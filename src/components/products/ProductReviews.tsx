@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { 
   Star, ThumbsUp, MessageCircle, Flag, Plus,
-  Loader2, Trash2, CheckCircle
+  Loader2, Trash2, CheckCircle, Globe, Search
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { getDateFnsLocale } from '@/utils/dateFnsLocale'
@@ -33,9 +33,10 @@ interface Review {
 
 interface ProductReviewsProps {
   productId: string
+  sourceUrl?: string
 }
 
-export function ProductReviews({ productId }: ProductReviewsProps) {
+export function ProductReviews({ productId, sourceUrl }: ProductReviewsProps) {
   const { toast } = useToast()
   const { user } = useAuth()
   const [reviews, setReviews] = useState<Review[]>([])
@@ -45,6 +46,9 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [filterRating, setFilterRating] = useState<number | null>(null)
+  const [isScraping, setIsScraping] = useState(false)
+  const [showScrapeInput, setShowScrapeInput] = useState(false)
+  const [scrapeUrlInput, setScrapeUrlInput] = useState(sourceUrl || '')
 
   // New review form
   const [newReview, setNewReview] = useState({
@@ -127,6 +131,31 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
     }
   }
 
+  const handleScrapeReviews = async (scrapeUrl?: string) => {
+    const targetUrl = scrapeUrl || scrapeUrlInput || sourceUrl
+    if (!targetUrl) {
+      setShowScrapeInput(true)
+      return
+    }
+    setIsScraping(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const { data, error } = await supabase.functions.invoke('scrape-product-media', {
+        body: { url: targetUrl, productId, scrapeType: 'reviews' },
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+      })
+      if (error) throw error
+      const count = data?.scraped?.reviews || 0
+      toast({ title: `${count} avis scrapé${count > 1 ? 's' : ''} avec succès` })
+      loadReviews()
+      setShowScrapeInput(false)
+    } catch (e: any) {
+      toast({ title: 'Erreur de scraping', description: e.message || 'Échec', variant: 'destructive' })
+    } finally {
+      setIsScraping(false)
+    }
+  }
+
   const filteredReviews = filterRating
     ? reviews.filter(r => r.rating === filterRating)
     : reviews
@@ -172,11 +201,45 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
           <h3 className="text-lg font-semibold">Avis Clients</h3>
           <p className="text-sm text-muted-foreground">{stats.total} avis au total</p>
         </div>
-        <Button onClick={() => setShowAddForm(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Ajouter un avis
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => sourceUrl ? handleScrapeReviews() : setShowScrapeInput(!showScrapeInput)} 
+            className="gap-2"
+            disabled={isScraping}
+          >
+            {isScraping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+            Scraper des avis
+          </Button>
+          <Button onClick={() => setShowAddForm(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Ajouter un avis
+          </Button>
+        </div>
       </div>
+
+      {/* Scrape URL Input */}
+      {showScrapeInput && !sourceUrl && (
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="https://aliexpress.com/item/... ou URL du produit"
+                value={scrapeUrlInput}
+                onChange={(e) => setScrapeUrlInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleScrapeReviews()}
+              />
+              <Button onClick={() => handleScrapeReviews()} disabled={!scrapeUrlInput.trim() || isScraping}>
+                {isScraping ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
+                Scraper
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Collez l'URL du produit source pour extraire automatiquement les avis clients via l'IA
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Card */}
       <Card>
