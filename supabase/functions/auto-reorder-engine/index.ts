@@ -47,6 +47,7 @@ Deno.serve(async (req) => {
       process_queue: () => handleProcessQueue(supabase),
       update_tracking: () => handleUpdateTracking(supabase),
       get_tracking: () => handleGetTracking(supabase, body),
+      reconcile: () => handleReconciliation(supabase),
     };
 
     const handler = handlers[action];
