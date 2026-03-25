@@ -3,7 +3,7 @@
  * P0.1: Parses XML/JSON feed then delegates to unified pipeline.
  * Writes to canonical `products` table via pipeline (not `imported_products`).
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

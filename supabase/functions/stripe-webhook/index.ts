@@ -3,9 +3,8 @@
  * SECURITY: Uses signature verification (not JWT)
  * P0.4 FIX: Webhooks don't need CORS * since they're server-to-server
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import Stripe from "npm:stripe@14";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 // Webhooks are server-to-server, no CORS needed for browsers
 // But we still handle OPTIONS for any edge cases
@@ -22,7 +21,7 @@ const logStep = (step: string, details?: any) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${safeDetails ? ` - ${JSON.stringify(safeDetails)}` : ''}`);
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Webhooks shouldn't receive browser CORS preflight, but handle just in case
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204 });

@@ -2,9 +2,8 @@
  * Check Renewal Alerts - Checks Stripe subscriptions and sends renewal notifications
  * Can be called by cron or manually by user
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import Stripe from "npm:stripe@14";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts';
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
@@ -18,7 +17,7 @@ const ALERT_THRESHOLDS = [
   { key: '1_day', days: 1, label: '1 jour' },
 ];
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const preflight = handleCorsPreflightSecure(req);
   if (preflight) return preflight;
 

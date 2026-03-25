@@ -7,8 +7,7 @@
  * - No user authentication needed (webhook from CJ servers)
  * - Signature verification recommended when CJ provides it
  */
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 
 // Minimal CORS for webhooks (server-to-server)
 const webhookHeaders = {
@@ -41,7 +40,7 @@ const ALLOWED_MESSAGE_TYPES = new Set([
   'ORDER_CONNECTED'
 ]);
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Webhooks should only accept POST
   if (req.method !== 'POST') {
     return new Response(

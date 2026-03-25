@@ -2,8 +2,7 @@
  * Send Email Campaign - Secure Implementation
  * P1.1: Auth obligatoire, rate limiting, validation Zod, scoping user_id
  */
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { authenticateUser, logSecurityEvent, checkRateLimit } from '../_shared/secure-auth.ts'
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
@@ -20,7 +19,7 @@ const RequestSchema = z.object({
   sendNow: z.boolean().optional().default(true)
 })
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(req)
   
   if (req.method === 'OPTIONS') {

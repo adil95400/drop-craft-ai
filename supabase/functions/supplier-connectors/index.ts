@@ -9,8 +9,7 @@
  * 4. All DB queries scoped by authenticated user_id
  */
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts"
 
 import { authenticateUser } from "../_shared/secure-auth.ts"
@@ -224,7 +223,7 @@ function createServiceClient() {
 // MAIN HANDLER
 // ============================================
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // CORS preflight - secure handling
   if (req.method === 'OPTIONS') {
     return handleCorsPreflightSecure(req);

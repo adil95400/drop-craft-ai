@@ -3,7 +3,7 @@
  * P0.1: All import logic delegates to the unified pipeline.
  * Auth is validated here, then forwarded via service call.
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { authenticateUser, logSecurityEvent, checkRateLimit } from '../_shared/secure-auth.ts'
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'

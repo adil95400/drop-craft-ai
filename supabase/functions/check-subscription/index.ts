@@ -6,9 +6,9 @@
  * their own plan column. The auth check itself uses getClaims() (no round-trip).
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { getSecureCorsHeaders } from '../_shared/cors.ts'
-import Stripe from 'https://esm.sh/stripe@18.5.0'
+import Stripe from 'npm:stripe@14
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!

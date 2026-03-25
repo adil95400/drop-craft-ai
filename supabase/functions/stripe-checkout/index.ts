@@ -2,9 +2,8 @@
  * Stripe Checkout - Secure Edge Function
  * SECURITY: JWT authentication + rate limiting + input validation
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import Stripe from "npm:stripe@14";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts';
 import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts';
 import { parseJsonValidated, z } from '../_shared/validators.ts';
@@ -25,7 +24,7 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[STRIPE-CHECKOUT] ${step}${safeDetails ? ` - ${JSON.stringify(safeDetails)}` : ''}`);
 };
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     const corsHeaders = getSecureCorsHeaders(req);
     if (req.method === "OPTIONS") {

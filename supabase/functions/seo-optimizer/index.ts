@@ -1,7 +1,7 @@
 /**
  * SEO Optimizer — Migrated to shared ai-client.ts with retry + cache
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { generateJSON } from '../_shared/ai-client.ts'
 
 const corsHeaders = {

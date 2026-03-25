@@ -2,8 +2,7 @@
  * Manage Referrals - CRUD + apply referral code
  * Actions: generate_code, apply_code, get_stats, complete_referral
  */
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts';
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
@@ -19,7 +18,7 @@ function generateCode(length = 8): string {
   return code;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const preflight = handleCorsPreflightSecure(req);
   if (preflight) return preflight;
 

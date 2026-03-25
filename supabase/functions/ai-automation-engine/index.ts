@@ -5,11 +5,10 @@
  * P0.6: Rate limiting per user
  */
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, handleCorsPreflightSecure, isAllowedOrigin } from '../_shared/secure-cors.ts';
 import { checkRateLimit } from '../_shared/rate-limiter.ts';
-import { z } from 'https://esm.sh/zod@3.22.4';
+import { z } from 'npm:zod@3.22.4';
 
 import { callOpenAI } from '../_shared/ai-client.ts';
 
@@ -42,7 +41,7 @@ async function authenticateUser(req: Request) {
   return { user, supabase };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(req);
   
   if (req.method === 'OPTIONS') {

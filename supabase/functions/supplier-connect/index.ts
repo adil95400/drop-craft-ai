@@ -9,8 +9,7 @@
  * - Supplier ID allowlist
  * - No sensitive data logging
  */
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 
 // Secure CORS configuration
 const ALLOWED_ORIGINS = [
@@ -59,7 +58,7 @@ interface SupplierConnectRequest {
   settings?: Record<string, unknown>;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   
   if (req.method === 'OPTIONS') {

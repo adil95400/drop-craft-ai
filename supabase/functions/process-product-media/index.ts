@@ -7,7 +7,7 @@
  * - reprocess: Re-upload and process a failed media
  * - get_status: Get processing status for a product's media
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import {
   uploadToCloudinary,
   getOptimizedUrl,

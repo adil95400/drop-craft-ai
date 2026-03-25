@@ -3,8 +3,7 @@
  * Exécuté par un cron ou manuellement pour maintenir les données à jour
  */
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts'
 
 interface SyncResult {
@@ -169,7 +168,7 @@ const platformSyncers: Record<string, (supabase: any, channel: any) => Promise<S
   }
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight
   const preflightResponse = handleCorsPreflightSecure(req)
   if (preflightResponse) return preflightResponse

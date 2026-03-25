@@ -3,7 +3,7 @@
  * P0.1: JWT authentication required
  * P0.2: Users can only check their own plan (or admins for any)
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { corsHeaders } from '../_shared/cors.ts'
 import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts'
 import { parseJsonValidated, z } from '../_shared/validators.ts'

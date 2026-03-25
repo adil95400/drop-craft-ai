@@ -4,8 +4,7 @@
  * P0.5 FIX: userId derived from JWT, not from body
  * P1: Rate limiting and input validation
  */
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 
 // Secure CORS configuration
 const ALLOWED_ORIGINS = [
@@ -28,7 +27,7 @@ function getSecureCorsHeaders(origin: string | null): Record<string, string> {
   return headers;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const origin = req.headers.get('Origin');
   const corsHeaders = getSecureCorsHeaders(origin);
   

@@ -4,7 +4,7 @@
  */
 
 import { createEdgeFunction, z } from '../_shared/create-edge-function.ts'
-import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
+import type { SupabaseClient } from 'npm:@supabase/supabase-js@2
 
 // Input schema for supplier sync
 const syncRequestSchema = z.object({

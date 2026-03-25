@@ -1,9 +1,8 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { handlePreflight, requireAuth, errorResponse, successResponse } from '../_shared/jwt-auth.ts'
 
 const ALLOWED_ACTIONS = new Set(['process', 'check_rules'])
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const preflight = handlePreflight(req)
   if (preflight) return preflight
 

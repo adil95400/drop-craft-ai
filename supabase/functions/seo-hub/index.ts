@@ -4,8 +4,7 @@
  * 
  * Actions: audit, optimize, generate, fix, issues, translate, score
  */
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -18,7 +17,7 @@ async function callAI(system: string, prompt: string) {
   } catch { return null; }
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(req)
 
   if (req.method === 'OPTIONS') {

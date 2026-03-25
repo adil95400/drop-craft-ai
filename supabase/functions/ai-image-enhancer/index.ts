@@ -5,8 +5,7 @@
  * P0.6: Rate limiting per user
  * P0.7: SSRF protection for image URLs
  */
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { callOpenAI, generateJSON, generateText } from '../_shared/ai-client.ts'
 
 // ============ SECURE CORS ============
@@ -132,7 +131,7 @@ const ALLOWED_ENHANCEMENT_TYPES = new Set([
   'upscale'
 ]);
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(req);
   
   if (req.method === 'OPTIONS') {

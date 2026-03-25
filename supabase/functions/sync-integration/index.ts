@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
+import { createClient } from "npm:@supabase/supabase-js@2"
 import { withErrorHandler, ValidationError } from "../_shared/error-handler.ts"
 import { parseJsonValidated, z } from "../_shared/validators.ts"
 
@@ -13,7 +12,7 @@ const BodySchema = z.object({
   sync_type: z.enum(['full', 'products', 'inventory', 'orders']).optional().default('full'),
 })
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders })

@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
+import Stripe from "npm:stripe@14";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getSecureCorsHeaders, handleCorsPreflightSecure, isAllowedOrigin } from '../_shared/secure-cors.ts';
 
@@ -9,7 +8,7 @@ const CREDIT_PACKS = {
   large: { credits: 500, label: "500 crédits IA", price_amount: 2999 },
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(req);
   if (req.method === "OPTIONS") {
     return handleCorsPreflightSecure(req);

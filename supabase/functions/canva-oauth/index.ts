@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 
 const supabaseClient = createClient(
@@ -12,7 +11,7 @@ const CANVA_CLIENT_ID = Deno.env.get('CANVA_CLIENT_ID');
 const CANVA_CLIENT_SECRET = Deno.env.get('CANVA_CLIENT_SECRET');
 const CANVA_API_BASE = 'https://api.canva.com/rest/v1';
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

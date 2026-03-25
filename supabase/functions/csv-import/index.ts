@@ -3,8 +3,8 @@
  * P0.1: Parses CSV then delegates item processing to unified pipeline.
  * Writes to canonical `products` table via pipeline (not `imported_products`).
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { parse } from 'https://deno.land/std@0.181.0/encoding/csv.ts'
+import { createClient } from 'npm:@supabase/supabase-js@2
+// CSV parse removed - use manual parsing
 import { authenticateUser, logSecurityEvent, checkRateLimit } from '../_shared/secure-auth.ts'
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 

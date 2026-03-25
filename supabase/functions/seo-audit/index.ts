@@ -3,7 +3,6 @@
  * Handles: create audit, get audit, list audits, list pages, list issues, export
  * SECURITY: JWT auth + user scoping
  */
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts';
 import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts';
@@ -25,7 +24,7 @@ const CreateAuditSchema = z.object({
   store_id: z.string().uuid().optional().nullable(),
 });
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     const preflight = handleCorsPreflightSecure(req);
     if (preflight) return preflight;

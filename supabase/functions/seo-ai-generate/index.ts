@@ -4,7 +4,6 @@
  * SECURITY: JWT auth + user scoping + quota tracking
  * UNIFIED: Writes to `jobs` table (not background_jobs)
  */
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/cors.ts';
 import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts';
@@ -20,7 +19,7 @@ const GenerateSchema = z.object({
   variants: z.number().int().min(1).max(5).default(3),
 });
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     const preflight = handleCorsPreflightSecure(req);
     if (preflight) return preflight;

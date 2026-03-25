@@ -1,5 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2
 import { withErrorHandler, ValidationError } from '../_shared/error-handler.ts'
 import { parseJsonValidated, z } from '../_shared/validators.ts'
 
@@ -68,7 +67,7 @@ async function fetchB2BProducts(userKey: string, authKey: string, page = 1, limi
   return await response.json()
 }
 
-serve(
+Deno.serve(
   withErrorHandler(async (req) => {
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders })
