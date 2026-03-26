@@ -751,7 +751,72 @@ export default function ProductDetailsPage() {
             </CardContent>
           </Card>
 
-          {/* QUICK METRICS */}
+          {/* SUPPLIER QUICK INFO */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Truck className="h-4 w-4" /> Fournisseur
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">Principal</Label>
+                <p className="text-sm mt-0.5 font-medium">
+                  {(product as any).supplier_name || (product as any).vendor || <span className="text-muted-foreground italic">Non assigné</span>}
+                </p>
+              </div>
+              {product.source_url && (
+                <>
+                  <Separator />
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Source</Label>
+                    <a href={product.source_url} target="_blank" rel="noopener noreferrer" 
+                      className="text-xs text-primary hover:underline flex items-center gap-1 mt-0.5 truncate">
+                      <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                      {new URL(product.source_url).hostname}
+                    </a>
+                  </div>
+                </>
+              )}
+              <Separator />
+              <Button variant="outline" size="sm" className="w-full text-xs gap-1.5" onClick={() => setActiveTab('suppliers')}>
+                <Truck className="h-3 w-3" /> Gérer les fournisseurs
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* MULTI-CHANNEL QUICK */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Globe className="h-4 w-4" /> Multi-canal
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Google Shopping</span>
+                <Badge variant={product.category && product.image_url ? "default" : "secondary"} className="text-[10px]">
+                  {product.category && product.image_url ? '✓ Prêt' : 'Incomplet'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Meta Commerce</span>
+                <Badge variant={product.image_url && product.description ? "default" : "secondary"} className="text-[10px]">
+                  {product.image_url && product.description ? '✓ Prêt' : 'Incomplet'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Amazon</span>
+                <Badge variant={product.sku && product.category ? "default" : "secondary"} className="text-[10px]">
+                  {product.sku && product.category ? '✓ Prêt' : 'Incomplet'}
+                </Badge>
+              </div>
+              <Button variant="outline" size="sm" className="w-full text-xs gap-1.5 mt-1" onClick={() => setActiveTab('channels')}>
+                <Globe className="h-3 w-3" /> Voir la compatibilité
+              </Button>
+            </CardContent>
+          </Card>
+
           <Card className="shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
