@@ -13,3 +13,8 @@ export { default as CatalogHealthPage } from './CatalogHealthPage'
 
 // Page legacy (intelligence catalogue)
 export { default as CatalogIntelligencePage } from './CatalogIntelligencePage'
+
+// Nouvelles pages audit
+export { default as CatalogDashboardPage } from './CatalogDashboardPage'
+export { default as PricingEnginePage } from './PricingEnginePage'
+export { default as SupplierSyncPage } from './SupplierSyncPage'

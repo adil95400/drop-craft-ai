@@ -14,6 +14,9 @@ const AttributesPage = lazy(() => import('@/pages/catalog/AttributesPage'));
 const CategoriesBrandsPage = lazy(() => import('@/pages/catalog/CategoriesBrandsPage'));
 const CatalogHealthPage = lazy(() => import('@/pages/catalog/CatalogHealthPage'));
 const ImageDeduplicationPage = lazy(() => import('@/pages/catalog/ImageDeduplicationPage'));
+const CatalogDashboardPage = lazy(() => import('@/pages/catalog/CatalogDashboardPage'));
+const PricingEnginePage = lazy(() => import('@/pages/catalog/PricingEnginePage'));
+const SupplierSyncPage = lazy(() => import('@/pages/catalog/SupplierSyncPage'));
 
 // Composant de chargement
 const CatalogLoadingSkeleton = () => (
@@ -44,6 +47,9 @@ export function CatalogRoutes() {
         <Route path="health" element={<CatalogHealthPage />} />
         <Route path="image-dedup" element={<ImageDeduplicationPage />} />
         <Route path="image-deduplication" element={<ImageDeduplicationPage />} />
+        <Route path="dashboard" element={<CatalogDashboardPage />} />
+        <Route path="pricing-engine" element={<PricingEnginePage />} />
+        <Route path="supplier-sync" element={<SupplierSyncPage />} />
         
         {/* Redirections legacy */}
         <Route path="*" element={<Navigate to="/catalog/to-process" replace />} />
