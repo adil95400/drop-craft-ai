@@ -1,2596 +1,422 @@
 import { createClient } from "npm:@supabase/supabase-js@2"
-
 import { getSecureCorsHeaders, handleCorsPreflightSecure } from '../_shared/secure-cors.ts'
 
-// Détecte le type de plateforme à partir de l'URL
 function detectPlatform(url: string): { platform: string; productId: string | null } {
-  const urlLower = url.toLowerCase()
-  
-  // AliExpress
-  if (urlLower.includes('aliexpress.com') || urlLower.includes('aliexpress.fr') || urlLower.includes('aliexpress.us') || urlLower.includes('ali.ski') || urlLower.includes('s.click.aliexpress')) {
-    const match = url.match(/item\/(\d+)\.html/) || url.match(/\/(\d+)\.html/) || url.match(/productId=(\d+)/) || url.match(/item\/(\d+)/)
-    return { platform: 'aliexpress', productId: match?.[1] || null }
-  }
-  
-  // Amazon (toutes régions)
-  if (urlLower.includes('amazon.')) {
-    const match = url.match(/\/dp\/([A-Z0-9]+)/i) || url.match(/\/gp\/product\/([A-Z0-9]+)/i) || url.match(/\/product\/([A-Z0-9]+)/i) || url.match(/asin=([A-Z0-9]+)/i)
-    return { platform: 'amazon', productId: match?.[1] || null }
-  }
-  
-  // eBay
-  if (urlLower.includes('ebay.')) {
-    const match = url.match(/\/itm\/(\d+)/) || url.match(/item=(\d+)/) || url.match(/itm\/[^\/]+\/(\d+)/)
-    return { platform: 'ebay', productId: match?.[1] || null }
-  }
-  
-  // Temu
-  if (urlLower.includes('temu.com') || urlLower.includes('share.temu')) {
-    const match = url.match(/goods\/(\d+)/) || url.match(/g-(\d+)/) || url.match(/goods_id=(\d+)/)
-    return { platform: 'temu', productId: match?.[1] || null }
-  }
-  
-  // Wish
-  if (urlLower.includes('wish.com')) {
-    const match = url.match(/product\/([a-zA-Z0-9]+)/) || url.match(/c\/([a-zA-Z0-9]+)/)
-    return { platform: 'wish', productId: match?.[1] || null }
-  }
-  
-  // CJ Dropshipping
-  if (urlLower.includes('cjdropshipping.com') || urlLower.includes('cjdrop')) {
-    const match = url.match(/product\/([^\/\?]+)/) || url.match(/pid=([^&]+)/)
-    return { platform: 'cjdropshipping', productId: match?.[1] || null }
-  }
-  
-  // BigBuy
-  if (urlLower.includes('bigbuy.eu') || urlLower.includes('bigbuy.com')) {
-    const match = url.match(/\/([^\/]+)\.html/) || url.match(/sku=([^&]+)/)
-    return { platform: 'bigbuy', productId: match?.[1] || null }
-  }
-  
-  // Banggood
-  if (urlLower.includes('banggood.com')) {
-    const match = url.match(/-p-(\d+)\.html/) || url.match(/products\/(\d+)/)
-    return { platform: 'banggood', productId: match?.[1] || null }
-  }
-  
-  // DHgate
-  if (urlLower.includes('dhgate.com')) {
-    const match = url.match(/product\/([^\/\.]+)/) || url.match(/\/(\d+)\.html/)
-    return { platform: 'dhgate', productId: match?.[1] || null }
-  }
-  
-  // Shein
-  if (urlLower.includes('shein.com') || urlLower.includes('shein.fr')) {
-    const match = url.match(/-p-(\d+)/) || url.match(/productId=(\d+)/)
-    return { platform: 'shein', productId: match?.[1] || null }
-  }
-  
-  // Shopify stores (generic detection) - Also check for .myshopify.com domains
-  if ((urlLower.includes('/products/') || urlLower.includes('.myshopify.com')) && !urlLower.includes('amazon') && !urlLower.includes('ebay') && !urlLower.includes('aliexpress')) {
-    const match = url.match(/\/products\/([^\/\?#]+)/)
-    return { platform: 'shopify', productId: match?.[1] || null }
-  }
-  
-  // WooCommerce (generic detection)
-  if (urlLower.includes('/product/') && !urlLower.includes('amazon') && !urlLower.includes('ebay')) {
-    const match = url.match(/\/product\/([^\/\?]+)/)
-    return { platform: 'woocommerce', productId: match?.[1] || null }
-  }
-  
-  // Etsy
-  if (urlLower.includes('etsy.com')) {
-    const match = url.match(/listing\/(\d+)/)
-    return { platform: 'etsy', productId: match?.[1] || null }
-  }
-  
-  // Made in China
-  if (urlLower.includes('made-in-china.com')) {
-    const match = url.match(/product\/([^\/\?]+)/)
-    return { platform: 'made-in-china', productId: match?.[1] || null }
-  }
-  
-  // Walmart
-  if (urlLower.includes('walmart.com')) {
-    const match = url.match(/\/ip\/[^\/]+\/(\d+)/) || url.match(/\/(\d+)\?/)
-    return { platform: 'walmart', productId: match?.[1] || null }
-  }
-  
-  // Cdiscount
-  if (urlLower.includes('cdiscount.com')) {
-    // URL patterns: /f-xxx.html, /mp-xxx.html, /fpd/xxx.html
-    const match = url.match(/\/([mf]p?d?)-([^\/\.]+)\.html/i) || 
-                  url.match(/\/dp\/([^\/\?]+)/) ||
-                  url.match(/productId=([^&]+)/)
-    return { platform: 'cdiscount', productId: match?.[2] || match?.[1] || null }
-  }
-  
-  // Fnac
-  if (urlLower.includes('fnac.com')) {
-    const match = url.match(/\/a(\d+)\//) || url.match(/\/(\d+)\.aspx/)
-    return { platform: 'fnac', productId: match?.[1] || null }
-  }
-  
-  // Rakuten
-  if (urlLower.includes('rakuten.com') || urlLower.includes('rakuten.fr')) {
-    const match = url.match(/\/product\/(\d+)/) || url.match(/\/offer\/buy\/(\d+)/)
-    return { platform: 'rakuten', productId: match?.[1] || null }
-  }
-  
-  // Darty
-  if (urlLower.includes('darty.com')) {
-    const match = url.match(/\/([^\/]+)_([^\/]+)\.html/) || url.match(/fp\/(\d+)/)
-    return { platform: 'darty', productId: match?.[2] || match?.[1] || null }
-  }
-  
-  // Boulanger
-  if (urlLower.includes('boulanger.com')) {
-    const match = url.match(/ref\/(\d+)/) || url.match(/\/c(\d+)/)
-    return { platform: 'boulanger', productId: match?.[1] || null }
-  }
-  
-  // Home Depot
-  if (urlLower.includes('homedepot.com')) {
-    const match = url.match(/\/p\/[^\/]+\/(\d+)/) || url.match(/\/(\d+)$/)
-    return { platform: 'homedepot', productId: match?.[1] || null }
-  }
-  
-  // Lowe's
-  if (urlLower.includes('lowes.com')) {
-    const match = url.match(/\/pd\/[^\/]+\/(\d+)/) || url.match(/\/productId=(\d+)/)
-    return { platform: 'lowes', productId: match?.[1] || null }
-  }
-  
-  // Costco
-  if (urlLower.includes('costco.com')) {
-    const match = url.match(/\.product\.(\d+)\.html/) || url.match(/productId=(\d+)/)
-    return { platform: 'costco', productId: match?.[1] || null }
-  }
-  
-  // Manomano
-  if (urlLower.includes('manomano.')) {
-    const match = url.match(/\/p\/([^\/\?]+)/) || url.match(/\/(\d+)$/)
-    return { platform: 'manomano', productId: match?.[1] || null }
-  }
-  
-  // Leroy Merlin
-  if (urlLower.includes('leroymerlin.')) {
-    const match = url.match(/\/p\/[^\/]+-(\d+)\.html/) || url.match(/\/(\d+)\.html/)
-    return { platform: 'leroymerlin', productId: match?.[1] || null }
-  }
-  
+  const u = url.toLowerCase()
+  const m = (patterns: RegExp[]) => { for (const p of patterns) { const r = url.match(p); if (r) return r[1] || null } return null }
+  if (u.includes('aliexpress.') || u.includes('ali.ski')) return { platform: 'aliexpress', productId: m([/item\/(\d+)/, /\/(\d+)\.html/, /productId=(\d+)/]) }
+  if (u.includes('amazon.')) return { platform: 'amazon', productId: m([/\/dp\/([A-Z0-9]+)/i, /\/gp\/product\/([A-Z0-9]+)/i, /asin=([A-Z0-9]+)/i]) }
+  if (u.includes('ebay.')) return { platform: 'ebay', productId: m([/\/itm\/(\d+)/, /item=(\d+)/, /itm\/[^\/]+\/(\d+)/]) }
+  if (u.includes('temu.com') || u.includes('share.temu')) return { platform: 'temu', productId: m([/goods\/(\d+)/, /g-(\d+)/]) }
+  if (u.includes('wish.com')) return { platform: 'wish', productId: m([/product\/([a-zA-Z0-9]+)/]) }
+  if (u.includes('cjdropshipping.com')) return { platform: 'cjdropshipping', productId: m([/product\/([^\/\?]+)/]) }
+  if (u.includes('bigbuy.')) return { platform: 'bigbuy', productId: m([/\/([^\/]+)\.html/, /sku=([^&]+)/]) }
+  if (u.includes('banggood.com')) return { platform: 'banggood', productId: m([/-p-(\d+)\.html/]) }
+  if (u.includes('dhgate.com')) return { platform: 'dhgate', productId: m([/product\/([^\/\.]+)/]) }
+  if (u.includes('shein.com') || u.includes('shein.fr')) return { platform: 'shein', productId: m([/-p-(\d+)/]) }
+  if (u.includes('etsy.com')) return { platform: 'etsy', productId: m([/listing\/(\d+)/]) }
+  if (u.includes('walmart.com')) return { platform: 'walmart', productId: m([/\/ip\/[^\/]+\/(\d+)/]) }
+  if (u.includes('cdiscount.com')) return { platform: 'cdiscount', productId: m([/\/dp\/([^\/\?]+)/]) }
+  if (u.includes('fnac.com')) return { platform: 'fnac', productId: m([/\/a(\d+)\//]) }
+  if (u.includes('rakuten.')) return { platform: 'rakuten', productId: m([/\/product\/(\d+)/]) }
+  if ((u.includes('/products/') || u.includes('.myshopify.com')) && !u.includes('amazon') && !u.includes('ebay')) return { platform: 'shopify', productId: m([/\/products\/([^\/\?#]+)/]) }
+  if (u.includes('/product/') && !u.includes('amazon') && !u.includes('ebay')) return { platform: 'woocommerce', productId: m([/\/product\/([^\/\?]+)/]) }
   return { platform: 'unknown', productId: null }
 }
 
 function canonicalizeAmazonUrl(url: string, asin: string | null): string {
   if (!asin) return url
-  // Prefer canonical dp URL; keep basic params to show correct variant
-  const u = new URL(url)
-  const base = `${u.protocol}//${u.host}/dp/${asin}`
-  const params = new URLSearchParams()
-  if (u.searchParams.get('th')) params.set('th', u.searchParams.get('th')!)
-  if (u.searchParams.get('psc')) params.set('psc', u.searchParams.get('psc')!)
-  // Some mobile links use "?th=1&psc=1" to surface variations
-  if (!params.has('th')) params.set('th', '1')
-  if (!params.has('psc')) params.set('psc', '1')
-  return `${base}?${params.toString()}`
+  try { const u = new URL(url); return `${u.protocol}//${u.host}/dp/${asin}?th=1&psc=1` } catch { return url }
 }
 
-function isBlockedOrErrorHtml(html: string): boolean {
+function isBlocked(html: string): boolean {
   const h = html.toLowerCase()
-  return (
-    h.includes('robot check') ||
-    h.includes('enter the characters you see below') ||
-    h.includes('automated access') ||
-    h.includes('captcha') ||
-    h.includes('main-frame-error') || // Chrome offline / DNS
-    h.includes('this site can\’t be reached') ||
-    h.includes('this site can\'t be reached') ||
-    h.includes('dino') && h.includes('offline')
-  )
+  return h.includes('robot check') || h.includes('enter the characters you see below') || h.includes('captcha') || h.includes('automated access')
 }
 
-function isUsableMarkdown(markdown: string): boolean {
-  if (!markdown || markdown.length < 500) return false
-  const m = markdown.toLowerCase()
-  return (
-    m.includes('prix') ||
-    m.includes('price') ||
-    m.includes('amazon') ||
-    m.includes('€') ||
-    m.includes('$') ||
-    m.includes('£')
-  )
-}
-
-// Extract high quality images from various sources
-function extractHQImages(html: string, platform: string, markdown: string = ''): string[] {
-  const images: string[] = []
-  const seenUrls = new Set<string>()
-  const seenAmazonImageKeys = new Set<string>()
-  const normalizeAmazonImageUrl = (url: string) => {
-    // Convert various Amazon image hosts/sizes to the cleanest possible URL.
-    let u = url
-
-    // Prefer m.media-amazon.com when we can
-    u = u.replace(
-      /^https?:\/\/images-[a-z0-9-]+\.ssl-images-amazon\.com\//i,
-      'https://m.media-amazon.com/'
-    )
-
-    // Strip query/hash
-    try {
-      const parsed = new URL(u)
-      parsed.search = ''
-      parsed.hash = ''
-      u = parsed.toString()
-    } catch {
-      // keep original
-    }
-
-    // Remove size/transform segments (keep original asset)
-    // Examples: ._AC_UL165_SR165,165_.jpg  /  ._SX679_.jpg  /  ._AC_SX679_.jpg
-    u = u
-      // generic "._SOMETHING_." pattern
-      .replace(/\._[^.]+_\./g, '.')
-      // extra safety for some AC_UL/SR shapes
-      .replace(/\._AC_UL\d+_SR\d+,\d+_\./g, '.')
-      .replace(/\._AC_UL\d+_\./g, '.')
-
-    return u
-  }
-  const addImage = (url: string) => {
-    if (!url || images.length >= 30) return
-
-    // Clean up URL
-    let cleanUrl = url.replace(/\\u002F/g, '/').replace(/\\/g, '')
-
+function extractImages(html: string, platform: string, md: string = ''): string[] {
+  const imgs: string[] = [], seen = new Set<string>(), seenKeys = new Set<string>()
+  const add = (u: string) => {
+    if (!u || imgs.length >= 20) return
+    let c = u.replace(/\\u002F/g, '/').replace(/\\/g, '')
     if (platform === 'amazon') {
-      cleanUrl = normalizeAmazonImageUrl(cleanUrl)
-
-      // De-duplicate by the underlying asset id (avoid 10 thumbnails of the same photo)
-      const m = cleanUrl.match(/\/images\/I\/([^._/]+)(?:\._[^.]+_)?\./i)
-      const key = m?.[1]
-      if (key && seenAmazonImageKeys.has(key)) return
-      if (key) seenAmazonImageKeys.add(key)
+      c = c.replace(/^https?:\/\/images-[a-z0-9-]+\.ssl-images-amazon\.com\//i, 'https://m.media-amazon.com/')
+      try { const p = new URL(c); p.search = ''; p.hash = ''; c = p.toString() } catch {}
+      c = c.replace(/\._[^.]+_\./g, '.')
+      const k = c.match(/\/images\/I\/([^._/]+)/i)?.[1]
+      if (k) { if (seenKeys.has(k)) return; seenKeys.add(k) }
+      if (/\/images\/[GS]\//i.test(c) || /prime|badge|logo|loading|placeholder|pixel|spacer|nav[_-]|header[_-]/i.test(c)) return
+      if (/[._]1x1[._]|[._]SR1,1[._]/i.test(c)) return
     }
-
-    if (!cleanUrl.startsWith('http')) return
-    if (seenUrls.has(cleanUrl)) return
-    // Filter out non-product images
-    if (cleanUrl.includes('icon') || cleanUrl.includes('sprite')) return
-    if (platform === 'amazon') {
-      // Skip Amazon UI/nav/badge/logo images
-      if (/\/images\/G\//i.test(cleanUrl)) return  // Amazon global UI assets
-      if (/\/images\/S\//i.test(cleanUrl)) return  // Amazon static UI assets  
-      if (/prime[_-]?logo|badge|banner|award|certification|stamp|trust|guarantee/i.test(cleanUrl)) return
-      if (/loading|placeholder|transparent|pixel|spacer|blank/i.test(cleanUrl)) return
-      if (/nav[_-]|header[_-]|footer[_-]|sidebar/i.test(cleanUrl)) return
-      // Skip very small utility images (1x1, 2x2, etc.)
-      if (/[._]1x1[._]|[._]2x2[._]|[._]SR1,1[._]/i.test(cleanUrl)) return
-    }
-
-    images.push(cleanUrl)
-    seenUrls.add(cleanUrl)
+    if (!c.startsWith('http') || seen.has(c) || c.includes('icon') || c.includes('sprite')) return
+    imgs.push(c); seen.add(c)
   }
-  // Platform-specific high-quality image extraction
+
   if (platform === 'amazon') {
-    console.log('🔍 Extracting Amazon images...')
-    
-    // Try colorImages JSON data first (most reliable)
-    const colorImagesMatch = html.match(/colorImages['"]\s*:\s*({[^}]+\[[^\]]+\][^}]*})/s) ||
-                             html.match(/'colorImages'\s*:\s*({.+?})\s*,\s*'color/s)
-    if (colorImagesMatch) {
-      console.log('📷 Found colorImages data')
-      const hiResMatches = colorImagesMatch[1].matchAll(/"hiRes"\s*:\s*"([^"]+)"/g)
-      for (const m of hiResMatches) {
-        addImage(m[1])
-      }
-      const largeMatches = colorImagesMatch[1].matchAll(/"large"\s*:\s*"([^"]+)"/g)
-      for (const m of largeMatches) {
-        addImage(m[1])
-      }
+    const ci = html.match(/colorImages['"]\s*:\s*({[^}]+\[[^\]]+\][^}]*})/s) || html.match(/'colorImages'\s*:\s*({.+?})\s*,\s*'color/s)
+    if (ci) { for (const m of ci[1].matchAll(/"hiRes"\s*:\s*"([^"]+)"/g)) add(m[1]); for (const m of ci[1].matchAll(/"large"\s*:\s*"([^"]+)"/g)) add(m[1]) }
+    const gd = html.match(/imageGalleryData['"]\s*:\s*\[([^\]]+)\]/s)
+    if (gd) for (const m of gd[1].matchAll(/"mainUrl"\s*:\s*"([^"]+)"/g)) add(m[1])
+    for (const m of html.matchAll(/data-(?:old-hires|a-dynamic-image)=["']([^"']+)["']/gi)) {
+      if (m[1].includes('{')) { try { for (const u of Object.keys(JSON.parse(m[1].replace(/&quot;/g, '"')))) add(u) } catch {} } else add(m[1])
     }
-    
-    // Try imageGalleryData
-    const galleryMatch = html.match(/imageGalleryData['"]\s*:\s*\[([^\]]+)\]/s)
-    if (galleryMatch) {
-      console.log('📷 Found imageGalleryData')
-      const imgMatches = galleryMatch[1].matchAll(/"mainUrl"\s*:\s*"([^"]+)"/g)
-      for (const m of imgMatches) {
-        addImage(m[1])
-      }
-    }
-    
-    // Try data-old-hires or data-a-dynamic-image
-    const dynamicImgMatches = html.matchAll(/data-(?:old-hires|a-dynamic-image)=["']([^"']+)["']/gi)
-    for (const m of dynamicImgMatches) {
-      // data-a-dynamic-image contains JSON
-      if (m[1].includes('{')) {
-        try {
-          const imgJson = JSON.parse(m[1].replace(/&quot;/g, '"'))
-          for (const url of Object.keys(imgJson)) {
-            addImage(url)
-          }
-        } catch (e) {}
-      } else {
-        addImage(m[1])
-      }
-    }
-    
-    // Amazon image URLs from HTML — only from product-relevant sections
-    // Skip if we already have enough from colorImages/gallery (those are most accurate)
-    if (images.length < 5) {
-      const amazonImgMatches = html.matchAll(/(https?:\/\/m\.media-amazon\.com\/images\/I\/[^"'\s]+\.(?:jpg|png|webp))/gi)
-      for (const m of amazonImgMatches) {
-        let imgUrl = m[1]
-          .replace(/\._[A-Z]{2}\d+_\./, '.')
-          .replace(/\._S[LXSMXY]\d+_\./, '.')
-          .replace(/\._AC_[^.]+\./, '.')
-        addImage(imgUrl)
-      }
-    }
-    
-    // Markdown fallback — only if very few images found (avoid sponsored/related product images)
-    if (images.length < 3 && markdown) {
-      const mdImgMatches = markdown.matchAll(/!\[[^\]]*\]\((https?:\/\/[^)]+\.(?:jpg|jpeg|png|webp)[^)]*)\)/gi)
-      for (const m of mdImgMatches) {
-        if (m[1].includes('media-amazon') && m[1].includes('/images/I/')) {
-          addImage(m[1])
-        }
-      }
-    }
+    if (imgs.length < 5) for (const m of html.matchAll(/(https?:\/\/m\.media-amazon\.com\/images\/I\/[^"'\s]+\.(?:jpg|png|webp))/gi)) add(m[1])
+    if (imgs.length < 3 && md) for (const m of md.matchAll(/!\[[^\]]*\]\((https?:\/\/[^)]+media-amazon[^)]+\/images\/I\/[^)]+)\)/gi)) add(m[1])
+  } else if (platform === 'aliexpress') {
+    const j = html.match(/imagePathList['"]\s*:\s*\[(.*?)\]/s)
+    if (j) for (const m of j[1].matchAll(/"(https?:\/\/[^"]+)"/g)) add(m[1].replace(/_\d+x\d+\.[a-z]+$/i, '.jpg'))
+    for (const m of html.matchAll(/data-zoom-image="([^"]+)"/gi)) add(m[1])
+  } else if (platform === 'shopify') {
+    for (const m of html.matchAll(/"(?:featured_image|src|url)"\s*:\s*"(https?:\/\/cdn\.shopify\.com\/[^"]+)"/gi)) add(m[1].replace(/_\d+x(\d+)?\./, '.'))
+    for (const m of html.matchAll(/(?:data-src|src)=["'](https?:\/\/cdn\.shopify\.com\/[^"'\s]+)["']/gi)) add(m[1].replace(/_\d+x(\d+)?\./, '.'))
   }
-  
-  if (platform === 'aliexpress') {
-    // AliExpress uses imagePathList in JSON
-    const jsonMatch = html.match(/imagePathList['"]\s*:\s*\[(.*?)\]/s)
-    if (jsonMatch) {
-      const imgMatches = jsonMatch[1].matchAll(/"(https?:\/\/[^"]+)"/g)
-      for (const m of imgMatches) {
-        // Convert to high quality by removing size modifiers
-        let imgUrl = m[1].replace(/_\d+x\d+\.[a-z]+$/i, '.jpg')
-          .replace(/\.jpg_\d+x\d+\.jpg$/i, '.jpg')
-          .replace(/_\d+x\d+xz\.jpg$/i, '.jpg')
-        addImage(imgUrl)
-      }
-    }
-    
-    // Also check for data-zoom-image
-    const zoomMatches = html.matchAll(/data-zoom-image="([^"]+)"/gi)
-    for (const m of zoomMatches) {
-      addImage(m[1])
-    }
+  // Generic fallbacks
+  if (imgs.length < 3) {
+    for (const m of html.matchAll(/og:image"[^>]*content="([^"]+)"/gi)) if (!m[1].includes('logo')) add(m[1])
+    for (const m of html.matchAll(/data-(?:src|original|zoom|large-src)="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/gi)) add(m[1])
   }
-  
-  if (platform === 'shopify') {
-    console.log('🛍️ Extracting Shopify images...')
-    
-    // Strategy 1: Product JSON (most reliable for Shopify)
-    const productJsonMatch = html.match(/var\s+meta\s*=\s*({[\s\S]*?});/i) ||
-                              html.match(/"product"\s*:\s*({[\s\S]*?}),\s*"/i)
-    if (productJsonMatch) {
-      try {
-        const productData = JSON.parse(productJsonMatch[1])
-        const images = productData?.product?.images || productData?.images || []
-        for (const img of images) {
-          const src = img?.src || img?.url || img
-          if (typeof src === 'string') {
-            // Get the best quality by removing size modifiers
-            const hqUrl = src.replace(/_\d+x(\d+)?\./, '.').replace(/\?.*$/, '')
-            addImage(hqUrl)
-          }
-        }
-      } catch (e) {
-        console.log('Could not parse Shopify product JSON')
-      }
-    }
-    
-    // Strategy 2: featured_image and images in script tags
-    const imgUrlMatches = html.matchAll(/"(?:featured_image|src|url)"\s*:\s*"(https?:\/\/cdn\.shopify\.com\/[^"]+)"/gi)
-    for (const m of imgUrlMatches) {
-      // Remove size modifiers for max quality
-      const hqUrl = m[1].replace(/_\d+x(\d+)?\./, '.').replace(/\?.*$/, '')
-      addImage(hqUrl)
-    }
-    
-    // Strategy 3: product-image or product__media elements
-    const productImgMatches = html.matchAll(/(?:data-src|data-srcset|src)=["'](https?:\/\/cdn\.shopify\.com\/[^"'\s]+)["']/gi)
-    for (const m of productImgMatches) {
-      const hqUrl = m[1].replace(/_\d+x(\d+)?\./, '.').replace(/\?.*$/, '')
-      addImage(hqUrl)
-    }
-    
-    // Strategy 4: og:image meta tags
-    const ogShopifyImgs = html.matchAll(/og:image"[^>]*content="(https?:\/\/cdn\.shopify\.com\/[^"]+)"/gi)
-    for (const m of ogShopifyImgs) {
-      addImage(m[1])
-    }
-  }
-  
-  // Cdiscount image extraction
-  if (platform === 'cdiscount') {
-    console.log('🛒 Extracting Cdiscount images...')
-    
-    // Strategy 1: JSON-LD structured data
-    const jsonLdMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)
-    if (jsonLdMatch) {
-      for (const match of jsonLdMatch) {
-        const jsonContent = match.replace(/<script[^>]*>|<\/script>/gi, '')
-        try {
-          const data = JSON.parse(jsonContent)
-          if (data.image) {
-            if (Array.isArray(data.image)) {
-              for (const img of data.image) {
-                addImage(typeof img === 'string' ? img : img.url || img)
-              }
-            } else {
-              addImage(typeof data.image === 'string' ? data.image : data.image.url || data.image)
-            }
-          }
-        } catch (e) {}
-      }
-    }
-    
-    // Strategy 2: Product gallery images
-    const galleryMatches = html.matchAll(/(?:data-src|data-lazy|data-original|data-zoom-image)=["'](https?:\/\/[^"']+\.(?:jpg|jpeg|png|webp)[^"']*)["']/gi)
-    for (const m of galleryMatches) {
-      addImage(m[1])
-    }
-    
-    // Strategy 3: Cdiscount CDN images
-    const cdnMatches = html.matchAll(/(https?:\/\/(?:f\.lp\.cnd|cd[0-9]+|static\.cdiscount)[^"'\s]+\.(?:jpg|jpeg|png|webp)[^"'\s]*)/gi)
-    for (const m of cdnMatches) {
-      // Clean up size modifiers and get full resolution
-      let imgUrl = m[1]
-        .replace(/_\d+x\d+\./, '.')
-        .replace(/\/[a-z]_\d+_\d+\//, '/')
-        .replace(/&w=\d+&h=\d+/, '')
-      addImage(imgUrl)
-    }
-    
-    // Strategy 4: Product image container
-    const imgSrcMatches = html.matchAll(/class=["'][^"']*(?:product-image|gallery|zoom|main-image)[^"']*["'][^>]*>[\s\S]{0,500}?src=["'](https?:\/\/[^"']+\.(?:jpg|jpeg|png|webp)[^"']*)["']/gi)
-    for (const m of imgSrcMatches) {
-      addImage(m[1])
-    }
-  }
-  
-  // Fnac image extraction
-  if (platform === 'fnac') {
-    console.log('📚 Extracting Fnac images...')
-    
-    // Fnac uses static.fnac-static.com
-    const fnacImgMatches = html.matchAll(/(https?:\/\/static\.fnac-static\.com\/[^"'\s]+\.(?:jpg|jpeg|png|webp)[^"'\s]*)/gi)
-    for (const m of fnacImgMatches) {
-      let imgUrl = m[1].replace(/\/\d+_\d+\//, '/').replace(/_\d+\./, '.')
-      addImage(imgUrl)
-    }
-    
-    // JSON-LD
-    const jsonLdFnac = html.match(/"image"\s*:\s*"([^"]+)"/i)
-    if (jsonLdFnac) addImage(jsonLdFnac[1])
-  }
-  
-  // Darty / Boulanger extraction
-  if (platform === 'darty' || platform === 'boulanger') {
-    console.log(`🏠 Extracting ${platform} images...`)
-    
-    const productImgMatches = html.matchAll(/(https?:\/\/(?:assets|media|images)\.[^"'\s]+\.(?:jpg|jpeg|png|webp)[^"'\s]*)/gi)
-    for (const m of productImgMatches) {
-      addImage(m[1])
-    }
-  }
-  
-  // Home Depot / Lowe's extraction
-  if (platform === 'homedepot' || platform === 'lowes') {
-    console.log(`🏪 Extracting ${platform} images...`)
-    
-    // They often use similar CDN patterns
-    const productImgMatches = html.matchAll(/(https?:\/\/[^"'\s]*(?:images|media|assets)[^"'\s]+\.(?:jpg|jpeg|png|webp))/gi)
-    for (const m of productImgMatches) {
-      let imgUrl = m[1]
-        .replace(/_\d+\./, '.')
-        .replace(/\?.*$/, '')
-      addImage(imgUrl)
-    }
-  }
-  
-  // Generic high quality extraction
-  // Only use generic fallbacks if we don't already have enough images from platform-specific extraction
-  if (images.length < 3) {
-    const ogImages = html.matchAll(/og:image"[^>]*content="([^"]+)"/gi)
-    for (const m of ogImages) {
-      const imgUrl = m[1]
-      if (!imgUrl.includes('logo')) {
-        addImage(imgUrl)
-      }
-    }
-    
-    // Data-src with high resolution
-    const dataSrcMatches = html.matchAll(/data-(?:src|original|zoom|large-src|big-src)="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/gi)
-    for (const m of dataSrcMatches) {
-      addImage(m[1])
-    }
-    
-    // Standard src with quality indicators
-    const srcMatches = html.matchAll(/src="(https?:\/\/[^"]*(?:product|goods|item|main|large|original|zoom)[^"]*\.(?:jpg|jpeg|png|webp)[^"]*)"/gi)
-    for (const m of srcMatches) {
-      addImage(m[1])
-    }
-  }
-  
-  console.log(`📸 Extracted ${images.length} images`)
-  return images.slice(0, 20)
+  // JSON-LD images
+  const jlds = html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)
+  for (const jm of jlds) { try { const d = JSON.parse(jm[1].replace(/<\/?script[^>]*>/gi, '')); if (d.image) { const ia = Array.isArray(d.image) ? d.image : [d.image]; for (const i of ia) add(typeof i === 'string' ? i : i?.url || '') } } catch {} }
+  return imgs
 }
 
-// Extract videos from the page
 function extractVideos(html: string, platform: string): string[] {
-  const videos: string[] = []
-  const seenUrls = new Set<string>()
-  
-  // Helper to add video
-  const addVideo = (url: string) => {
-    if (!url) return
+  const vids: string[] = [], seen = new Set<string>()
+  const add = (u: string) => { if (!u || vids.length >= 5) return; const c = String(u).replace(/\\u002F/g, '/').trim(); if (c.startsWith('http') && !seen.has(c)) { vids.push(c); seen.add(c) } }
+  for (const m of html.matchAll(/"(?:url|videoUrl|video_url|src|streamingUrl)"[^:]*:\s*"(https?:\/\/[^"]+(?:\.mp4|\.webm|\.m3u8)[^"]*)"/gi)) add(m[1])
+  for (const m of html.matchAll(/["'](https?:\/\/[^"']+\.(?:mp4|webm)[^"']*)["']/gi)) if (m[1].includes('video') || m[1].includes('media')) add(m[1])
+  return vids
+}
 
-    const cleanUrl = String(url).replace(/\\u002F/g, '/').replace(/\\/g, '').trim()
-
-    // Blob URLs come from browser runtime and are not usable outside Amazon page
-    if (!cleanUrl.startsWith('http')) return
-    if (cleanUrl.includes('blank') || cleanUrl.includes('placeholder')) return
-
-    if (!seenUrls.has(cleanUrl) && videos.length < 10) {
-      videos.push(cleanUrl)
-      seenUrls.add(cleanUrl)
-    }
+function extractVariants(html: string, platform: string, md: string = ''): any[] {
+  const vars: any[] = [], seen = new Set<string>()
+  const push = (attrs: Record<string, any>, sku?: string) => {
+    const k = JSON.stringify({ sku, attrs }); if (seen.has(k)) return; seen.add(k)
+    vars.push({ sku: sku || '', name: Object.values(attrs).filter(Boolean).join(' / ') || sku || 'Variante', price: 0, stock: 0, image: null, attributes: attrs })
   }
-  // Platform-specific video extraction
   if (platform === 'amazon') {
-    // Strategy 1: Look for Amazon video JSON data (BEST for Amazon)
-    // Pattern: "url":"https://...mp4" or "videoUrl":"https://..."
-    const jsonVideoMatches = html.matchAll(/"(?:url|videoUrl|video_url|videoSrc|src|streamingUrl)"[^:]*:\s*"(https?:\/\/[^"]+(?:\.mp4|\.webm|\.m3u8|m3u8)[^"]*)"/gi)
-    for (const m of jsonVideoMatches) {
-      addVideo(m[1])
+    // asinToDimensionValuesMap
+    const findJson = (key: string) => { const i = html.indexOf(`"${key}"`); if (i === -1) return null; const ci = html.indexOf(':', i); if (ci === -1) return null; let j = ci + 1; while (j < html.length && /\s/.test(html[j])) j++; const f = html[j]; if (f !== '{' && f !== '[') return null; const cl = f === '{' ? '}' : ']'; let d = 0, inS = false, esc = false; for (let x = j; x < html.length; x++) { const c = html[x]; if (inS) { if (esc) { esc = false } else if (c === '\\') esc = true; else if (c === '"') inS = false; continue } if (c === '"') { inS = true; continue } if (c === f) d++; if (c === cl) { d--; if (d === 0) { try { return JSON.parse(html.slice(j, x + 1)) } catch { return null } } } } return null }
+    const a2d = findJson('asinToDimensionValuesMap'), dvd = findJson('dimensionValuesDisplayData')
+    if (a2d && typeof a2d === 'object') { for (const [asin, dim] of Object.entries(a2d as Record<string, any>)) { if (dim && typeof dim === 'object') { const a: Record<string, any> = {}; for (const [k, v] of Object.entries(dim)) a[k] = dvd?.[k]?.[v as any] || v; push(a, asin) } } }
+    else {
+      const vv = findJson('variationValues')
+      if (vv && typeof vv === 'object') for (const [k, vs] of Object.entries(vv as Record<string, any>)) if (Array.isArray(vs)) for (const v of vs) push({ [k]: v })
     }
-    
-    // Strategy 2: Look for Amazon video data structure
-    const videoDataMatch = html.match(/"videos?":\s*\[([\s\S]*?)\]/i)
-    if (videoDataMatch) {
-      const urlMatches = videoDataMatch[1].matchAll(/"(?:url|src|videoUrl)":\s*"([^"]+)"/gi)
-      for (const m of urlMatches) {
-        if (m[1].includes('mp4') || m[1].includes('webm') || m[1].includes('m3u8')) {
-          addVideo(m[1])
-        }
-      }
+    if (vars.length === 0) {
+      for (const m of html.matchAll(/id="color_name_\d+"[^>]*>[\s\S]{0,800}?alt="([^"]+)"/gis)) push({ color: m[1].trim() })
     }
-    
-    // Strategy 3: Direct mp4/webm URLs
-    const directVideoMatches = html.matchAll(/["'](https?:\/\/[^"']*(?:cloudfront\.net|amazonvideo|images-amazon|m\.media-amazon)[^"']*\.(?:mp4|webm)[^"']*)["']/gi)
-    for (const m of directVideoMatches) {
-      addVideo(m[1])
-    }
-    
-    // Strategy 4: HLS streaming URLs
-    const hlsMatches = html.matchAll(/["'](https?:\/\/[^"']+\.m3u8[^"']*)["']/gi)
-    for (const m of hlsMatches) {
-      addVideo(m[1])
-    }
+  } else if (platform === 'aliexpress') {
+    const sk = html.match(/skuProducts['"]\s*:\s*(\[[^\]]+\])/s)
+    if (sk) try { for (const s of JSON.parse(sk[1].replace(/'/g, '"')).slice(0, 50)) vars.push({ sku: s.skuId || '', name: s.skuAttr || '', price: parseFloat(s.skuVal?.skuAmount?.value || 0), stock: s.skuVal?.availQuantity || 0, image: s.skuVal?.image || null, attributes: {} }) } catch {}
   }
-  
-  if (platform === 'aliexpress') {
-    // AliExpress video URLs
-    const videoMatches = html.matchAll(/["'](https?:\/\/[^"']+\.(?:mp4|webm|m3u8)[^"']*)["']/gi)
-    for (const m of videoMatches) {
-      addVideo(m[1])
-    }
-    
-    // Video poster or data
-    const videoJsonMatch = html.match(/videoUrl['"]\s*:\s*['"](https?:\/\/[^'"]+)['"]/i)
-    if (videoJsonMatch) {
-      addVideo(videoJsonMatch[1])
-    }
+  // Generic option/variant detection
+  if (vars.length === 0) {
+    for (const m of html.matchAll(/data-(?:variant|option|sku)=["']([^"']+)["'][^>]*>([^<]*)</gi)) if (m[2]?.trim()) push({ option: m[2].trim() }, m[1])
   }
-  
-  if (platform === 'shopify') {
-    console.log('🎬 Extracting Shopify videos...')
-    
-    // Shopify product media (videos are often in JSON)
-    const mediaMatches = html.matchAll(/"(?:sources|preview_video|video_url|external_video)"\s*:\s*\[\s*{[^}]*"url"\s*:\s*"([^"]+)"/gi)
-    for (const m of mediaMatches) {
-      if (m[1].includes('.mp4') || m[1].includes('.webm') || m[1].includes('youtube') || m[1].includes('vimeo')) {
-        addVideo(m[1])
-      }
-    }
-    
-    // Video tags with Shopify CDN
-    const videoTagMatches = html.matchAll(/<video[^>]*>[\s\S]*?<source[^>]*src=["']([^"']+\.(?:mp4|webm))["']/gi)
-    for (const m of videoTagMatches) {
-      addVideo(m[1])
-    }
-    
-    // YouTube/Vimeo embeds
-    const embedMatches = html.matchAll(/(?:youtube\.com\/embed\/|vimeo\.com\/video\/)([^"'?\s]+)/gi)
-    for (const m of embedMatches) {
-      if (m[0].includes('youtube')) {
-        addVideo(`https://www.youtube.com/embed/${m[1]}`)
-      } else if (m[0].includes('vimeo')) {
-        addVideo(`https://player.vimeo.com/video/${m[1]}`)
-      }
-    }
-    
-    // External video URLs in data attributes
-    const externalVideoMatches = html.matchAll(/data-(?:video|media)-url=["']([^"']+)["']/gi)
-    for (const m of externalVideoMatches) {
-      addVideo(m[1])
-    }
-  }
-  
-  // Generic video extraction
-  const genericVideoMatches = html.matchAll(/(?:src|data-src|data-video-url|videoUrl|video_url)=["'](https?:\/\/[^"']+\.(?:mp4|webm|m3u8)[^"']*)["']/gi)
-  for (const m of genericVideoMatches) {
-    addVideo(m[1])
-  }
-  
-  // Video tags
-  const videoTagMatches = html.matchAll(/<video[^>]*src=["']([^"']+)["']/gi)
-  for (const m of videoTagMatches) {
-    addVideo(m[1])
-  }
-  
-  // Source tags within video
-  const sourceMatches = html.matchAll(/<source[^>]*src=["']([^"']+\.(?:mp4|webm))["']/gi)
-  for (const m of sourceMatches) {
-    addVideo(m[1])
-  }
-  
-  console.log(`🎬 Found ${videos.length} videos`)
-  return videos.slice(0, 10)
+  return vars.slice(0, 100)
 }
 
-// Extract product variants for Amazon
-function extractAmazonVariants(html: string, markdown: string = ''): any[] {
-  const variants: any[] = []
-  const seen = new Set<string>()
-
-  console.log('🎨 Extracting Amazon variants...')
-
-  const safeJsonParse = (str: string) => {
-    try {
-      return JSON.parse(str)
-    } catch {
-      return null
-    }
-  }
-
-  const extractJsonValueByKey = (key: string): any => {
-    // Finds the first occurrence of "<key>": and attempts to extract the following JSON object/array/string
-    const idx = html.indexOf(`"${key}"`)
-    if (idx === -1) return null
-
-    const colonIdx = html.indexOf(':', idx)
-    if (colonIdx === -1) return null
-
-    // Skip whitespace
-    let i = colonIdx + 1
-    while (i < html.length && /\s/.test(html[i])) i++
-
-    const first = html[i]
-    if (first !== '{' && first !== '[' && first !== '"') return null
-
-    if (first === '"') {
-      const end = html.indexOf('"', i + 1)
-      if (end === -1) return null
-      return html.slice(i + 1, end)
-    }
-
-    const open = first
-    const close = open === '{' ? '}' : ']'
-    let depth = 0
-    let inStr = false
-    let escaped = false
-
-    for (let j = i; j < html.length; j++) {
-      const ch = html[j]
-      if (inStr) {
-        if (escaped) {
-          escaped = false
-        } else if (ch === '\\') {
-          escaped = true
-        } else if (ch === '"') {
-          inStr = false
-        }
-        continue
-      }
-
-      if (ch === '"') {
-        inStr = true
-        continue
-      }
-
-      if (ch === open) depth++
-      if (ch === close) {
-        depth--
-        if (depth === 0) {
-          const raw = html.slice(i, j + 1)
-          return safeJsonParse(raw)
-        }
-      }
-    }
-
-    return null
-  }
-
-  const cleanAttrKey = (k: string): string => {
-    // Convert internal Amazon keys like "color_name", "size_name" to readable labels
-    return k.replace(/_name$/i, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-  }
-
-  const pushVariant = (attrs: Record<string, any>, asin?: string) => {
-    const key = JSON.stringify({ asin: asin || '', attrs })
-    if (seen.has(key)) return
-    seen.add(key)
-    // Build a readable name from attribute values
-    const displayValues = Object.entries(attrs)
-      .map(([k, v]) => {
-        const val = typeof v === 'string' ? v.trim() : String(v ?? '')
-        return val || null
-      })
-      .filter(Boolean)
-    const name = displayValues.join(' / ') || asin || 'Variante'
-    variants.push({
-      sku: asin || '',
-      name,
-      price: 0,
-      stock: 0,
-      image: null,
-      attributes: attrs,
-    })
-  }
-
-  // 1) Best case: dimensionToAsinMap + dimensionValuesDisplayData
-  // This can give real combinations (color+size, etc.).
-  const dimensionToAsinMap = extractJsonValueByKey('dimensionToAsinMap')
-  const dimensionValuesDisplayData = extractJsonValueByKey('dimensionValuesDisplayData')
-  const asinToDimensionValuesMap = extractJsonValueByKey('asinToDimensionValuesMap')
-
-  if (asinToDimensionValuesMap && typeof asinToDimensionValuesMap === 'object') {
-    console.log('📋 Found asinToDimensionValuesMap')
-    for (const [asin, dim] of Object.entries(asinToDimensionValuesMap as Record<string, any>)) {
-      if (dim && typeof dim === 'object') {
-        // Replace internal ids with display names when available
-        const attrs: Record<string, any> = {}
-        for (const [k, v] of Object.entries(dim)) {
-          const display = dimensionValuesDisplayData?.[k]?.[v as any]
-          attrs[k] = display || v
-        }
-        pushVariant(attrs, asin)
-      }
-    }
-  } else if (dimensionToAsinMap && typeof dimensionToAsinMap === 'object') {
-    console.log('📋 Found dimensionToAsinMap')
-    // Example keys can be like "color_name:Black,size_name:M" or dimension ids.
-    for (const [k, asin] of Object.entries(dimensionToAsinMap as Record<string, any>)) {
-      const attrs: Record<string, any> = {}
-      const parts = String(k).split(',')
-      for (const p of parts) {
-        const [rawKey, rawVal] = p.split(':')
-        if (!rawKey || rawVal == null) continue
-        const key = rawKey.trim()
-        const val = rawVal.trim()
-        attrs[key] = dimensionValuesDisplayData?.[key]?.[val] || val
-      }
-      pushVariant(attrs, typeof asin === 'string' ? asin : undefined)
-    }
-  }
-
-  // 2) Fallbacks (single-dimension lists)
-  // variationValues / asinVariationValues
-  const variationValues = extractJsonValueByKey('variationValues')
-  if (variationValues && typeof variationValues === 'object') {
-    console.log('📋 Found variationValues')
-    for (const [key, values] of Object.entries(variationValues as Record<string, any>)) {
-      if (Array.isArray(values)) {
-        for (const v of values) pushVariant({ [key]: v })
-      }
-    }
-  }
-
-  const asinVariationValues = extractJsonValueByKey('asinVariationValues')
-  if (asinVariationValues && typeof asinVariationValues === 'object') {
-    console.log('📋 Found asinVariationValues')
-    for (const [asin, attrs] of Object.entries(asinVariationValues as Record<string, any>)) {
-      if (attrs && typeof attrs === 'object') pushVariant(attrs as Record<string, any>, asin)
-    }
-  }
-
-  // 3) HTML extraction (color swatches + size dropdown)
-  const colorMatches = html.matchAll(/id="color_name_(\d+)"[^>]*>[\s\S]{0,800}?alt="([^"]+)"/gis)
-  for (const m of colorMatches) {
-    const colorName = m[2].trim()
-    if (colorName) pushVariant({ color_name: colorName })
-  }
-
-  // Sizes are often in <select> or buttons; try a broad pattern
-  const sizeOptionMatches = html.matchAll(/id="native_dropdown_selected_size_name"[\s\S]{0,6000}?<option[^>]*>([^<]{1,40})<\/option>/gis)
-  for (const m of sizeOptionMatches) {
-    const v = m[1].trim()
-    if (!v || /^taille$/i.test(v)) continue
-    pushVariant({ size_name: v })
-  }
-
-  // 4) Markdown fallback
-  if (markdown && variants.length === 0) {
-    const mdColor = markdown.matchAll(/(?:couleur|color)[:\s]+([^\n,]+)/gi)
-    for (const m of mdColor) pushVariant({ color_name: m[1].trim() })
-
-    const mdSize = markdown.matchAll(/(?:taille|size)[:\s]+([^\n,]+)/gi)
-    for (const m of mdSize) pushVariant({ size_name: m[1].trim() })
-  }
-
-  console.log(`🎨 Variants extracted: ${variants.length}`)
-  return variants.slice(0, 200)
-}
-
-// Extract Shopify variants from product JSON
-function extractShopifyVariants(html: string): any[] {
-  const variants: any[] = []
-  const seen = new Set<string>()
-  
-  console.log('🛍️ Extracting Shopify variants...')
-  
-  try {
-    // Strategy 1: Look for product JSON data (most reliable)
-    const productJsonPatterns = [
-      /var\s+product\s*=\s*({[\s\S]*?});(?=\s*(?:var|const|let|function|<|$))/i,
-      /window\.ShopifyProduct\s*=\s*({[\s\S]*?});(?=\s*(?:var|const|let|function|<|$))/i,
-      /ShopifyAnalytics\.meta\.product\s*=\s*({[\s\S]*?});(?=\s*(?:var|const|let|function|<|$))/i,
-    ]
-    
-    for (const pattern of productJsonPatterns) {
-      const match = html.match(pattern)
-      if (match) {
-        try {
-          // Clean up common JSON issues before parsing
-          let jsonStr = match[1]
-            .replace(/,\s*}/g, '}')  // Remove trailing commas
-            .replace(/,\s*]/g, ']')  // Remove trailing commas in arrays
-            .replace(/\\'/g, "'")    // Fix escaped quotes
-          
-          const data = JSON.parse(jsonStr)
-          const productVariants = data.variants || data.product?.variants || []
-          
-          // Get options names safely
-          const optionNames = Array.isArray(data.options) 
-            ? data.options.map((o: any) => typeof o === 'string' ? o : o?.name || o)
-            : []
-          
-          for (const v of productVariants) {
-            const key = v.id?.toString() || v.sku || JSON.stringify(v)
-            if (seen.has(key)) continue
-            seen.add(key)
-            
-            // Build attributes from option values
-            const attributes: Record<string, string> = {}
-            if (v.option1) attributes[optionNames[0] || 'Option 1'] = v.option1
-            if (v.option2) attributes[optionNames[1] || 'Option 2'] = v.option2
-            if (v.option3) attributes[optionNames[2] || 'Option 3'] = v.option3
-            
-            // Handle price - can be in cents or already in decimal
-            let price = 0
-            if (typeof v.price === 'number') {
-              price = v.price > 1000 ? v.price / 100 : v.price // If > 1000, likely in cents
-            } else if (typeof v.price === 'string') {
-              const parsed = parseFloat(v.price.replace(/[^0-9.,]/g, '').replace(',', '.'))
-              price = parsed > 1000 ? parsed / 100 : parsed
-            }
-            
-            variants.push({
-              sku: v.sku || v.id?.toString() || '',
-              name: v.title || v.name || Object.values(attributes).join(' / ') || 'Variant',
-              price,
-              stock: typeof v.inventory_quantity === 'number' ? v.inventory_quantity : (v.available ? 99 : 0),
-              available: v.available ?? true,
-              image: v.featured_image?.src || v.image || null,
-              attributes,
-              variant_id: v.id?.toString()
-            })
-          }
-          
-          if (variants.length > 0) {
-            console.log(`📋 Found ${variants.length} Shopify variants from JSON`)
-            break
-          }
-        } catch (e) {
-          // Silent fail - try next pattern
-        }
-      }
-    }
-    
-    // Strategy 2: Look for variants in script tags with specific patterns
-    if (variants.length === 0) {
-      const variantArrayMatch = html.match(/"variants"\s*:\s*(\[[^\]]+\])/i)
-      if (variantArrayMatch) {
-        try {
-          const variantData = JSON.parse(variantArrayMatch[1])
-          for (const v of variantData) {
-            const key = v.id?.toString() || v.sku || JSON.stringify(v)
-            if (seen.has(key)) continue
-            seen.add(key)
-            
-            variants.push({
-              sku: v.sku || v.id?.toString() || '',
-              name: v.title || v.name || 'Variant',
-              price: parseFloat(v.price) / 100 || 0,
-              stock: v.inventory_quantity ?? (v.available ? 99 : 0),
-              available: v.available ?? true,
-              image: v.featured_image?.src || v.image || null,
-              attributes: {}
-            })
-          }
-        } catch (e) {
-          console.log('Could not parse variant array')
-        }
-      }
-    }
-    
-    // Strategy 3: Extract from select elements (fallback)
-    if (variants.length === 0) {
-      const optionMatches = html.matchAll(/data-variant-id=["'](\d+)["'][^>]*>([^<]+)</gi)
-      for (const m of optionMatches) {
-        if (!seen.has(m[1])) {
-          seen.add(m[1])
-          variants.push({
-            sku: m[1],
-            name: m[2].trim(),
-            price: 0,
-            stock: 99,
-            available: true,
-            image: null,
-            attributes: {},
-            variant_id: m[1]
-          })
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error extracting Shopify variants:', error)
-  }
-  
-  console.log(`🎨 Shopify variants extracted: ${variants.length}`)
-  return variants.slice(0, 100)
-}
-
-// Extract product variants
-function extractVariants(html: string, platform: string, markdown: string = ''): any[] {
+function extractSpecs(html: string, platform: string): Record<string, string> {
+  const s: Record<string, string> = {}
   if (platform === 'amazon') {
-    return extractAmazonVariants(html, markdown)
+    const dt = html.match(/id="productDetails_techSpec_section_1"[^>]*>([\s\S]*?)<\/table>/i) || html.match(/id="technicalSpecifications_section_1"[^>]*>([\s\S]*?)<\/table>/i)
+    if (dt) for (const m of dt[1].matchAll(/<th[^>]*>([^<]+)<\/th>\s*<td[^>]*>([^<]+)<\/td>/gi)) { const k = m[1].trim(), v = m[2].trim(); if (k && v) s[k] = v }
   }
-  
-  if (platform === 'shopify') {
-    return extractShopifyVariants(html)
-  }
-  
-  const variants: any[] = []
-  
-  try {
-    if (platform === 'aliexpress') {
-      // AliExpress skuProducts or skuPropertyList
-      const skuMatch = html.match(/skuProducts['"]\s*:\s*(\[[^\]]+\])/s) ||
-                       html.match(/"skuModule"[^}]*"skuPriceList"\s*:\s*(\[[^\]]*\])/s)
-      if (skuMatch) {
-        try {
-          const skuData = JSON.parse(skuMatch[1].replace(/'/g, '"'))
-          for (const sku of skuData.slice(0, 50)) {
-            variants.push({
-              sku: sku.skuId || sku.id || '',
-              name: sku.skuAttr || sku.name || '',
-              price: parseFloat(sku.skuVal?.skuAmount?.value || sku.price || 0),
-              stock: sku.skuVal?.availQuantity || sku.stock || 0,
-              image: sku.skuVal?.image || sku.image || null,
-              attributes: sku.propertyValueName || sku.attributes || {}
-            })
-          }
-        } catch (e) {
-          console.log('Error parsing AliExpress variants:', e)
-        }
-      }
-      
-      // Also try skuPropertyList for attributes
-      const propMatch = html.match(/skuPropertyList['"]\s*:\s*(\[[^\]]+\])/s)
-      if (propMatch && variants.length === 0) {
-        try {
-          const propData = JSON.parse(propMatch[1].replace(/'/g, '"'))
-          for (const prop of propData) {
-            for (const val of (prop.skuPropertyValues || [])) {
-              variants.push({
-                sku: val.propertyValueId || '',
-                name: `${prop.skuPropertyName}: ${val.propertyValueDisplayName}`,
-                price: 0,
-                stock: 0,
-                image: val.skuPropertyImagePath || null,
-                attributes: {
-                  [prop.skuPropertyName]: val.propertyValueDisplayName
-                }
-              })
-            }
-          }
-        } catch (e) {
-          console.log('Error parsing AliExpress properties:', e)
-        }
-      }
-    }
-    
-    // Generic variant extraction using common patterns
-    if (variants.length === 0) {
-      // Look for variant selectors
-      const selectMatches = html.matchAll(/<option[^>]*value=["']([^"']+)["'][^>]*>([^<]+)</gi)
-      for (const m of selectMatches) {
-        if (m[2] && !m[2].toLowerCase().includes('select') && !m[2].toLowerCase().includes('choisir')) {
-          variants.push({
-            sku: m[1],
-            name: m[2].trim(),
-            price: 0,
-            stock: 0,
-            image: null,
-            attributes: {}
-          })
-        }
-      }
-      
-      // Look for variant buttons
-      const buttonMatches = html.matchAll(/data-(?:variant|option|sku)=["']([^"']+)["'][^>]*>([^<]*)</gi)
-      for (const m of buttonMatches) {
-        if (m[2]?.trim()) {
-          variants.push({
-            sku: m[1],
-            name: m[2].trim(),
-            price: 0,
-            stock: 0,
-            image: null,
-            attributes: {}
-          })
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error extracting variants:', error)
-  }
-  
-  return variants.slice(0, 100)
+  for (const m of html.matchAll(/<tr[^>]*>\s*<t[hd][^>]*>([^<]+)<\/t[hd]>\s*<t[hd][^>]*>([^<]+)<\/t[hd]>/gi)) { const k = m[1].trim().replace(/:$/, ''), v = m[2].trim(); if (k && v && k.length < 50 && v.length < 200) s[k] = v }
+  for (const m of html.matchAll(/<dt[^>]*>([^<]+)<\/dt>\s*<dd[^>]*>([^<]+)<\/dd>/gi)) { const k = m[1].trim().replace(/:$/, ''), v = m[2].trim(); if (k && v && k.length < 50) s[k] = v }
+  return s
 }
 
-// Extract specifications/attributes
-function extractSpecifications(html: string, platform: string = ''): Record<string, string> {
-  const specs: Record<string, string> = {}
-  
-  try {
-    if (platform === 'amazon') {
-      // Amazon product details table
-      const detailsMatch = html.match(/id="productDetails_techSpec_section_1"[^>]*>([\s\S]*?)<\/table>/i) ||
-                           html.match(/id="technicalSpecifications_section_1"[^>]*>([\s\S]*?)<\/table>/i)
-      if (detailsMatch) {
-        const rowMatches = detailsMatch[1].matchAll(/<th[^>]*>([^<]+)<\/th>\s*<td[^>]*>([^<]+)<\/td>/gi)
-        for (const m of rowMatches) {
-          const key = m[1].trim()
-          const value = m[2].trim()
-          if (key && value) {
-            specs[key] = value
-          }
-        }
-      }
-      
-      // Amazon detail bullets
-      const bulletMatches = html.matchAll(/<li[^>]*>\s*<span[^>]*class="[^"]*a-list-item[^"]*"[^>]*>([^<]+)<\/span>/gi)
-      let bulletNum = 1
-      for (const m of bulletMatches) {
-        const text = m[1].trim()
-        if (text && text.length > 10 && bulletNum <= 10) {
-          specs[`Détail ${bulletNum}`] = text
-          bulletNum++
-        }
+function extractReviews(html: string, platform: string, md: string = ''): any[] {
+  const revs: any[] = []
+  if (platform === 'amazon') {
+    for (const m of html.matchAll(/id="customer_review-([^"]+)"[\s\S]*?(?=id="customer_review-|$)/gi)) {
+      if (revs.length >= 15) break
+      const b = m[0]
+      const nm = b.match(/a-profile-name[^>]*>([^<]+)/i)?.[1]?.trim() || 'Client'
+      const rt = b.match(/(\d+(?:[,.]?\d*)?)\s*(?:out of|sur|\/)\s*5/i) || b.match(/a-star-(\d)/i)
+      const ti = b.match(/review-title[^>]*>(?:<span[^>]*>)?([^<]+)/i)?.[1]?.trim() || ''
+      const bd = b.match(/review-body[^>]*>[\s\S]*?<span[^>]*>([^<]+)/i)?.[1]?.trim().slice(0, 2000) || ''
+      if (bd || ti) revs.push({ customer_name: nm, rating: rt ? Math.min(5, parseFloat(rt[1].replace(',', '.'))) : 5, title: ti, comment: bd, verified_purchase: /v[ée]rifi[ée]|verified/i.test(b), helpful_count: 0, review_date: null, images: [] })
+    }
+    // Markdown fallback
+    if (revs.length === 0 && md) {
+      const blocks = md.split(/(?=\d+[.,]\d*\s*(?:out of|sur)\s*5)/gi)
+      for (let i = 1; i < blocks.length && revs.length < 10; i++) {
+        const rm = blocks[i].match(/^(\d+[.,]?\d*)\s*(?:out of|sur)\s*5/i)
+        if (!rm) continue
+        const lines = blocks[i].split('\n').map(l => l.trim()).filter(Boolean)
+        let title = '', comment = ''
+        for (let j = 1; j < lines.length && j < 8; j++) { const l = lines[j]; if (/v[ée]rifi|Reviewed|Signaler|personnes/i.test(l)) continue; if (!title && l.length < 100 && l.length > 3) { title = l; continue }; if (l.length > 20) comment += (comment ? '\n' : '') + l }
+        if (comment || title) revs.push({ customer_name: 'Client', rating: Math.min(5, parseFloat(rm[1].replace(',', '.'))), title, comment: comment.slice(0, 2000), verified_purchase: false, helpful_count: 0, review_date: null, images: [] })
       }
     }
-    
-    // Common spec table patterns
-    const specMatches = html.matchAll(/<tr[^>]*>\s*<t[hd][^>]*>([^<]+)<\/t[hd]>\s*<t[hd][^>]*>([^<]+)<\/t[hd]>/gi)
-    for (const m of specMatches) {
-      const key = m[1].trim().replace(/:$/, '')
-      const value = m[2].trim()
-      if (key && value && key.length < 50 && value.length < 200) {
-        specs[key] = value
-      }
-    }
-    
-    // DL/DT/DD patterns
-    const dlMatches = html.matchAll(/<dt[^>]*>([^<]+)<\/dt>\s*<dd[^>]*>([^<]+)<\/dd>/gi)
-    for (const m of dlMatches) {
-      const key = m[1].trim().replace(/:$/, '')
-      const value = m[2].trim()
-      if (key && value && key.length < 50 && value.length < 200) {
-        specs[key] = value
-      }
-    }
-  } catch (error) {
-    console.error('Error extracting specifications:', error)
+  } else if (platform === 'aliexpress') {
+    const fb = html.match(/feedbackList['"]\s*:\s*(\[[^\]]+\])/s)
+    if (fb) try { for (const f of JSON.parse(fb[1]).slice(0, 15)) revs.push({ customer_name: f.buyerName || 'Client', rating: Math.min(5, f.star || f.rating || 5), title: '', comment: (f.content || f.feedback || '').slice(0, 2000), verified_purchase: true, helpful_count: 0, review_date: null, images: f.images || [] }) } catch {}
   }
-  
-  return specs
+  // Schema.org fallback
+  if (revs.length === 0) for (const m of html.matchAll(/"@type"\s*:\s*"Review"[\s\S]*?(?="@type"|$)/gi)) {
+    if (revs.length >= 10) break
+    const au = m[0].match(/"author"[^}]*"name"\s*:\s*"([^"]+)"/i), rv = m[0].match(/"ratingValue"\s*:\s*"?(\d+(?:\.\d+)?)"?/i), rb = m[0].match(/"reviewBody"\s*:\s*"([^"]+)"/i)
+    if (rb || rv) revs.push({ customer_name: au?.[1] || 'Client', rating: rv ? Math.min(5, parseFloat(rv[1])) : 5, title: '', comment: (rb?.[1] || '').slice(0, 2000), verified_purchase: false, helpful_count: 0, review_date: null, images: [] })
+  }
+  return revs
 }
 
-// Extract shipping info
-function extractShippingInfo(html: string, platform: string): any {
-  const shipping: any = {
-    methods: [],
-    estimated_delivery: null,
-    free_shipping: false
+function extractTitle(html: string, md: string, platform: string): string {
+  if (platform === 'amazon') {
+    const t = html.match(/id="productTitle"[^>]*>([^<]+)/i)?.[1]?.trim()
+    if (t) return t
   }
-  
-  try {
-    // Check for free shipping
-    if (/free\s*(?:shipping|delivery)|livraison\s*gratuite|envoi\s*gratuit|retours?\s*gratuit/i.test(html)) {
-      shipping.free_shipping = true
-    }
-    
-    // Amazon Prime
-    if (platform === 'amazon' && /prime/i.test(html)) {
-      shipping.methods.push('prime')
-      shipping.free_shipping = true
-    }
-    
-    // Extract delivery estimates
-    const deliveryMatch = html.match(/(?:delivered?|livr[ée]|arrival?|arriv[ée])[^<]*?(\d{1,2}[-–]\d{1,2})\s*(?:days?|jours?|business days?)/i) ||
-                          html.match(/(\d{1,2}[-–]\d{1,2})\s*(?:days?|jours?|business days?)[^<]*?(?:shipping|delivery|livraison)/i) ||
-                          html.match(/livraison[^<]*?(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s+\d+/i)
-    if (deliveryMatch) {
-      shipping.estimated_delivery = deliveryMatch[1] + (deliveryMatch[1].includes('-') ? ' jours' : '')
-    }
-    
-    // Extract shipping methods
-    const methodMatches = html.matchAll(/(?:shipping|livraison)[^<]*?(standard|express|fast|priority|économique|rapide)[^<]*/gi)
-    for (const m of methodMatches) {
-      if (!shipping.methods.includes(m[1].toLowerCase())) {
-        shipping.methods.push(m[1].toLowerCase())
-      }
-    }
-  } catch (error) {
-    console.error('Error extracting shipping info:', error)
-  }
-  
-  return shipping
-}
-
-// Extract individual reviews from the page
-function extractReviews(html: string, platform: string, markdown: string = ''): any[] {
-  const reviews: any[] = []
-  const maxReviews = 20
-  
-  try {
-    if (platform === 'amazon') {
-      // Amazon review blocks - multiple patterns
-      // Pattern 1: review-id based blocks
-      const reviewBlockMatches = html.matchAll(/id="customer_review-([^"]+)"[\s\S]*?(?=id="customer_review-|$)/gi)
-      for (const match of reviewBlockMatches) {
-        if (reviews.length >= maxReviews) break
-        
-        const block = match[0]
-        const reviewId = match[1]
-        
-        // Extract reviewer name
-        const nameMatch = block.match(/class="[^"]*a-profile-name[^"]*"[^>]*>([^<]+)</i)
-        const customerName = nameMatch?.[1]?.trim() || 'Client Amazon'
-        
-        // Extract rating
-        const ratingMatch = block.match(/(\d+(?:[,.]?\d*)?)\s*(?:out of|sur|\/)\s*5/i) ||
-                           block.match(/class="[^"]*a-star-(\d)[^"]*"/i)
-        const rating = ratingMatch ? parseFloat(ratingMatch[1].replace(',', '.')) : 5
-        
-        // Extract title
-        const titleMatch = block.match(/data-hook="review-title"[^>]*>(?:<span[^>]*>)?([^<]+)/i) ||
-                          block.match(/review-title[^>]*>([^<]+)</i)
-        const title = titleMatch?.[1]?.trim() || ''
-        
-        // Extract comment/body
-        const bodyMatch = block.match(/data-hook="review-body"[^>]*>[\s\S]*?<span[^>]*>([^<]+(?:<br[^>]*>)?[^<]*)</i) ||
-                         block.match(/review-text[^>]*>([^<]+)</i)
-        let comment = bodyMatch?.[1]?.trim() || ''
-        comment = comment.replace(/<br\s*\/?>/gi, '\n').slice(0, 2000)
-        
-        // Extract date
-        const dateMatch = block.match(/data-hook="review-date"[^>]*>([^<]+)</i) ||
-                         block.match(/review-date[^>]*>([^<]+)</i)
-        let reviewDate = null
-        if (dateMatch) {
-          const dateStr = dateMatch[1]
-          const parsed = Date.parse(dateStr.replace(/le\s*/i, '').replace(/Reviewed\s*in\s*[^on]+on\s*/i, ''))
-          if (!isNaN(parsed)) {
-            reviewDate = new Date(parsed).toISOString()
-          }
-        }
-        
-        // Check verified purchase
-        const verifiedPurchase = /achat\s*v[ée]rifi[ée]|verified\s*purchase/i.test(block)
-        
-        // Extract helpful count
-        const helpfulMatch = block.match(/(\d+)\s*(?:personnes?|people?)\s*(?:ont\s*trouv|found\s*this\s*helpful)/i)
-        const helpfulCount = helpfulMatch ? parseInt(helpfulMatch[1]) : 0
-        
-        // Extract images in review
-        const images: string[] = []
-        const imgMatches = block.matchAll(/review-image-tile[^>]*>\s*<img[^>]*src="([^"]+)"/gi)
-        for (const im of imgMatches) {
-          if (images.length < 5) images.push(im[1])
-        }
-        
-        if (comment || title) {
-          reviews.push({
-            customer_name: customerName,
-            rating: Math.min(5, Math.max(0, rating)),
-            title,
-            comment,
-            verified_purchase: verifiedPurchase,
-            helpful_count: helpfulCount,
-            review_date: reviewDate,
-            images,
-            source_review_id: reviewId
-          })
-        }
-      }
-      
-      // Pattern 2: cr-review-list based (alternative Amazon layout)
-      if (reviews.length === 0) {
-        const altReviewMatches = html.matchAll(/class="[^"]*review[^"]*"[^>]*data-hook="review"[\s\S]*?(?=class="[^"]*review[^"]*"[^>]*data-hook="review"|<\/div>\s*<\/div>\s*<\/div>\s*$)/gi)
-        for (const match of altReviewMatches) {
-          if (reviews.length >= maxReviews) break
-          const block = match[0]
-          
-          const nameMatch = block.match(/class="[^"]*a-profile-name[^"]*"[^>]*>([^<]+)</i)
-          const ratingMatch = block.match(/(\d+(?:[,.]?\d*)?)\s*(?:out of|sur|\/)\s*5/i)
-          const bodyMatch = block.match(/review-text[^>]*>([^<]+)</i)
-          
-          if (bodyMatch || nameMatch) {
-            reviews.push({
-              customer_name: nameMatch?.[1]?.trim() || 'Client Amazon',
-              rating: ratingMatch ? Math.min(5, parseFloat(ratingMatch[1].replace(',', '.'))) : 5,
-              title: '',
-              comment: bodyMatch?.[1]?.trim().slice(0, 2000) || '',
-              verified_purchase: /achat\s*v[ée]rifi[ée]|verified/i.test(block),
-              helpful_count: 0,
-              review_date: null,
-              images: []
-            })
-          }
-        }
-      }
-
-      // Pattern 3: Amazon "top reviews" section with a-section blocks
-      if (reviews.length === 0) {
-        const topReviewBlocks = html.matchAll(/class="[^"]*a-section\s+review\s+aok-relative[^"]*"[\s\S]*?(?=class="[^"]*a-section\s+review\s+aok-relative|id="reviewsMedley"|$)/gi)
-        for (const match of topReviewBlocks) {
-          if (reviews.length >= maxReviews) break
-          const block = match[0]
-          const nameMatch = block.match(/a-profile-name[^>]*>([^<]+)</i)
-          const ratingMatch = block.match(/a-star-(\d)/i) || block.match(/(\d+(?:[,.]?\d*))\s*(?:sur|out of)\s*5/i)
-          const titleMatch = block.match(/review-title[^>]*>(?:<span[^>]*>)*\s*([^<]+)/i)
-          const bodyMatch = block.match(/reviewText[^>]*>[\s\S]*?<span[^>]*>([^<]+)/i) ||
-                           block.match(/review-text-content[^>]*>[\s\S]*?<span[^>]*>([^<]+)/i)
-          const comment = bodyMatch?.[1]?.trim().replace(/<br\s*\/?>/gi, '\n').slice(0, 2000) || ''
-          const title = titleMatch?.[1]?.trim() || ''
-          if (comment || title) {
-            reviews.push({
-              customer_name: nameMatch?.[1]?.trim() || 'Client Amazon',
-              rating: ratingMatch ? Math.min(5, parseFloat(ratingMatch[1].replace(',', '.'))) : 5,
-              title,
-              comment,
-              verified_purchase: /achat\s*v[ée]rifi[ée]|verified/i.test(block),
-              helpful_count: 0,
-              review_date: null,
-              images: []
-            })
-          }
-        }
-      }
-
-      // Pattern 4: Extract from Firecrawl markdown content (reviews rendered by JS)
-      if (reviews.length === 0 && markdown) {
-        console.log('📝 Trying markdown-based Amazon review extraction...')
-        // Markdown often renders reviews as star blocks followed by text
-        // Common patterns: "★★★★★" or "5.0 out of 5 stars" followed by review text
-        const mdReviewBlocks = markdown.split(/(?=\d+[.,]\d*\s*(?:out of|sur)\s*5\s*(?:stars?|étoiles?))/gi)
-        for (let i = 1; i < mdReviewBlocks.length && reviews.length < maxReviews; i++) {
-          const block = mdReviewBlocks[i]
-          const ratingMatch = block.match(/^(\d+[.,]?\d*)\s*(?:out of|sur)\s*5/i)
-          if (!ratingMatch) continue
-          
-          const lines = block.split('\n').map(l => l.trim()).filter(Boolean)
-          // Skip the rating line itself
-          let title = ''
-          let comment = ''
-          let customerName = 'Client Amazon'
-          let verified = false
-          
-          for (let j = 1; j < lines.length && j < 10; j++) {
-            const line = lines[j]
-            if (/achat\s*v[ée]rifi[ée]|verified\s*purchase/i.test(line)) { verified = true; continue }
-            if (/Reviewed\s*in|Commenté\s*en/i.test(line)) continue
-            if (/personnes?\s*ont\s*trouv|people?\s*found/i.test(line)) continue
-            if (/Signaler/i.test(line)) continue
-            if (!title && line.length < 100 && line.length > 3) { title = line; continue }
-            if (line.length > 20) { comment = (comment ? comment + '\n' : '') + line }
-          }
-          
-          // Try to find author name (often "By AuthorName" or just a name before the rating)
-          if (i > 0) {
-            const prevBlock = mdReviewBlocks[i - 1]
-            const prevLines = prevBlock.split('\n').map(l => l.trim()).filter(Boolean)
-            const lastLine = prevLines[prevLines.length - 1]
-            if (lastLine && lastLine.length < 40 && !/\d{2,}/.test(lastLine)) {
-              customerName = lastLine.replace(/^By\s+/i, '').trim() || customerName
-            }
-          }
-          
-          if (comment || title) {
-            reviews.push({
-              customer_name: customerName,
-              rating: Math.min(5, parseFloat(ratingMatch[1].replace(',', '.'))),
-              title,
-              comment: comment.slice(0, 2000),
-              verified_purchase: verified,
-              helpful_count: 0,
-              review_date: null,
-              images: []
-            })
-          }
-        }
-      }
-    }
-    
-    if (platform === 'aliexpress') {
-      // AliExpress reviews from feedback JSON
-      const feedbackMatch = html.match(/feedbackList['"]\s*:\s*(\[[^\]]+\])/s) ||
-                           html.match(/"reviews?"\s*:\s*(\[[^\]]+\])/si)
-      if (feedbackMatch) {
-        try {
-          const feedbacks = JSON.parse(feedbackMatch[1])
-          for (const fb of feedbacks) {
-            if (reviews.length >= maxReviews) break
-            reviews.push({
-              customer_name: fb.buyerName || fb.buyer_name || fb.anonymous ? 'Client AliExpress' : (fb.name || 'Anonyme'),
-              rating: Math.min(5, Math.max(0, fb.star || fb.rating || fb.buyerEval || 5)),
-              title: '',
-              comment: (fb.content || fb.feedback || fb.buyerFeedback || '').slice(0, 2000),
-              verified_purchase: true,
-              helpful_count: 0,
-              review_date: fb.evalDate || fb.date ? new Date(fb.evalDate || fb.date).toISOString() : null,
-              images: fb.images || []
-            })
-          }
-        } catch (e) {
-          console.error('Error parsing AliExpress reviews:', e)
-        }
-      }
-    }
-    
-    // Generic review extraction for other platforms
-    if (reviews.length === 0) {
-      // Try schema.org Review markup
-      const reviewSchemaMatches = html.matchAll(/"@type"\s*:\s*"Review"[\s\S]*?(?="@type"|$)/gi)
-      for (const match of reviewSchemaMatches) {
-        if (reviews.length >= maxReviews) break
-        const block = match[0]
-        
-        const authorMatch = block.match(/"author"[^}]*"name"\s*:\s*"([^"]+)"/i)
-        const ratingMatch = block.match(/"ratingValue"\s*:\s*"?(\d+(?:\.\d+)?)"?/i)
-        const bodyMatch = block.match(/"reviewBody"\s*:\s*"([^"]+)"/i)
-        const dateMatch = block.match(/"datePublished"\s*:\s*"([^"]+)"/i)
-        
-        if (bodyMatch || ratingMatch) {
-          reviews.push({
-            customer_name: authorMatch?.[1] || 'Client',
-            rating: ratingMatch ? Math.min(5, parseFloat(ratingMatch[1])) : 5,
-            title: '',
-            comment: (bodyMatch?.[1] || '').slice(0, 2000),
-            verified_purchase: false,
-            helpful_count: 0,
-            review_date: dateMatch ? new Date(dateMatch[1]).toISOString() : null,
-            images: []
-          })
-        }
-      }
-    }
-    
-  } catch (error) {
-    console.error('Error extracting reviews:', error)
-  }
-  
-  return reviews
-}
-
-// Extract seller info
-function extractSellerInfo(html: string, platform: string): any {
-  const seller: any = {
-    name: null,
-    rating: null,
-    reviews_count: null,
-    url: null
-  }
-  
-  try {
-    if (platform === 'amazon') {
-      // Amazon seller
-      const sellerMatch = html.match(/id="sellerProfileTriggerId"[^>]*>([^<]+)</i) ||
-                          html.match(/sold\s*by[^<]*<a[^>]*>([^<]+)</i) ||
-                          html.match(/Vendu\s*par[^<]*<a[^>]*>([^<]+)</i)
-      if (sellerMatch) {
-        seller.name = sellerMatch[1].trim()
-      } else {
-        seller.name = 'Amazon'
-      }
-    } else {
-      // Generic seller extraction
-      const sellerMatch = html.match(/(?:sold\s*by|vendeur|seller|shop)[^<]*?[>:]([^<]{2,50})</i) ||
-                          html.match(/store-name[^>]*>([^<]+)</i) ||
-                          html.match(/shop-name[^>]*>([^<]+)</i)
-      if (sellerMatch) {
-        seller.name = sellerMatch[1].trim()
-      }
-    }
-    
-    // Seller rating
-    const ratingMatch = html.match(/(?:seller|store|shop)[^<]*?(\d+\.?\d*)\s*%?\s*(?:positive|feedback)/i) ||
-                        html.match(/(\d+\.?\d*)\s*(?:star|étoile|★)/i)
-    if (ratingMatch) {
-      seller.rating = parseFloat(ratingMatch[1])
-    }
-    
-    // Reviews count
-    const reviewsMatch = html.match(/(\d+(?:[,.\s]\d+)?[kKmM]?)\s*(?:reviews?|avis|évaluations?|ratings?)/i)
-    if (reviewsMatch) {
-      let count = reviewsMatch[1].replace(/[,\s]/g, '')
-      if (count.toLowerCase().includes('k')) {
-        count = String(parseFloat(count) * 1000)
-      } else if (count.toLowerCase().includes('m')) {
-        count = String(parseFloat(count) * 1000000)
-      }
-      seller.reviews_count = parseInt(count)
-    }
-  } catch (error) {
-    console.error('Error extracting seller info:', error)
-  }
-  
-  return seller
-}
-
-// Extract title specifically for Amazon
-function extractAmazonTitle(html: string, markdown: string = ''): string {
-  // Try productTitle span
-  const titleMatch = html.match(/id="productTitle"[^>]*>([^<]+)</i)
-  if (titleMatch) {
-    return titleMatch[1].trim()
-  }
-  
-  // Try title from JSON-LD
-  const jsonLdMatch = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)
-  if (jsonLdMatch) {
-    for (const match of jsonLdMatch) {
-      try {
-        const jsonContent = match.replace(/<\/?script[^>]*>/gi, '')
-        const data = JSON.parse(jsonContent)
-        if (data.name) return data.name
-        if (data['@graph']) {
-          for (const item of data['@graph']) {
-            if (item.name) return item.name
-          }
-        }
-      } catch (e) {}
-    }
-  }
-  
-  // Try og:title
-  const ogMatch = html.match(/og:title"[^>]*content="([^"]+)"/i)
-  if (ogMatch) {
-    return ogMatch[1].replace(/\s*[-|:].*Amazon.*$/i, '').trim()
-  }
-  
-  // Try <title>
-  const htmlTitleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
-  if (htmlTitleMatch) {
-    return htmlTitleMatch[1].replace(/\s*[-|:].*Amazon.*$/i, '').trim()
-  }
-  
-  // Try markdown
-  if (markdown) {
-    const mdTitleMatch = markdown.match(/^#\s+(.+)$/m)
-    if (mdTitleMatch) {
-      return mdTitleMatch[1].trim()
-    }
-  }
-  
+  // JSON-LD
+  for (const m of html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)) { try { const d = JSON.parse(m[1].replace(/<\/?script[^>]*>/gi, '')); if (d.name) return d.name; if (d['@graph']) for (const i of d['@graph']) if (i.name) return i.name } catch {} }
+  const og = html.match(/og:title"[^>]*content="([^"]+)"/i)
+  if (og) return og[1].replace(/\s*[-|].*$/, '').trim()
+  const ht = html.match(/<title[^>]*>([^<]+)<\/title>/i)
+  if (ht) return ht[1].replace(/\s*[-|].*$/, '').trim()
+  if (md) { const mt = md.match(/^#\s+(.+)$/m); if (mt) return mt[1].trim() }
   return 'Produit importé'
 }
 
-// Extract brand from product page (Amazon-optimized)
-function extractBrand(html: string, markdown: string, platform: string): string {
+function extractPrice(html: string, md: string, platform: string): { price: number; currency: string; originalPrice: number | null } {
+  let price = 0, originalPrice: number | null = null, currency = 'EUR'
+  const parseMoney = (r: string) => { if (!r) return 0; let c = r.replace(/[^\d,\.]/g, ''); if ((c.match(/,/g) || []).length === 1 && !(c.match(/\./g) || []).length) c = c.replace(',', '.'); else if ((c.match(/,/g) || []).length === 1 && (c.match(/\./g) || []).length >= 1) c = c.replace(/\./g, '').replace(',', '.'); const n = parseFloat(c); return (!isNaN(n) && n > 0 && n < 50000) ? n : 0 }
+  if (html.includes('£')) currency = 'GBP'; else if (html.includes('$') && !html.includes('€')) currency = 'USD'
+
   if (platform === 'amazon') {
-    // Strategy 1: bylineInfo — Amazon FR: "Visiter la boutique BRAND" or "Marque : BRAND"
-    // The link may contain inner spans, so grab the whole inner text
-    const bylineBlock = html.match(/id="bylineInfo"[^>]*>([\s\S]*?)<\/a>/i)
-    if (bylineBlock) {
-      // Strip inner HTML tags to get pure text
-      const text = bylineBlock[1].replace(/<[^>]+>/g, '').trim()
-      // Remove "Visiter la boutique" / "Visit the BRAND Store" prefix
-      const cleaned = text
-        .replace(/^Visiter\s*la\s*boutique\s*/i, '')
-        .replace(/^Visit\s*the\s*/i, '')
-        .replace(/\s*Store$/i, '')
-        .replace(/^Marque\s*:\s*/i, '')
-        .trim()
-      if (cleaned && cleaned.length > 1 && cleaned.length < 80) {
-        console.log(`✓ Brand from bylineInfo: ${cleaned}`)
-        return cleaned
-      }
-    }
-
-    // Strategy 2: "Marque" row in detail table
-    const marqueMatch = html.match(/>\s*Marque\s*<\/t[hd]>\s*<td[^>]*>([^<]+)/i) ||
-                        html.match(/>\s*Brand\s*<\/t[hd]>\s*<td[^>]*>([^<]+)/i)
-    if (marqueMatch) {
-      const brand = marqueMatch[1].trim()
-      if (brand.length > 1 && brand.length < 80) {
-        console.log(`✓ Brand from detail table: ${brand}`)
-        return brand
-      }
-    }
-
-    // Strategy 3: JSON-LD brand
-    const jsonLdBrand = html.match(/"brand"\s*:\s*\{\s*"@type"\s*:\s*"Brand"\s*,\s*"name"\s*:\s*"([^"]+)"/i) ||
-                        html.match(/"brand"\s*:\s*"([^"]+)"/i)
-    if (jsonLdBrand) {
-      const brand = jsonLdBrand[1].trim()
-      if (brand.length > 1 && brand.length < 80 && brand.toLowerCase() !== 'amazon') {
-        console.log(`✓ Brand from JSON-LD: ${brand}`)
-        return brand
-      }
-    }
-
-    // Strategy 4: Markdown
-    if (markdown) {
-      const mdBrand = markdown.match(/Marque\s*[:|]\s*([^\n|]+)/i) ||
-                      markdown.match(/Brand\s*[:|]\s*([^\n|]+)/i)
-      if (mdBrand) {
-        const brand = mdBrand[1].trim()
-        if (brand.length > 1 && brand.length < 80) {
-          console.log(`✓ Brand from markdown: ${brand}`)
-          return brand
-        }
-      }
-    }
+    // Core price display
+    const cb = html.match(/id="corePrice[^"]*"[\s\S]{0,2000}/i)
+    if (cb) { const pm = cb[0].match(/(\d{1,5})[,\.](\d{2})\s*€/) || cb[0].match(/priceToPay[\s\S]*?(\d{1,5})[,\.](\d{2})/); if (pm) { const w = parseInt(pm[1]), f = parseInt(pm[2]); if (w > 0) price = w + f / 100 } }
+    if (!price) { const wm = html.match(/a-price-whole[^>]*>(\d+)/i), fm = html.match(/a-price-fraction[^>]*>(\d+)/i); if (wm) { price = parseInt(wm[1]) + (fm ? parseInt(fm[1]) / 100 : 0) } }
+    if (!price && md) { const pm = md.match(/\*?\*?(\d{1,4})[,\.](\d{2})\s*€/i); if (pm) price = parseInt(pm[1]) + parseInt(pm[2]) / 100 }
+    if (!price) { const mm = html.match(/product:price:amount"[^>]*content="([\d,\.]+)"/i) || html.match(/itemprop="price"[^>]*content="([\d,\.]+)"/i); if (mm) price = parseMoney(mm[1]) }
+    if (!price) { const jm = html.match(/"price"\s*:\s*"?(\d+(?:[,\.]\d+)?)"?/i); if (jm) price = parseMoney(jm[1]) }
+    // Original price
+    const op = html.match(/a-text-price[^>]*>[\s\S]{0,100}?<span[^>]*>([^<]{1,20})/i) || html.match(/a-text-strike[^>]*>([^<]{1,20})/i)
+    if (op) { const e = parseMoney(op[1]); if (e > price) originalPrice = e }
+  } else {
+    const pm = html.match(/product:price:amount"[^>]*content="([\d,.]+)"/i) || html.match(/price[^>]*>[\s]*[€$£]?\s*([\d,.]+)/i)
+    if (pm) price = parseMoney(pm[1])
+    const cm = html.match(/product:price:currency"[^>]*content="([^"]+)"/i)
+    if (cm) currency = cm[1].toUpperCase()
+    if (!currency || currency === 'EUR') { if (platform === 'aliexpress') currency = 'USD' }
   }
-
-  // Generic extraction for other platforms
-  const genericBrand = html.match(/og:brand"[^>]*content="([^"]+)"/i) ||
-                       html.match(/"brand"\s*:\s*\{\s*"name"\s*:\s*"([^"]+)"/i) ||
-                       html.match(/"brand"\s*:\s*"([^"]+)"/i)
-  if (genericBrand) {
-    const brand = genericBrand[1].trim()
-    if (brand.length > 1 && brand.length < 80) return brand
-  }
-
-  return platform
-}
-
-// Extract price specifically for Amazon (with markdown fallback)
-function extractAmazonPrice(html: string, markdown?: string): { price: number; currency: string; originalPrice: number | null } {
-  let price = 0
-  let originalPrice: number | null = null
-  let currency = 'EUR'
-
-  // Helpers: parse European-format prices (149,00 € or 149.00€)
-  const parseMoney = (raw: string): number => {
-    if (!raw) return 0
-    // Remove everything except digits, commas, dots
-    let cleaned = raw.replace(/[^\d,\.]/g, '').trim()
-    if (!cleaned) return 0
-    
-    // Handle European format: 149,00 or 1.499,00
-    const commaCount = (cleaned.match(/,/g) || []).length
-    const dotCount = (cleaned.match(/\./g) || []).length
-    
-    if (commaCount === 1 && dotCount === 0) {
-      cleaned = cleaned.replace(',', '.')
-    } else if (dotCount === 1 && commaCount === 0) {
-      // Already 149.00
-    } else if (commaCount === 1 && dotCount >= 1) {
-      cleaned = cleaned.replace(/\./g, '').replace(',', '.')
-    } else if (dotCount === 1 && commaCount >= 1) {
-      cleaned = cleaned.replace(/,/g, '')
-    }
-    
-    const result = parseFloat(cleaned)
-    return (!isNaN(result) && result > 0 && result < 50000) ? result : 0
-  }
-
-  // Detect currency
-  if (html.includes('£')) currency = 'GBP'
-  else if (html.includes('$') && !html.includes('€')) currency = 'USD'
-
-  console.log('🔍 Searching for Amazon price...')
-
-  // Strategy 1: Display price — prioritize corePriceDisplay / priceToPay container
-  const coreBlock = html.match(/id="corePriceDisplay[^"]*"[\s\S]{0,2000}/i) ||
-                    html.match(/id="corePrice[^"]*"[\s\S]{0,2000}/i)
-  if (coreBlock) {
-    const corePriceMatch = coreBlock[0].match(/(\d{1,5})[,\.](\d{2})\s*€/) ||
-                           coreBlock[0].match(/class="[^"]*priceToPay[^"]*"[\s\S]*?(\d{1,5})[,\.](\d{2})/)
-    if (corePriceMatch) {
-      const whole = parseInt(corePriceMatch[1]) || 0
-      const fraction = parseInt(corePriceMatch[2]) || 0
-      if (whole > 0 && whole < 50000) {
-        price = whole + fraction / 100
-        console.log(`✓ Found core display price: ${price}`)
-      }
-    }
-  }
-
-  // Strategy 1b: priceToPay class directly
-  if (price === 0) {
-    const payMatch = html.match(/class="[^"]*priceToPay[^"]*"[^>]*>[\s\S]*?(\d{1,5})[,\.](\d{2})\s*€/i)
-    if (payMatch) {
-      const whole = parseInt(payMatch[1]) || 0
-      const fraction = parseInt(payMatch[2]) || 0
-      if (whole > 0 && whole < 50000) {
-        price = whole + fraction / 100
-        console.log(`✓ Found priceToPay: ${price}`)
-      }
-    }
-  }
-
-  // Strategy 3: Look for a-price-whole + a-price-fraction
-  if (price === 0) {
-    const wholeMatch = html.match(/class="[^"]*a-price-whole[^"]*"[^>]*>(\d+)/i)
-    const fractionMatch = html.match(/class="[^"]*a-price-fraction[^"]*"[^>]*>(\d+)/i)
-    if (wholeMatch) {
-      const whole = parseInt(wholeMatch[1]) || 0
-      const fraction = fractionMatch ? parseInt(fractionMatch[1]) || 0 : 0
-      if (whole > 0 && whole < 10000) {
-        price = whole + fraction / 100
-        console.log(`✓ Found whole+fraction: ${price}`)
-      }
-    }
-  }
-
-  // Strategy 4: Search in markdown for price pattern (very reliable fallback)
-  if (price === 0 && markdown) {
-    // Match patterns like "149,00€" or "149.00 €" or "**149,00€**"
-    const mdPriceMatch = markdown.match(/\*?\*?(\d{1,4})[,\.](\d{2})\s*€\*?\*?/i) ||
-                         markdown.match(/€\s*(\d{1,4})[,\.](\d{2})/i) ||
-                         markdown.match(/Prix\s*:?\s*(\d{1,4})[,\.](\d{2})/i)
-    if (mdPriceMatch) {
-      const whole = parseInt(mdPriceMatch[1]) || 0
-      const fraction = parseInt(mdPriceMatch[2]) || 0
-      if (whole > 0 && whole < 10000) {
-        price = whole + fraction / 100
-        console.log(`✓ Found markdown price: ${price}`)
-      }
-    }
-  }
-
-  // Strategy 5: a-offscreen prices (filter out installments)
-  if (price === 0) {
-    const offscreenMatches = [...html.matchAll(/<span[^>]*class="[^"]*a-offscreen[^"]*"[^>]*>([^<]{1,30})</gi)]
-    for (const match of offscreenMatches) {
-      const context = html.slice(Math.max(0, html.indexOf(match[0]) - 200), html.indexOf(match[0]) + match[0].length + 50)
-      const isInstallment = /mois|month|mensuel|paiement|4x|3x|abonnement|subscription|\/mois/i.test(context)
-      
-      if (!isInstallment) {
-        const extracted = parseMoney(match[1])
-        if (extracted > 0 && extracted < 5000) {
-          price = extracted
-          console.log(`✓ Found a-offscreen price: ${price}`)
-          break
-        }
-      }
-    }
-  }
-
-  // Strategy 6: Meta tags
-  if (price === 0) {
-    const metaMatch = html.match(/product:price:amount"[^>]*content="([\d,\.]+)"/i) ||
-                      html.match(/itemprop="price"[^>]*content="([\d,\.]+)"/i)
-    if (metaMatch) {
-      const extracted = parseMoney(metaMatch[1])
-      if (extracted > 0) {
-        price = extracted
-        console.log(`✓ Found meta price: ${price}`)
-      }
-    }
-  }
-
-  // Strategy 7: JSON-LD
-  if (price === 0) {
-    const jsonLdMatch = html.match(/"price"\s*:\s*"?(\d+(?:[,\.]\d+)?)"?/i)
-    if (jsonLdMatch) {
-      const extracted = parseMoney(jsonLdMatch[1])
-      if (extracted > 0 && extracted < 10000) {
-        price = extracted
-        console.log(`✓ Found JSON-LD price: ${price}`)
-      }
-    }
-  }
-
-  // Extract original/strike-through price
-  const oldPricePatterns = [
-    /class="[^"]*a-text-price[^"]*"[^>]*>[\s\S]{0,100}?<span[^>]*>([^<]{1,20})</i,
-    /class="[^"]*a-text-strike[^"]*"[^>]*>([^<]{1,20})</i,
-    /Ancien\s*prix[^:]*:\s*([^<\n]{1,20})/i,
-  ]
-  
-  for (const pattern of oldPricePatterns) {
-    const match = html.match(pattern)
-    if (match) {
-      const extracted = parseMoney(match[1])
-      if (extracted > 0 && extracted > price) {
-        originalPrice = extracted
-        console.log(`✓ Found original price: ${originalPrice}`)
-        break
-      }
-    }
-  }
-
-  console.log(`💰 Amazon price: ${price} ${currency} (original: ${originalPrice})`)
   return { price, currency, originalPrice }
 }
 
-// Extract SKU from product page (model number, not ASIN)
-function extractAmazonSKU(html: string, markdown: string, asin: string): string {
-  // Strategy 1: Look for model number in details table
-  const modelPatterns = [
-    /Numéro\s*de\s*modèle[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})</i,
-    /Numéro\s*du\s*modèle[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})</i,
-    /Model\s*Number[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})</i,
-    /Modèle[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})</i,
-    />Numéro\s*de\s*modèle[^<]*<[^>]*>([A-Z0-9][\w-]{2,20})</i,
-    /data-hook="dp-product-meta"[\s\S]*?([A-Z]{2,}-\d+[\w-]*)/i,
-  ]
-  
-  for (const pattern of modelPatterns) {
-    const match = html.match(pattern)
-    if (match && match[1] && match[1] !== asin) {
-      console.log(`✓ Found model SKU: ${match[1]}`)
-      return match[1].trim()
-    }
-  }
-  
-  // Strategy 2: Look in markdown for model pattern
-  if (markdown) {
-    const mdModelMatch = markdown.match(/Numéro\s*d[eu]\s*modèle[^:|\n]*[:|]\s*([A-Z0-9][\w-]{2,20})/i) ||
-                         markdown.match(/Model[^:|\n]*[:|]\s*([A-Z0-9][\w-]{2,20})/i) ||
-                         markdown.match(/Modèle[^:|\n]*[:|]\s*([A-Z0-9][\w-]{2,20})/i)
-    if (mdModelMatch && mdModelMatch[1] && mdModelMatch[1] !== asin) {
-      console.log(`✓ Found model from markdown: ${mdModelMatch[1]}`)
-      return mdModelMatch[1].trim()
-    }
-  }
-  
-  // Strategy 3: Try to find part number
-  const partMatch = html.match(/Part\s*Number[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})</i) ||
-                    html.match(/Référence[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})</i)
-  if (partMatch && partMatch[1] && partMatch[1] !== asin) {
-    console.log(`✓ Found part number: ${partMatch[1]}`)
-    return partMatch[1].trim()
-  }
-  
-  // Fallback to ASIN with prefix
-  return `AMZ-${asin}`
-}
-
-// Scrape Shopify product using the public JSON API (most reliable method)
-async function scrapeShopifyProduct(url: string, productHandle: string | null): Promise<any | null> {
-  console.log('🛍️ Attempting Shopify JSON API scraping...')
-  
-  try {
-    // Build the JSON API URL
-    const urlObj = new URL(url)
-    const baseUrl = `${urlObj.protocol}//${urlObj.host}`
-    
-    // If we have a handle, use it directly
-    let jsonUrl = ''
-    if (productHandle) {
-      jsonUrl = `${baseUrl}/products/${productHandle}.json`
-    } else {
-      // Try to extract handle from URL
-      const handleMatch = url.match(/\/products\/([^\/\?#]+)/)
-      if (handleMatch) {
-        jsonUrl = `${baseUrl}/products/${handleMatch[1]}.json`
-      }
-    }
-    
-    if (!jsonUrl) {
-      console.log('Could not build Shopify JSON URL')
-      return null
-    }
-    
-    console.log(`📡 Fetching Shopify JSON: ${jsonUrl}`)
-    
-    const response = await fetch(jsonUrl, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      }
-    })
-    
-    if (!response.ok) {
-      console.log(`Shopify JSON API returned ${response.status}`)
-      return null
-    }
-    
-    const data = await response.json()
-    const product = data.product
-    
-    if (!product) {
-      console.log('No product found in Shopify JSON response')
-      return null
-    }
-    
-    console.log(`✅ Shopify JSON API success: "${product.title}"`)
-    
-    // Extract all images (high quality)
-    const images = (product.images || []).map((img: any) => {
-      // Remove size modifiers for max quality
-      return (img.src || img.url || '').replace(/_\d+x(\d+)?\./, '.').replace(/\?.*$/, '')
-    }).filter(Boolean)
-    
-    // Extract variants with full details
-    const variants = (product.variants || []).map((v: any) => {
-      const attributes: Record<string, string> = {}
-      if (v.option1) attributes[product.options?.[0]?.name || 'Option 1'] = v.option1
-      if (v.option2) attributes[product.options?.[1]?.name || 'Option 2'] = v.option2
-      if (v.option3) attributes[product.options?.[2]?.name || 'Option 3'] = v.option3
-      
-      return {
-        sku: v.sku || v.id?.toString() || '',
-        name: v.title || Object.values(attributes).join(' / '),
-        price: parseFloat(v.price) || 0,
-        compare_at_price: v.compare_at_price ? parseFloat(v.compare_at_price) : null,
-        stock: v.inventory_quantity ?? (v.available ? 99 : 0),
-        available: v.available ?? true,
-        image: v.featured_image?.src || (v.image_id && images[0]) || null,
-        attributes,
-        variant_id: v.id?.toString(),
-        weight: v.weight,
-        weight_unit: v.weight_unit
-      }
-    })
-    
-    // Get the best price (lowest variant price)
-    const prices = variants.map((v: any) => v.price).filter((p: number) => p > 0)
-    const price = prices.length > 0 ? Math.min(...prices) : 0
-    
-    // Get compare_at_price if available
-    const compareAtPrices = variants.map((v: any) => v.compare_at_price).filter((p: number | null) => p && p > 0)
-    const originalPrice = compareAtPrices.length > 0 ? Math.max(...compareAtPrices) : null
-    
-    // Safely handle tags - can be string or array
-    const tagsArray = Array.isArray(product.tags) 
-      ? product.tags 
-      : typeof product.tags === 'string' 
-        ? product.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
-        : []
-    
-    return {
-      title: product.title || 'Produit Shopify',
-      description: product.body_html?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '',
-      price,
-      original_price: originalPrice,
-      currency: 'EUR', // Shopify JSON doesn't include currency, default to EUR
-      sku: product.variants?.[0]?.sku || product.handle || `SHOPIFY-${product.id}`,
-      brand: product.vendor || '',
-      category: product.product_type || '',
-      images,
-      videos: [], // Will be populated from HTML if needed
-      variants,
-      specifications: {
-        'Type': product.product_type || '',
-        'Vendeur': product.vendor || '',
-        'Tags': tagsArray.join(', ')
-      },
-      handle: product.handle,
-      product_type: product.product_type || '',
-      tags: tagsArray,
-      vendor: product.vendor || '',
-      created_at: product.created_at,
-      updated_at: product.updated_at
-    }
-  } catch (error) {
-    console.error('Shopify JSON API error:', error)
-    return null
-  }
-}
-
-// Extract tags from product page
-function extractTags(html: string, markdown: string, platform: string): string[] {
-  const tags: string[] = []
-  
+function extractBrand(html: string, md: string, platform: string): string {
   if (platform === 'amazon') {
-    // Breadcrumb categories as tags
-    const breadcrumbMatch = html.match(/id="wayfinding-breadcrumbs[^"]*"([\s\S]{0,3000}?)<\/div>\s*<\/div>/i)
-    if (breadcrumbMatch) {
-      const links = breadcrumbMatch[1].matchAll(/<a[^>]*>\s*([^<]+)/gi)
-      for (const m of links) {
-        const tag = m[1].trim()
-        if (tag && tag.length > 1 && tag.length < 60 && !tags.includes(tag)) tags.push(tag)
-      }
-    }
-    // JSON-LD keywords
-    const keywordsMatch = html.match(/"keywords"\s*:\s*"([^"]+)"/i)
-    if (keywordsMatch) {
-      const kws = keywordsMatch[1].split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 1 && k.length < 50)
-      for (const k of kws) { if (!tags.includes(k)) tags.push(k) }
-    }
+    const bl = html.match(/id="bylineInfo"[^>]*>([\s\S]*?)<\/a>/i)
+    if (bl) { const t = bl[1].replace(/<[^>]+>/g, '').trim().replace(/^Visiter\s*la\s*boutique\s*/i, '').replace(/^Visit\s*the\s*/i, '').replace(/\s*Store$/i, '').replace(/^Marque\s*:\s*/i, '').trim(); if (t.length > 1 && t.length < 80) return t }
+    const mr = html.match(/>\s*Marque\s*<\/t[hd]>\s*<td[^>]*>([^<]+)/i) || html.match(/>\s*Brand\s*<\/t[hd]>\s*<td[^>]*>([^<]+)/i)
+    if (mr) { const b = mr[1].trim(); if (b.length > 1) return b }
   }
-  
-  // Generic: meta keywords
-  const metaKw = html.match(/name="keywords"[^>]*content="([^"]+)"/i)
-  if (metaKw) {
-    const kws = metaKw[1].split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 1 && k.length < 50)
-    for (const k of kws) { if (!tags.includes(k)) tags.push(k) }
-  }
-
-  // Markdown tags
-  if (markdown) {
-    const mdTags = markdown.match(/Tags?\s*[:|]\s*([^\n]+)/i)
-    if (mdTags) {
-      const kws = mdTags[1].split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 1 && k.length < 50)
-      for (const k of kws) { if (!tags.includes(k)) tags.push(k) }
-    }
-  }
-
-  return tags.slice(0, 20)
-}
-
-// Extract category from product page
-function extractCategory(html: string, markdown: string, platform: string): string {
-  if (platform === 'amazon') {
-    const breadcrumbMatch = html.match(/id="wayfinding-breadcrumbs[^"]*"([\s\S]{0,3000}?)<\/div>\s*<\/div>/i)
-    if (breadcrumbMatch) {
-      const links = breadcrumbMatch[1].matchAll(/<a[^>]*>\s*([^<]+)/gi)
-      const catList: string[] = []
-      for (const m of links) {
-        const c = m[1].trim()
-        if (c && c.length > 1 && c.length < 80) catList.push(c)
-      }
-      if (catList.length > 0) return catList[0]
-    }
-    const ptMatch = html.match(/"product_type_name"\s*:\s*"([^"]+)"/i)
-    if (ptMatch) return ptMatch[1].trim()
-  }
-  
-  const ogType = html.match(/og:product:category"[^>]*content="([^"]+)"/i) ||
-                 html.match(/product:category"[^>]*content="([^"]+)"/i)
-  if (ogType) return ogType[1].trim()
-  
-  const jsonCat = html.match(/"category"\s*:\s*"([^"]+)"/i)
-  if (jsonCat) return jsonCat[1].trim()
-
-  if (markdown) {
-    const mdCat = markdown.match(/Cat[ée]gorie\s*[:|]\s*([^\n]+)/i) ||
-                  markdown.match(/Category\s*[:|]\s*([^\n]+)/i)
-    if (mdCat) return mdCat[1].trim()
-  }
-  
+  const gb = html.match(/"brand"\s*:\s*\{\s*"name"\s*:\s*"([^"]+)"/i) || html.match(/"brand"\s*:\s*"([^"]+)"/i)
+  if (gb) { const b = gb[1].trim(); if (b.length > 1 && b.length < 80) return b }
   return ''
 }
 
-// Extract subcategory from product page
-function extractSubcategory(html: string, markdown: string, platform: string): string {
+function extractStock(html: string, platform: string): number {
   if (platform === 'amazon') {
-    const breadcrumbMatch = html.match(/id="wayfinding-breadcrumbs[^"]*"([\s\S]{0,3000}?)<\/div>\s*<\/div>/i)
-    if (breadcrumbMatch) {
-      const links = breadcrumbMatch[1].matchAll(/<a[^>]*>\s*([^<]+)/gi)
-      const catList: string[] = []
-      for (const m of links) {
-        const c = m[1].trim()
-        if (c && c.length > 1 && c.length < 80) catList.push(c)
-      }
-      if (catList.length > 1) return catList[catList.length - 1]
-    }
+    const av = html.match(/id="availability"[\s\S]{0,500}/i)
+    if (av) { const qm = av[0].match(/(\d+)\s*(?:exemplaire|left|restant|en stock)/i); if (qm) return parseInt(qm[1]); if (/en\s+stock|in\s+stock|disponible/i.test(av[0])) return 99; if (/indisponible|unavailable|rupture/i.test(av[0])) return 0 }
   }
-  
-  const jsonSub = html.match(/"subcategory"\s*:\s*"([^"]+)"/i)
-  if (jsonSub) return jsonSub[1].trim()
-
-  if (markdown) {
-    const mdSub = markdown.match(/Sous[- ]?cat[ée]gorie\s*[:|]\s*([^\n]+)/i) ||
-                  markdown.match(/Sub[- ]?category\s*[:|]\s*([^\n]+)/i)
-    if (mdSub) return mdSub[1].trim()
-  }
-  
-  return ''
-}
-
-// Extract breadcrumbs as an array
-function extractBreadcrumbs(html: string, markdown: string, platform: string): string[] {
-  const crumbs: string[] = []
-  if (platform === 'amazon') {
-    const breadcrumbMatch = html.match(/id="wayfinding-breadcrumbs[^"]*"([\s\S]{0,3000}?)<\/div>\s*<\/div>/i)
-    if (breadcrumbMatch) {
-      const links = breadcrumbMatch[1].matchAll(/<a[^>]*>\s*([^<]+)/gi)
-      for (const m of links) { const c = m[1].trim(); if (c && c.length > 1 && c.length < 80) crumbs.push(c) }
-    }
-  }
-  if (crumbs.length === 0) {
-    const bcMatch = html.match(/class="[^"]*breadcrumb[^"]*"([\s\S]{0,3000}?)<\/(?:nav|div|ol|ul)>/i)
-    if (bcMatch) {
-      const links = bcMatch[1].matchAll(/<a[^>]*>\s*([^<]+)/gi)
-      for (const m of links) { const c = m[1].trim(); if (c && c.length > 1 && c.length < 80 && !/home|accueil/i.test(c)) crumbs.push(c) }
-    }
-  }
-  if (crumbs.length === 0) {
-    const jsonLdMatch = html.match(/"@type"\s*:\s*"BreadcrumbList"[\s\S]*?"itemListElement"\s*:\s*\[([\s\S]*?)\]/i)
-    if (jsonLdMatch) { const nameMatches = jsonLdMatch[1].matchAll(/"name"\s*:\s*"([^"]+)"/gi); for (const m of nameMatches) { if (m[1].length > 1 && m[1].length < 80) crumbs.push(m[1]) } }
-  }
-  return crumbs.slice(0, 10)
-}
-
-// Extract SEO data
-function extractSeoData(html: string): { metaTitle: string; metaDescription: string; h1: string; h2s: string[]; canonicalUrl: string; keywords: string[] } {
-  const seo = { metaTitle: '', metaDescription: '', h1: '', h2s: [] as string[], canonicalUrl: '', keywords: [] as string[] }
-  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i); seo.metaTitle = titleMatch?.[1]?.trim() || ''
-  const descMatch = html.match(/name="description"[^>]*content="([^"]+)"/i) || html.match(/property="og:description"[^>]*content="([^"]+)"/i); seo.metaDescription = descMatch?.[1]?.trim() || ''
-  const h1Match = html.match(/<h1[^>]*>([^<]+)</i); seo.h1 = h1Match?.[1]?.trim() || ''
-  const h2Matches = html.matchAll(/<h2[^>]*>([^<]+)</gi); for (const m of h2Matches) { const h2 = m[1].trim(); if (h2.length > 2 && h2.length < 200 && seo.h2s.length < 10) seo.h2s.push(h2) }
-  const canonMatch = html.match(/rel="canonical"[^>]*href="([^"]+)"/i) || html.match(/href="([^"]+)"[^>]*rel="canonical"/i); seo.canonicalUrl = canonMatch?.[1] || ''
-  const kwMatch = html.match(/name="keywords"[^>]*content="([^"]+)"/i); if (kwMatch) seo.keywords = kwMatch[1].split(',').map(k => k.trim()).filter(k => k.length > 1 && k.length < 50).slice(0, 20)
-  return seo
-}
-
-// Calculate review star distribution
-function calculateReviewDistribution(reviews: any[]): { distribution: Record<number, number>; averageRating: number; totalReviews: number } {
-  const distribution: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
-  if (!reviews || reviews.length === 0) return { distribution, averageRating: 0, totalReviews: 0 }
-  let totalRating = 0
-  for (const review of reviews) { const rating = Math.min(5, Math.max(1, Math.round(review.rating || 5))); distribution[rating] = (distribution[rating] || 0) + 1; totalRating += rating }
-  return { distribution, averageRating: Math.round((totalRating / reviews.length) * 10) / 10, totalReviews: reviews.length }
-}
-
-// Calculate product quality/completeness score
-function calculateQualityScore(productData: any): { score: number; breakdown: Record<string, { score: number; max: number; label: string }> } {
-  const breakdown: Record<string, { score: number; max: number; label: string }> = {
-    title: { score: 0, max: 15, label: 'Titre' }, description: { score: 0, max: 15, label: 'Description' },
-    images: { score: 0, max: 20, label: 'Images' }, price: { score: 0, max: 10, label: 'Prix' },
-    variants: { score: 0, max: 10, label: 'Variantes' }, reviews: { score: 0, max: 10, label: 'Avis' },
-    specifications: { score: 0, max: 5, label: 'Caractéristiques' }, category: { score: 0, max: 5, label: 'Catégorie' },
-    brand: { score: 0, max: 5, label: 'Marque' }, seo: { score: 0, max: 5, label: 'SEO' },
-  }
-  if (productData.title?.length > 10) breakdown.title.score = 10; if (productData.title?.length > 30) breakdown.title.score = 15
-  if (productData.description?.length > 20) breakdown.description.score = 8; if (productData.description?.length > 100) breakdown.description.score = 15
-  const imgCount = productData.images?.length || 0
-  if (imgCount >= 1) breakdown.images.score = 5; if (imgCount >= 3) breakdown.images.score = 10; if (imgCount >= 5) breakdown.images.score = 15; if (imgCount >= 8) breakdown.images.score = 20
-  if (productData.price > 0) breakdown.price.score = 10
-  const varCount = productData.variants?.length || 0; if (varCount >= 1) breakdown.variants.score = 5; if (varCount >= 3) breakdown.variants.score = 10
-  const revCount = productData.extracted_reviews?.length || 0; if (revCount >= 1) breakdown.reviews.score = 3; if (revCount >= 3) breakdown.reviews.score = 6; if (revCount >= 5) breakdown.reviews.score = 10
-  if (Object.keys(productData.specifications || {}).length >= 1) breakdown.specifications.score = 2; if (Object.keys(productData.specifications || {}).length >= 3) breakdown.specifications.score = 5
-  if (productData.category) breakdown.category.score = 3; if (productData.subcategory) breakdown.category.score = 5
-  if (productData.brand && productData.brand !== productData.platform) breakdown.brand.score = 5
-  if (productData.seo?.metaTitle) breakdown.seo.score += 2; if (productData.seo?.metaDescription) breakdown.seo.score += 3
-  const totalScore = Object.values(breakdown).reduce((sum, b) => sum + b.score, 0)
-  const maxScore = Object.values(breakdown).reduce((sum, b) => sum + b.max, 0)
-  return { score: Math.round((totalScore / maxScore) * 100), breakdown }
-}
-
-// Extract real stock/inventory from product page
-function extractStock(html: string, markdown: string, platform: string): number {
-  if (platform === 'amazon') {
-    const inStockMatch = html.match(/id="availability"[\s\S]{0,500}/i)
-    if (inStockMatch) {
-      const stockText = inStockMatch[0]
-      const qtyMatch = stockText.match(/(\d+)\s*(?:exemplaire|left|restant|en stock)/i)
-      if (qtyMatch) return parseInt(qtyMatch[1])
-      if (/en\s+stock|in\s+stock|disponible/i.test(stockText)) return 99
-      if (/indisponible|unavailable|rupture/i.test(stockText)) return 0
-    }
-    const qtySelect = html.match(/id="quantity"[\s\S]{0,1000}/i)
-    if (qtySelect) {
-      const options = qtySelect[0].matchAll(/value="(\d+)"/gi)
-      let maxQty = 0
-      for (const m of options) { maxQty = Math.max(maxQty, parseInt(m[1])) }
-      if (maxQty > 0) return maxQty
-    }
-  }
-  
-  const invMatch = html.match(/"inventory"\s*:\s*(\d+)/i) ||
-                   html.match(/"stock_quantity"\s*:\s*(\d+)/i) ||
-                   html.match(/"inventoryLevel"[\s\S]*?"value"\s*:\s*(\d+)/i)
-  if (invMatch) return parseInt(invMatch[1])
-
+  const im = html.match(/"inventory"\s*:\s*(\d+)/i) || html.match(/"stock_quantity"\s*:\s*(\d+)/i)
+  if (im) return parseInt(im[1])
   if (/in\s*stock|en\s*stock|disponible/i.test(html)) return 99
-  if (/out\s*of\s*stock|rupture|indisponible/i.test(html)) return 0
-  
   return 0
 }
 
-// Scrape product data using Firecrawl if available, otherwise fallback
-async function scrapeProductData(url: string, platform: string, externalProductId?: string | null): Promise<any> {
-  // Amazon links with many params often lead to bot/error/offline pages; canonicalize early.
-  const { productId: detectedProductId } = detectPlatform(url)
-  const productId = externalProductId || detectedProductId
-  const effectiveUrl = platform === 'amazon' ? canonicalizeAmazonUrl(url, productId) : url
+function extractCategory(html: string, md: string, platform: string): string {
+  if (platform === 'amazon') { const bc = html.match(/id="wayfinding-breadcrumbs[^"]*"([\s\S]{0,3000}?)<\/div>\s*<\/div>/i); if (bc) { const links = bc[1].matchAll(/<a[^>]*>\s*([^<]+)/gi); for (const m of links) { const c = m[1].trim(); if (c.length > 1) return c } } }
+  const ot = html.match(/og:product:category"[^>]*content="([^"]+)"/i) || html.match(/"category"\s*:\s*"([^"]+)"/i)
+  if (ot) return ot[1].trim()
+  return ''
+}
 
-  console.log(`📦 Scraping product from ${platform}: ${effectiveUrl}`)
-  
-  // Special handling for Shopify - try JSON API first (most reliable)
-  if (platform === 'shopify') {
-    const shopifyData = await scrapeShopifyProduct(url, productId)
-    if (shopifyData) {
-      // Shopify JSON API worked, return the data
-      return {
-        source_url: url,
-        platform,
-        scraped_at: new Date().toISOString(),
-        ...shopifyData
-      }
-    }
-    console.log('⚠️ Shopify JSON API failed, falling back to HTML scraping')
+function extractTags(html: string, md: string, platform: string): string[] {
+  const tags: string[] = []
+  if (platform === 'amazon') { const bc = html.match(/id="wayfinding-breadcrumbs[^"]*"([\s\S]{0,3000}?)<\/div>\s*<\/div>/i); if (bc) for (const m of bc[1].matchAll(/<a[^>]*>\s*([^<]+)/gi)) { const t = m[1].trim(); if (t.length > 1 && t.length < 60 && !tags.includes(t)) tags.push(t) } }
+  const mk = html.match(/name="keywords"[^>]*content="([^"]+)"/i)
+  if (mk) for (const k of mk[1].split(',').map(k => k.trim()).filter(k => k.length > 1 && k.length < 50)) if (!tags.includes(k)) tags.push(k)
+  return tags.slice(0, 20)
+}
+
+function extractSeo(html: string) {
+  return {
+    metaTitle: html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1]?.trim() || '',
+    metaDescription: (html.match(/name="description"[^>]*content="([^"]+)"/i) || html.match(/og:description"[^>]*content="([^"]+)"/i))?.[1]?.trim() || '',
+    canonicalUrl: (html.match(/rel="canonical"[^>]*href="([^"]+)"/i) || html.match(/href="([^"]+)"[^>]*rel="canonical"/i))?.[1] || '',
   }
+}
+
+function calcQuality(d: any): { score: number; breakdown: Record<string, any> } {
+  let s = 0, max = 100
+  if (d.title?.length > 10) s += 10; if (d.title?.length > 30) s += 5
+  if (d.description?.length > 20) s += 8; if (d.description?.length > 100) s += 7
+  const ic = d.images?.length || 0; s += Math.min(20, ic * 4)
+  if (d.price > 0) s += 10
+  s += Math.min(10, (d.variants?.length || 0) * 3)
+  s += Math.min(10, (d.extracted_reviews?.length || 0) * 2)
+  if (d.brand) s += 5; if (d.category) s += 5
+  return { score: Math.min(100, Math.round(s / max * 100)), breakdown: {} }
+}
+
+function calcReviewDist(reviews: any[]) {
+  const dist: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+  if (!reviews?.length) return { distribution: dist, averageRating: 0, totalReviews: 0 }
+  let total = 0
+  for (const r of reviews) { const rt = Math.min(5, Math.max(1, Math.round(r.rating || 5))); dist[rt]++; total += rt }
+  return { distribution: dist, averageRating: Math.round((total / reviews.length) * 10) / 10, totalReviews: reviews.length }
+}
+
+async function scrapeShopify(url: string, handle: string | null): Promise<any | null> {
+  try {
+    const u = new URL(url), base = `${u.protocol}//${u.host}`
+    const h = handle || url.match(/\/products\/([^\/\?#]+)/)?.[1]
+    if (!h) return null
+    const r = await fetch(`${base}/products/${h}.json`, { headers: { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0' } })
+    if (!r.ok) return null
+    const p = (await r.json()).product
+    if (!p) return null
+    const images = (p.images || []).map((i: any) => (i.src || '').replace(/_\d+x(\d+)?\./, '.').replace(/\?.*$/, '')).filter(Boolean)
+    const variants = (p.variants || []).map((v: any) => {
+      const attrs: Record<string, string> = {}
+      if (v.option1) attrs[p.options?.[0]?.name || 'Option 1'] = v.option1
+      if (v.option2) attrs[p.options?.[1]?.name || 'Option 2'] = v.option2
+      if (v.option3) attrs[p.options?.[2]?.name || 'Option 3'] = v.option3
+      return { sku: v.sku || v.id?.toString() || '', name: v.title || Object.values(attrs).join(' / '), price: parseFloat(v.price) || 0, compare_at_price: v.compare_at_price ? parseFloat(v.compare_at_price) : null, stock: v.inventory_quantity ?? (v.available ? 99 : 0), available: v.available ?? true, image: v.featured_image?.src || null, attributes: attrs, variant_id: v.id?.toString() }
+    })
+    const prices = variants.map((v: any) => v.price).filter((p: number) => p > 0)
+    const tagsArray = Array.isArray(p.tags) ? p.tags : typeof p.tags === 'string' ? p.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : []
+    return { title: p.title || 'Produit Shopify', description: p.body_html?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '', price: prices.length > 0 ? Math.min(...prices) : 0, original_price: null, currency: 'EUR', sku: p.variants?.[0]?.sku || p.handle || `SHOPIFY-${p.id}`, brand: p.vendor || '', category: p.product_type || '', images, videos: [], variants, specifications: {}, handle: p.handle, product_type: p.product_type || '', tags: tagsArray, vendor: p.vendor || '' }
+  } catch { return null }
+}
+
+async function scrapeProduct(url: string, platform: string, productId?: string | null): Promise<any> {
+  const effectiveUrl = platform === 'amazon' ? canonicalizeAmazonUrl(url, productId || null) : url
+  if (platform === 'shopify') { const sd = await scrapeShopify(url, productId || null); if (sd) return { source_url: url, platform, scraped_at: new Date().toISOString(), ...sd } }
 
   const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
-  let html = ''
-  let markdown = ''
-  
-  try {
-    if (firecrawlKey) {
-      console.log(`🔥 Using Firecrawl for enhanced scraping: ${effectiveUrl}`)
-      
-      // Try with effectiveUrl first, retry with original if blocked
-      for (const tryUrl of [effectiveUrl, ...(effectiveUrl !== url ? [url] : [])]) {
-        const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${firecrawlKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            url: tryUrl,
-            formats: ['html', 'markdown', 'rawHtml'],
-            onlyMainContent: false,
-            waitFor: platform === 'amazon' ? 8000 : 5000,
-          }),
-        })
-        
-        if (firecrawlResponse.ok) {
-          const firecrawlData = await firecrawlResponse.json()
-          const candidateHtml = firecrawlData.data?.rawHtml || firecrawlData.data?.html || firecrawlData.rawHtml || firecrawlData.html || ''
-          const candidateMd = firecrawlData.data?.markdown || firecrawlData.markdown || ''
-          console.log(`✅ Firecrawl returned ${candidateHtml.length} chars HTML, ${candidateMd.length} chars markdown for ${tryUrl}`)
-          
-          // Check if blocked (captcha, robot check)
-          if (candidateHtml.length > 5000 && !isBlockedOrErrorHtml(candidateHtml)) {
-            html = candidateHtml
-            markdown = candidateMd
-            break
-          } else if (candidateHtml.length > 0) {
-            console.log(`⚠️ Firecrawl returned blocked/short HTML (${candidateHtml.length} chars), trying next URL...`)
-            // Keep as fallback if nothing better
-            if (candidateHtml.length > html.length) {
-              html = candidateHtml
-              markdown = candidateMd
-            }
-          }
-        } else {
-          const errorText = await firecrawlResponse.text()
-          console.log(`⚠️ Firecrawl failed for ${tryUrl}:`, errorText)
-        }
-      }
-    }
-    
-    // Fallback to direct fetch if Firecrawl failed or returned too little
-    if (!html || html.length < 5000 || isBlockedOrErrorHtml(html)) {
-      console.log(`📡 Using direct fetch: ${effectiveUrl}`)
-      const response = await fetch(effectiveUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Sec-Fetch-Dest': 'document',
-          'Sec-Fetch-Mode': 'navigate',
-          'Sec-Fetch-Site': 'none',
-          'Sec-Fetch-User': '?1',
-          'Upgrade-Insecure-Requests': '1',
-          'Cache-Control': 'max-age=0',
-        },
-        redirect: 'follow',
-      })
-      
-      if (response.ok) {
-        const fetchedHtml = await response.text()
-        console.log(`📡 Direct fetch returned ${fetchedHtml.length} chars`)
-        if (fetchedHtml.length > html.length && !isBlockedOrErrorHtml(fetchedHtml)) {
-          html = fetchedHtml
-        }
-      }
-    }
+  let html = '', markdown = ''
 
-    // Last-resort fallback for anti-bot pages (Amazon often blocks server-side fetches)
-    if ((!html || html.length < 5000 || isBlockedOrErrorHtml(html)) && platform === 'amazon') {
+  if (firecrawlKey) {
+    for (const tryUrl of [effectiveUrl, ...(effectiveUrl !== url ? [url] : [])]) {
       try {
-        const noScheme = effectiveUrl.replace(/^https?:\/\//i, '')
-        const proxyUrl = `https://r.jina.ai/http://${noScheme}`
-        console.log(`🛟 Trying Jina fallback: ${proxyUrl}`)
-
-        const proxyResp = await fetch(proxyUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0',
-            'Accept': 'text/plain, text/markdown;q=0.9, */*;q=0.8',
-          },
-        })
-
-        if (proxyResp.ok) {
-          const proxyMarkdown = await proxyResp.text()
-          console.log(`🛟 Jina fallback returned ${proxyMarkdown.length} chars markdown`)
-          if (proxyMarkdown.length > markdown.length && isUsableMarkdown(proxyMarkdown)) {
-            markdown = proxyMarkdown
-          }
-        }
-      } catch (proxyErr) {
-        console.log('⚠️ Jina fallback failed:', proxyErr)
-      }
+        const r = await fetch('https://api.firecrawl.dev/v1/scrape', { method: 'POST', headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ url: tryUrl, formats: ['html', 'markdown', 'rawHtml'], onlyMainContent: false, waitFor: platform === 'amazon' ? 8000 : 5000 }) })
+        if (r.ok) { const d = await r.json(); const ch = d.data?.rawHtml || d.data?.html || ''; const cm = d.data?.markdown || ''; if (ch.length > 5000 && !isBlocked(ch)) { html = ch; markdown = cm; break } else if (ch.length > html.length) { html = ch; markdown = cm } } else { await r.text() }
+      } catch {}
     }
-
-    const hasUsableMarkdown = isUsableMarkdown(markdown)
-    if ((!html || html.length < 500) && hasUsableMarkdown) {
-      // Allow extraction logic to continue even when HTML is blocked/empty.
-      html = markdown
-    }
-    
-    // Guard: if we still have no usable HTML, fail explicitly
-    if (!html || html.length < 500) {
-      throw new Error(`Impossible de récupérer la page produit. Le site (${platform}) a peut-être bloqué la requête. Réessayez dans quelques instants.`)
-    }
-    
-    if (isBlockedOrErrorHtml(html) && !hasUsableMarkdown) {
-      console.log('⚠️ HTML appears blocked (captcha/robot check detected)')
-      throw new Error(`Le site ${platform} a bloqué la requête (captcha/protection anti-bot). Réessayez dans quelques instants ou essayez avec un lien produit plus court.`)
-    }
-
-    // Extract all product data
-    let productData: any = {
-      source_url: url,
-      platform,
-      scraped_at: new Date().toISOString()
-    }
-    
-    // Platform-specific extraction
-    if (platform === 'amazon') {
-      productData.title = extractAmazonTitle(html, markdown)
-      const priceData = extractAmazonPrice(html, markdown)
-      productData.price = priceData.price
-      productData.currency = priceData.currency
-      productData.original_price = priceData.originalPrice
-      // Amazon SKU extraction with model number
-      productData.sku = extractAmazonSKU(html, markdown, productId || '')
-    } else {
-      // Generic title extraction
-      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i) ||
-                         html.match(/og:title"[^>]*content="([^"]+)"/i) ||
-                         html.match(/product-title[^>]*>([^<]+)</i) ||
-                         html.match(/<h1[^>]*>([^<]+)</i)
-      productData.title = titleMatch?.[1]?.trim()
-        .replace(/\s*[-|].*$/, '')
-        .replace(/&amp;/g, '&')
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .slice(0, 500) || 'Produit importé'
-      
-      // Generic price extraction
-      const priceMatch = html.match(/product:price:amount"[^>]*content="([\d,.]+)"/i) ||
-                         html.match(/og:price:amount"[^>]*content="([\d,.]+)"/i) ||
-                         html.match(/price[^>]*>[\s]*[€$£¥]?\s*([\d,.]+)/i) ||
-                         html.match(/class="[^"]*price[^"]*"[^>]*>[\s€$£¥]*([\d,.]+)/i)
-      productData.price = priceMatch ? parseFloat(priceMatch[1].replace(/[,\s]/g, '.').replace(/\.(?=.*\.)/g, '')) : 0
-      
-      // Currency
-      const currencyMatch = html.match(/product:price:currency"[^>]*content="([^"]+)"/i) ||
-                            html.match(/og:price:currency"[^>]*content="([^"]+)"/i)
-      productData.currency = currencyMatch?.[1]?.toUpperCase() || (platform === 'aliexpress' ? 'USD' : 'EUR')
-      
-      // Generic SKU
-      const skuMatch = html.match(/sku[^>]*>([^<]+)</i) ||
-                       html.match(/product-id[^>]*>([^<]+)</i) ||
-                       html.match(/"sku"\s*:\s*"([^"]+)"/i) ||
-                       html.match(/data-sku="([^"]+)"/i)
-      productData.sku = skuMatch?.[1]?.trim() || `IMPORT-${Date.now()}`
-    }
-    
-    // Description
-    const descMatch = html.match(/og:description"[^>]*content="([^"]+)"/i) ||
-                      html.match(/meta[^>]*name="description"[^>]*content="([^"]+)"/i) ||
-                      html.match(/product-description[^>]*>([^<]{10,500})</i)
-    productData.description = descMatch?.[1]?.trim()
-      .replace(/&amp;/g, '&')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .slice(0, 5000) || ''
-    
-    // Brand — improved extraction for Amazon FR/US
-    productData.brand = extractBrand(html, markdown, platform)
-    
-    // Extract HQ images
-    productData.images = extractHQImages(html, platform, markdown)
-    console.log(`📸 Found ${productData.images.length} high-quality images`)
-    
-    // Extract videos
-    productData.videos = extractVideos(html, platform)
-    console.log(`🎬 Found ${productData.videos.length} videos`)
-    
-    // Extract variants
-    productData.variants = extractVariants(html, platform, markdown)
-    console.log(`🎨 Found ${productData.variants.length} variants`)
-    
-    // Extract specifications
-    productData.specifications = extractSpecifications(html, platform)
-    console.log(`📋 Found ${Object.keys(productData.specifications).length} specifications`)
-    
-    // Extract tags, category, subcategory, breadcrumbs, SEO
-    productData.tags = extractTags(html, markdown, platform)
-    productData.category = extractCategory(html, markdown, platform)
-    productData.subcategory = extractSubcategory(html, markdown, platform)
-    productData.breadcrumbs = extractBreadcrumbs(html, markdown, platform)
-    productData.product_type = productData.category || ''
-    productData.seo = extractSeoData(html)
-    console.log(`🏷️ Tags: ${productData.tags?.length || 0}, Category: ${productData.category}, Breadcrumbs: ${productData.breadcrumbs?.length || 0}`)
-    
-    // Extract real stock/inventory
-    productData.inventory_quantity = extractStock(html, markdown, platform)
-    console.log(`📦 Stock: ${productData.inventory_quantity}`)
-
-    // Extract shipping info
-    productData.shipping = extractShippingInfo(html, platform)
-    
-    // Extract seller info
-    productData.seller = extractSellerInfo(html, platform)
-    
-// Extract reviews summary
-    const ratingMatch = html.match(/(\d+[,.]?\d*)\s*(?:out of|sur|\/)\s*5/i) ||
-                        html.match(/class="[^"]*rating[^"]*"[^>]*>(\d+[,.]?\d*)/i) ||
-                        html.match(/(\d+[,.]?\d*)\s*★/i)
-    const reviewCountMatch = html.match(/(\d+(?:[,.\s]\d+)?)\s*(?:reviews?|avis|évaluations?|notes?)/i)
-    productData.reviews = {
-      rating: ratingMatch ? parseFloat(ratingMatch[1].replace(',', '.')) : null,
-      count: reviewCountMatch ? parseInt(reviewCountMatch[1].replace(/[,.\s]/g, '')) : null
-    }
-    
-    // Extract individual reviews
-    productData.extracted_reviews = extractReviews(html, platform, markdown)
-    console.log(`⭐ Extracted ${productData.extracted_reviews.length} reviews`)
-    
-    // Calculate review distribution and quality score
-    productData.review_distribution = calculateReviewDistribution(productData.extracted_reviews)
-    productData.quality_score = calculateQualityScore(productData)
-    
-    console.log(`✅ Scraped: "${productData.title}" - ${productData.price} ${productData.currency}`)
-    
-    return productData
-    
-  } catch (error) {
-    console.error('Scraping error:', error)
-    throw new Error(`Impossible de récupérer les données du produit: ${error.message}`)
   }
+
+  if (!html || html.length < 5000 || isBlocked(html)) {
+    try {
+      const r = await fetch(effectiveUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Accept': 'text/html,application/xhtml+xml', 'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8', 'Sec-Fetch-Dest': 'document', 'Sec-Fetch-Mode': 'navigate' }, redirect: 'follow' })
+      if (r.ok) { const fh = await r.text(); if (fh.length > html.length && !isBlocked(fh)) html = fh } else { await r.text() }
+    } catch {}
+  }
+
+  // Jina fallback for Amazon
+  if ((!html || html.length < 5000 || isBlocked(html)) && platform === 'amazon') {
+    try { const r = await fetch(`https://r.jina.ai/${effectiveUrl}`, { headers: { Accept: 'text/plain' } }); if (r.ok) { const t = await r.text(); if (t.length > markdown.length) markdown = t } else { await r.text() } } catch {}
+  }
+
+  if ((!html || html.length < 500) && markdown.length > 500) html = markdown
+  if (!html || html.length < 500) throw new Error(`Impossible de récupérer la page (${platform}). Réessayez.`)
+  if (isBlocked(html) && markdown.length < 500) throw new Error(`Le site ${platform} a bloqué la requête (anti-bot). Réessayez.`)
+
+  const priceData = extractPrice(html, markdown, platform)
+  const desc = html.match(/og:description"[^>]*content="([^"]+)"/i)?.[1]?.trim()?.replace(/&amp;/g, '&').replace(/&quot;/g, '"').slice(0, 5000) || ''
+  const sku = platform === 'amazon' ? (() => { const mp = [/Numéro\s*de\s*modèle[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})/i, /Model\s*Number[^:]*:\s*<[^>]*>([A-Z0-9][\w-]{2,20})/i]; for (const p of mp) { const m = html.match(p); if (m) return m[1].trim() }; return `AMZ-${productId || Date.now()}` })() : (html.match(/"sku"\s*:\s*"([^"]+)"/i)?.[1] || `IMPORT-${Date.now()}`)
+  const images = extractImages(html, platform, markdown)
+  const videos = extractVideos(html, platform)
+  const variants = extractVariants(html, platform, markdown)
+  const specifications = extractSpecs(html, platform)
+  const extracted_reviews = extractReviews(html, platform, markdown)
+  const ratingMatch = html.match(/(\d+[,.]?\d*)\s*(?:out of|sur|\/)\s*5/i)
+  const reviewCountMatch = html.match(/(\d+(?:[,.\s]\d+)?)\s*(?:reviews?|avis|évaluations?)/i)
+  const category = extractCategory(html, markdown, platform)
+  const tags = extractTags(html, markdown, platform)
+  const seo = extractSeo(html)
+  const inventory_quantity = extractStock(html, platform)
+  const brand = extractBrand(html, markdown, platform)
+
+  const data: any = {
+    source_url: url, platform, scraped_at: new Date().toISOString(),
+    title: extractTitle(html, markdown, platform),
+    description: desc, price: priceData.price, currency: priceData.currency, original_price: priceData.originalPrice,
+    sku, brand, images, videos, variants, specifications,
+    tags, category, product_type: category, seo,
+    inventory_quantity,
+    reviews: { rating: ratingMatch ? parseFloat(ratingMatch[1].replace(',', '.')) : null, count: reviewCountMatch ? parseInt(reviewCountMatch[1].replace(/[,.\s]/g, '')) : null },
+    extracted_reviews,
+    review_distribution: calcReviewDist(extracted_reviews),
+    quality_score: null, // set below
+    shipping: { methods: [], estimated_delivery: null, free_shipping: /free\s*shipping|livraison\s*gratuite/i.test(html) || (platform === 'amazon' && /prime/i.test(html)) },
+    seller: { name: platform === 'amazon' ? (html.match(/sellerProfileTriggerId[^>]*>([^<]+)/i)?.[1]?.trim() || 'Amazon') : null, rating: null },
+  }
+  data.quality_score = calcQuality(data)
+  return data
 }
 
 Deno.serve(async (req) => {
   const corsHeaders = getSecureCorsHeaders(req)
-  if (req.method === 'OPTIONS') {
-    return handleCorsPreflightSecure(req)
-  }
+  if (req.method === 'OPTIONS') return handleCorsPreflightSecure(req)
 
   try {
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-
-    // Auth is optional for preview, mandatory for import
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const authHeader = req.headers.get('authorization')
     let user_id: string | null = null
     if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.replace('Bearer ', '')
-      const supabaseUser = createClient(supabaseUrl, anonKey, {
-        global: { headers: { Authorization: `Bearer ${token}` } },
-        auth: { persistSession: false },
-      })
-
-      const { data: claimsData, error: claimsError } = await supabaseUser.auth.getUser(token)
-      if (!claimsError && claimsData?.user?.id) {
-        user_id = claimsData.user.id
-      } else {
-        console.warn('⚠️ Invalid/expired token received for quick-import-url; continuing as anonymous for preview')
-      }
+      const sb = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } })
+      const { data: ud, error: ue } = await sb.auth.getUser(token)
+      if (!ue && ud?.user?.id) user_id = ud.user.id
     }
 
     const body = await req.json()
-    const { url, action = 'preview', target_store_id, price_multiplier = 1.5 } = body
-    
-    if (!url) {
-      throw new Error('URL requise')
-    }
+    const { url, action = 'preview', price_multiplier = 1.5 } = body
+    if (!url) throw new Error('URL requise')
 
-    console.log(`🔗 Quick Import from URL: ${url}`)
-    
-    // Detect platform
     const { platform, productId } = detectPlatform(url)
-    console.log(`📍 Platform detected: ${platform}, Product ID: ${productId}`)
-    
-    if (platform === 'unknown') {
-      throw new Error('Plateforme non reconnue. Plateformes supportées: AliExpress, Amazon, eBay, Temu, Wish, CJ Dropshipping, BigBuy, Banggood, DHgate, Shein, Etsy, Walmart, Shopify, WooCommerce')
-    }
+    if (platform === 'unknown') throw new Error('Plateforme non reconnue. Supportées: AliExpress, Amazon, eBay, Temu, Shopify, etc.')
 
-    // Scrape product data
-    const productData = await scrapeProductData(url, platform, productId)
-    
-    // Preview mode
+    const productData = await scrapeProduct(url, platform, productId)
+
     if (action === 'preview') {
       const suggestedPrice = Math.ceil(productData.price * price_multiplier * 100) / 100
-      
-      // Calculate total stock from variants
-      const totalStock = productData.variants?.length > 0
-        ? productData.variants.reduce((sum: number, v: any) => sum + (typeof v.stock === 'number' ? v.stock : 0), 0)
-        : (typeof productData.inventory_quantity === 'number' ? productData.inventory_quantity : 0)
-      
-      return new Response(
-        JSON.stringify({
-          success: true,
-          action: 'preview',
-          data: {
-            ...productData,
-            suggested_price: suggestedPrice,
-            stock_quantity: totalStock,
-            profit_margin: productData.price > 0 ? Math.round(((suggestedPrice - productData.price) / suggestedPrice) * 100) : 0,
-            platform_detected: platform,
-            product_id: productId,
-            has_variants: productData.variants?.length > 0,
-            has_videos: productData.videos?.length > 0,
-            has_reviews: productData.extracted_reviews?.length > 0,
-            images_count: productData.images?.length || 0,
-            variants_count: productData.variants?.length || 0,
-            videos_count: productData.videos?.length || 0,
-            reviews_count: productData.extracted_reviews?.length || 0
-          }
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      const totalStock = productData.variants?.length > 0 ? productData.variants.reduce((s: number, v: any) => s + (typeof v.stock === 'number' ? v.stock : 0), 0) : (productData.inventory_quantity || 0)
+      return new Response(JSON.stringify({ success: true, action: 'preview', data: { ...productData, suggested_price: suggestedPrice, stock_quantity: totalStock, profit_margin: productData.price > 0 ? Math.round(((suggestedPrice - productData.price) / suggestedPrice) * 100) : 0, platform_detected: platform, product_id: productId, has_variants: productData.variants?.length > 0, has_videos: productData.videos?.length > 0, has_reviews: productData.extracted_reviews?.length > 0 } }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
-    
-    // Import mode
+
     if (action === 'import') {
-      if (!user_id) {
-        return new Response(
-          JSON.stringify({ success: false, error: 'Authentification requise pour importer le produit' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
-
-      // Service-role client only for cross-table writes (products, reviews)
-      const supabaseAdmin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
-        auth: { persistSession: false },
-      })
-
-      const overrideData = body.override_data || {}
-      const finalTitle = overrideData.title || productData.title
-      const finalDescription = overrideData.description || productData.description
-      const finalImages = overrideData.images || productData.images
-      const finalBrand = overrideData.brand || productData.brand
-      const finalSku = overrideData.sku || productData.sku
-      const finalStatus = overrideData.status || 'draft'
-      const finalCategory = overrideData.category || productData.product_type || productData.category || 'Importé'
-      const finalVariants = overrideData.variants || productData.variants
-      const finalVideos = overrideData.videos || productData.videos
-      const finalTags = overrideData.tags || productData.tags || []
-      const finalProductType = overrideData.product_type || productData.product_type || ''
-      const suggestedPrice = overrideData.suggested_price || Math.ceil(productData.price * price_multiplier * 100) / 100
-      const costPrice = overrideData.price || productData.price
-      const importReviews = productData.extracted_reviews?.length > 0
-      
-      // Insert into canonical products table (source of truth)
-      const { data: insertedProduct, error: insertError } = await supabaseAdmin
-        .from('products')
-        .insert({
-          user_id,
-          title: finalTitle,
-          description: finalDescription,
-          price: suggestedPrice,
-          cost_price: costPrice,
-          currency: productData.currency || 'EUR',
-          sku: finalSku,
-          brand: finalBrand,
-          category: finalCategory,
-          product_type: finalProductType,
-          tags: finalTags.length > 0 ? finalTags : null,
-          status: finalStatus,
-          stock_quantity: (() => {
-            const ov = overrideData.stock_quantity
-            if (typeof ov === 'number') return ov
-            if (finalVariants?.length > 0) {
-              return finalVariants.reduce((s: number, v: any) => s + (typeof v.stock === 'number' ? v.stock : 0), 0)
-            }
-            return typeof productData.inventory_quantity === 'number' ? productData.inventory_quantity : 0
-          })(),
-          images: finalImages,
-          image_url: finalImages?.[0] || null,
-          primary_image_url: finalImages?.[0] || null,
-          main_image_url: finalImages?.[0] || null,
-          variants: finalVariants || null,
-          supplier: platform,
-          supplier_url: url,
-          supplier_name: platform,
-          supplier_product_id: productId || null,
-          source_url: url,
-          source_type: platform,
-          vendor: finalBrand || platform,
-          compare_at_price: productData.original_price || null,
-        })
-        .select()
-        .single()
-      
-      if (insertError) throw insertError
-      
-      console.log(`✅ Product imported to products (canon): ${insertedProduct.id}`)
-      
-      // Import reviews if available
+      if (!user_id) return new Response(JSON.stringify({ success: false, error: 'Authentification requise' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      const admin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } })
+      const ov = body.override_data || {}
+      const finalTitle = ov.title || productData.title
+      const finalImages = ov.images || productData.images
+      const finalVariants = ov.variants || productData.variants
+      const suggestedPrice = ov.suggested_price || Math.ceil(productData.price * price_multiplier * 100) / 100
+      const costPrice = ov.price || productData.price
+      const finalTags = ov.tags || productData.tags || []
+      const { data: ins, error: ie } = await admin.from('products').insert({
+        user_id, title: finalTitle, description: ov.description || productData.description, price: suggestedPrice, cost_price: costPrice, currency: productData.currency || 'EUR', sku: ov.sku || productData.sku, brand: ov.brand || productData.brand, category: ov.category || productData.category || 'Importé', product_type: productData.product_type || '', tags: finalTags.length > 0 ? finalTags : null, status: ov.status || 'draft', stock_quantity: (() => { if (typeof ov.stock_quantity === 'number') return ov.stock_quantity; if (finalVariants?.length) return finalVariants.reduce((s: number, v: any) => s + (typeof v.stock === 'number' ? v.stock : 0), 0); return productData.inventory_quantity || 0 })(), images: finalImages, image_url: finalImages?.[0] || null, primary_image_url: finalImages?.[0] || null, main_image_url: finalImages?.[0] || null, variants: finalVariants || null, supplier: platform, supplier_url: url, supplier_name: platform, supplier_product_id: productId || null, source_url: url, source_type: platform, vendor: ov.brand || productData.brand || platform, compare_at_price: productData.original_price || null
+      }).select().single()
+      if (ie) throw ie
       let reviewsImported = 0
-      if (importReviews && productData.extracted_reviews.length > 0) {
-        console.log(`📝 Importing ${productData.extracted_reviews.length} reviews...`)
-        
-        // Insert into product_reviews table (canonical, used by the app)
-        const productReviewsToInsert = productData.extracted_reviews.map((review: any) => ({
-          user_id,
-          product_id: insertedProduct.id,
-          author: review.customer_name || 'Client',
-          rating: Math.min(5, Math.max(1, Math.round(review.rating || 5))),
-          text: [review.title, review.comment].filter(Boolean).join('\n\n') || 'Avis importé',
-          verified_purchase: review.verified_purchase || false,
-          helpful_count: review.helpful_count || 0,
-          review_date: review.review_date || null,
-          source_platform: platform,
-          source_url: url,
-          images: review.images?.length > 0 ? review.images : null,
-          external_id: review.source_review_id || null,
-        }))
-        
-        const { data: insertedReviews, error: reviewsError } = await supabaseAdmin
-          .from('product_reviews')
-          .insert(productReviewsToInsert)
-          .select('id')
-        
-        if (reviewsError) {
-          console.error('Error importing reviews to product_reviews:', reviewsError)
-        } else {
-          reviewsImported = insertedReviews?.length || 0
-          console.log(`✅ Imported ${reviewsImported} reviews to product_reviews`)
-        }
+      if (productData.extracted_reviews?.length > 0) {
+        const { data: ir, error: re } = await admin.from('product_reviews').insert(productData.extracted_reviews.map((r: any) => ({ user_id, product_id: ins.id, author: r.customer_name || 'Client', rating: Math.min(5, Math.max(1, Math.round(r.rating || 5))), text: [r.title, r.comment].filter(Boolean).join('\n\n') || 'Avis importé', verified_purchase: r.verified_purchase || false, helpful_count: r.helpful_count || 0, review_date: r.review_date || null, source_platform: platform, source_url: url, images: r.images?.length > 0 ? r.images : null, external_id: r.source_review_id || null }))).select('id')
+        if (!re) reviewsImported = ir?.length || 0
       }
-      
-      return new Response(
-        JSON.stringify({
-          success: true,
-          action: 'imported',
-          data: insertedProduct,
-          message: `Produit "${finalTitle}" importé avec succès${reviewsImported > 0 ? ` avec ${reviewsImported} avis` : ''}`,
-          summary: {
-            images: finalImages?.length || 0,
-            videos: finalVideos?.length || 0,
-            variants: finalVariants?.length || 0,
-            reviews: reviewsImported
-          }
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ success: true, action: 'imported', data: ins, message: `Produit "${finalTitle}" importé${reviewsImported > 0 ? ` avec ${reviewsImported} avis` : ''}`, summary: { images: finalImages?.length || 0, videos: (ov.videos || productData.videos)?.length || 0, variants: finalVariants?.length || 0, reviews: reviewsImported } }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
-
     throw new Error('Action non reconnue')
-
   } catch (error) {
     console.error('Quick import error:', error)
-    return new Response(
-      JSON.stringify({ success: false, error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    )
+    return new Response(JSON.stringify({ success: false, error: (error as Error).message }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 })
   }
 })
