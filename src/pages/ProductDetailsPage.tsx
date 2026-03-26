@@ -14,6 +14,7 @@ import { ProductAuditBlock } from '@/components/products/ProductAuditBlock'
 import { ProductPerformanceMetrics } from '@/components/products/ProductPerformanceMetrics'
 import { OptimizationHistory } from '@/components/products/OptimizationHistory'
 import { MultiChannelReadiness } from '@/components/products/MultiChannelReadiness'
+import { ChannelDataSpecifications } from '@/components/products/ChannelDataSpecifications'
 import { ProductImageEditor } from '@/components/products/ProductImageEditor'
 import { ProductMediaQualityPanel } from '@/components/products/ProductMediaQualityPanel'
 
@@ -645,7 +646,12 @@ export default function ProductDetailsPage() {
                   <TabsContent value="reviews"><ProductReviews productId={product.id} sourceUrl={product.source_url || (product as any).url} /></TabsContent>
                   <TabsContent value="translations"><ProductTranslations productId={product.id} /></TabsContent>
                   <TabsContent value="performance"><ProductPerformanceMetrics productId={product.id} sourceTable={product.source === 'products' ? 'products' : 'imported_products'} /></TabsContent>
-                  <TabsContent value="channels"><MultiChannelReadiness product={product} /></TabsContent>
+                  <TabsContent value="channels">
+                    <div className="space-y-6">
+                      <ChannelDataSpecifications product={product} />
+                      <MultiChannelReadiness product={product} />
+                    </div>
+                  </TabsContent>
                   <TabsContent value="history"><OptimizationHistory productId={product.id} sourceTable={product.source === 'products' ? 'products' : 'imported_products'} /></TabsContent>
                 </div>
               </Tabs>
