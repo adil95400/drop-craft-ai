@@ -47,6 +47,9 @@ export function CatalogRoutes() {
         <Route path="health" element={<CatalogHealthPage />} />
         <Route path="image-dedup" element={<ImageDeduplicationPage />} />
         <Route path="image-deduplication" element={<ImageDeduplicationPage />} />
+        <Route path="dashboard" element={<CatalogDashboardPage />} />
+        <Route path="pricing-engine" element={<PricingEnginePage />} />
+        <Route path="supplier-sync" element={<SupplierSyncPage />} />
         
         {/* Redirections legacy */}
         <Route path="*" element={<Navigate to="/catalog/to-process" replace />} />
