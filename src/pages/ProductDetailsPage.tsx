@@ -957,6 +957,15 @@ export default function ProductDetailsPage() {
           }}
         />
       )}
+
+      {/* Zoom Image Dialog */}
+      <Dialog open={!!zoomImageUrl} onOpenChange={() => setZoomImageUrl(null)}>
+        <DialogContent className="sm:max-w-3xl p-2">
+          {zoomImageUrl && (
+            <img src={zoomImageUrl} alt="Zoom" className="w-full h-auto max-h-[80vh] object-contain rounded-lg" />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
