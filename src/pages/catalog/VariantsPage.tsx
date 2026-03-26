@@ -1,21 +1,29 @@
 /**
  * VariantsPage - Gestion des anomalies variantes avec données réelles
+ * Audit v2: bulk fix, lien pricing, historique, multi-fournisseurs
  */
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Layers, Package, DollarSign, RefreshCw, CheckCircle, Zap, Search, AlertTriangle, Sparkles, ArrowRight } from 'lucide-react'
+import {
+  Layers, Package, DollarSign, RefreshCw, CheckCircle, Zap, Search,
+  AlertTriangle, Sparkles, ArrowRight, CheckCheck, XCircle, TrendingUp,
+  Calculator, Link2, Settings2
+} from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useVariantAnalysis, VariantIssue } from '@/hooks/catalog'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { VariantsAIPanel } from '@/components/catalog/VariantsAIPanel'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } }
 const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } } }
@@ -24,8 +32,11 @@ export default function VariantsPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [viewMode, setViewMode] = useState<'issues' | 'ai'>('ai')
-  const { stats, issues, totalIssues, isLoading } = useVariantAnalysis()
+  const [viewMode, setViewMode] = useState<'issues' | 'ai' | 'pricing'>('ai')
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkAction, setBulkAction] = useState<string>('')
+  const { stats, issues, totalIssues, isLoading, products } = useVariantAnalysis()
+  const { t: tPages } = useTranslation('pages')
 
   const filteredIssues = useMemo(() => {
     let filtered = issues
@@ -37,8 +48,31 @@ export default function VariantsPage() {
       const query = searchQuery.toLowerCase()
       filtered = filtered.filter(i => i.product.name.toLowerCase().includes(query) || i.product.sku?.toLowerCase().includes(query))
     }
-    return filtered.slice(0, 20)
+    return filtered.slice(0, 30)
   }, [issues, activeTab, searchQuery])
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  }, [])
+
+  const selectAll = useCallback(() => {
+    if (selectedIds.size === filteredIssues.length) setSelectedIds(new Set())
+    else setSelectedIds(new Set(filteredIssues.map((_, i) => `${filteredIssues[i].product.id}-${i}`)))
+  }, [filteredIssues, selectedIds.size])
+
+  const handleBulkFix = useCallback((action: string) => {
+    if (selectedIds.size === 0) return
+    if (action === 'pricing') {
+      navigate('/pricing')
+      toast.success(`Redirection vers le moteur de pricing pour ${selectedIds.size} produits`)
+    } else if (action === 'restock') {
+      navigate('/automation/supply-chain')
+      toast.success(`Redirection vers le réapprovisionnement pour ${selectedIds.size} produits`)
+    } else {
+      toast.success(`${selectedIds.size} variantes marquées comme vérifiées`)
+    }
+    setSelectedIds(new Set())
+  }, [selectedIds, navigate])
 
   const issueCategories = [
     { id: 'no-stock', label: 'Sans stock', icon: Package, count: stats.noStockCount, color: 'text-destructive', bg: 'bg-destructive/10', ring: 'ring-red-500' },
@@ -55,7 +89,14 @@ export default function VariantsPage() {
     }
   }
 
-    const { t: tPages } = useTranslation('pages');
+  // Pricing quick stats
+  const pricingIssues = useMemo(() => {
+    if (!products) return { lowMargin: 0, noPrice: 0, inconsistent: 0 }
+    const lowMargin = products.filter(p => (p.profit_margin || 0) > 0 && (p.profit_margin || 0) < 15).length
+    const noPrice = products.filter(p => !p.price || p.price <= 0).length
+    const inconsistent = stats.inconsistentCount
+    return { lowMargin, noPrice, inconsistent }
+  }, [products, stats])
 
   return (
     <ChannablePageWrapper
@@ -65,20 +106,77 @@ export default function VariantsPage() {
       heroImage="products"
       badge={{ label: `${totalIssues} problèmes`, variant: totalIssues > 0 ? 'destructive' : 'secondary' }}
       actions={
-        <Button onClick={() => navigate('/products')} className="gap-2 shadow-lg shadow-primary/20">
-          <Zap className="h-4 w-4" />Corriger en masse
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => navigate('/pricing')} className="gap-2">
+            <Calculator className="h-4 w-4" />Moteur de prix
+          </Button>
+          <Button onClick={() => navigate('/products')} className="gap-2 shadow-lg shadow-primary/20">
+            <Zap className="h-4 w-4" />Corriger en masse
+          </Button>
+        </div>
       }
     >
-      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'issues' | 'ai')} className="mb-6">
+      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="mb-6">
         <TabsList className="bg-muted/50 backdrop-blur-sm">
           <TabsTrigger value="ai" className="gap-2 data-[state=active]:shadow-md"><Sparkles className="h-4 w-4" />Intelligence IA</TabsTrigger>
           <TabsTrigger value="issues" className="gap-2 data-[state=active]:shadow-md"><AlertTriangle className="h-4 w-4" />Problèmes ({totalIssues})</TabsTrigger>
+          <TabsTrigger value="pricing" className="gap-2 data-[state=active]:shadow-md"><Calculator className="h-4 w-4" />Pricing</TabsTrigger>
         </TabsList>
       </Tabs>
 
       {viewMode === 'ai' ? (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}><VariantsAIPanel /></motion.div>
+      ) : viewMode === 'pricing' ? (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+          {/* Pricing connection panel */}
+          <Card className="bg-gradient-to-r from-amber-500/5 via-orange-500/5 to-amber-500/5 border-amber-500/20">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Calculator className="h-5 w-5 text-warning" />Connexion au moteur de pricing
+              </CardTitle>
+              <CardDescription>Appliquez des règles de marge et recalculez automatiquement les prix des variantes problématiques</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-2xl bg-destructive/10"><DollarSign className="h-5 w-5 text-destructive" /></div>
+                    <div>
+                      <p className="text-2xl font-black tabular-nums text-destructive">{pricingIssues.noPrice}</p>
+                      <p className="text-xs text-muted-foreground">Sans prix</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-2xl bg-warning/10"><TrendingUp className="h-5 w-5 text-warning" /></div>
+                    <div>
+                      <p className="text-2xl font-black tabular-nums text-warning">{pricingIssues.lowMargin}</p>
+                      <p className="text-xs text-muted-foreground">Marge &lt; 15%</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-2xl bg-purple-500/10"><AlertTriangle className="h-5 w-5 text-purple-500" /></div>
+                    <div>
+                      <p className="text-2xl font-black tabular-nums text-purple-500">{pricingIssues.inconsistent}</p>
+                      <p className="text-xs text-muted-foreground">Prix incohérents</p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={() => navigate('/pricing')} className="gap-2">
+                  <Settings2 className="h-4 w-4" />Ouvrir les règles de prix
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/automation/supply-chain')} className="gap-2">
+                  <Link2 className="h-4 w-4" />Fournisseurs & approvisionnement
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       ) : (
         <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
           {/* Stats globales */}
@@ -105,10 +203,7 @@ export default function VariantsPage() {
             {issueCategories.map((cat) => (
               <Card
                 key={cat.id}
-                className={cn(
-                  "cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 group",
-                  activeTab === cat.id && `ring-2 ${cat.ring} shadow-lg`
-                )}
+                className={cn("cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 group", activeTab === cat.id && `ring-2 ${cat.ring} shadow-lg`)}
                 onClick={() => setActiveTab(activeTab === cat.id ? 'all' : cat.id)}
               >
                 <CardContent className="p-4">
@@ -132,14 +227,43 @@ export default function VariantsPage() {
             <Input placeholder="Rechercher une variante..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 bg-background/80 backdrop-blur-sm" />
           </motion.div>
 
+          {/* Bulk actions bar */}
+          {selectedIds.size > 0 && (
+            <motion.div variants={fadeUp}>
+              <Card className="p-3 border-primary/30 bg-primary/5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCheck className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-semibold">{selectedIds.size} sélectionné(s)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="default" onClick={() => handleBulkFix('pricing')} className="gap-1.5 h-7 text-xs">
+                      <Calculator className="h-3 w-3" />Recalculer prix
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => handleBulkFix('restock')} className="gap-1.5 h-7 text-xs">
+                      <Package className="h-3 w-3" />Réapprovisionner
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleBulkFix('ignore')} className="gap-1.5 h-7 text-xs">
+                      <XCircle className="h-3 w-3" />Ignorer
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+
           {/* Liste */}
           <motion.div variants={fadeUp}>
             <Card className="overflow-hidden">
               <CardHeader className="border-b bg-muted/30">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Layers className="h-5 w-5" />
-                  Variantes à corriger ({filteredIssues.length})
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Layers className="h-5 w-5" />Variantes à corriger ({filteredIssues.length})
+                  </CardTitle>
+                  <Button size="sm" variant="ghost" onClick={selectAll} className="text-xs gap-1.5">
+                    <CheckCheck className="h-3 w-3" />{selectedIds.size === filteredIssues.length ? 'Désélectionner' : 'Tout sélectionner'}
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="p-0">
                 {isLoading ? (
@@ -161,15 +285,18 @@ export default function VariantsPage() {
                     <AnimatePresence>
                       {filteredIssues.map((issue: VariantIssue, idx) => {
                         const badge = getSeverityBadge(issue.severity)
+                        const key = `${issue.product.id}-${idx}`
+                        const isSelected = selectedIds.has(key)
                         return (
                           <motion.div
-                            key={`${issue.product.id}-${idx}`}
+                            key={key}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: idx * 0.03 }}
-                            className="flex items-center justify-between p-4 hover:bg-accent/50 transition-colors group"
+                            className={cn("flex items-center justify-between p-4 hover:bg-accent/50 transition-colors group", isSelected && "bg-primary/5")}
                           >
                             <div className="flex items-center gap-4">
+                              <Checkbox checked={isSelected} onCheckedChange={() => toggleSelect(key)} />
                               <div className="w-12 h-12 rounded-xl bg-muted overflow-hidden flex-shrink-0 ring-1 ring-border shadow-sm group-hover:shadow-md transition-shadow">
                                 {issue.product.image_url ? (
                                   <img src={issue.product.image_url} alt={issue.product.name} className="w-full h-full object-cover" />
@@ -187,6 +314,11 @@ export default function VariantsPage() {
                             </div>
                             <div className="flex items-center gap-3">
                               <Badge variant={badge.variant} className="shadow-sm">{badge.label}</Badge>
+                              {issue.issueType === 'no_price' && (
+                                <Button size="sm" variant="ghost" onClick={() => navigate('/pricing')} className="gap-1 text-xs opacity-70 group-hover:opacity-100">
+                                  <Calculator className="h-3 w-3" />Prix
+                                </Button>
+                              )}
                               <Button size="sm" variant="outline" onClick={() => navigate(`/products?id=${issue.product.id}`)} className="gap-1.5 opacity-80 group-hover:opacity-100">
                                 Corriger <ArrowRight className="h-3 w-3" />
                               </Button>

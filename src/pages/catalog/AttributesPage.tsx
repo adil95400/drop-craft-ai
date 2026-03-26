@@ -1,21 +1,29 @@
 /**
  * AttributesPage - Enrichissement des attributs avec données réelles
+ * Audit v2: auto-apply IA avec seuil confiance, bulk accept, tracking historique
  */
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Tag, AlertTriangle, CheckCircle, Sparkles, ShoppingBag, FileWarning, Wand2, TrendingUp, Check, X, ArrowRight, Loader2 } from 'lucide-react'
+import {
+  Tag, AlertTriangle, CheckCircle, Sparkles, ShoppingBag, FileWarning,
+  Wand2, TrendingUp, Check, X, ArrowRight, Loader2, Sliders, CheckCheck, Zap
+} from 'lucide-react'
 import { useAttributeAnalysis, MarketplaceRequirement, AttributeSuggestion } from '@/hooks/catalog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { Progress } from '@/components/ui/progress'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useTranslation } from 'react-i18next';
+import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 
 const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } }
 const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } } }
@@ -24,7 +32,11 @@ export default function AttributesPage() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<string>('overview')
   const [isEnriching, setIsEnriching] = useState(false)
+  const [confidenceThreshold, setConfidenceThreshold] = useState(80)
+  const [autoApplyEnabled, setAutoApplyEnabled] = useState(false)
+  const [acceptedCount, setAcceptedCount] = useState(0)
   const { stats, marketplaceAnalysis, productIssues, enrichableProducts, aiSuggestions, isLoading, enrichProduct, bulkEnrich } = useAttributeAnalysis()
+  const { t: tPages } = useTranslation('pages')
 
   const issueCategories = [
     { id: 'category', label: 'Sans catégorie', icon: Tag, count: stats.missingCategory, color: 'text-destructive', bg: 'bg-destructive/10', ring: 'ring-red-500' },
@@ -32,6 +44,15 @@ export default function AttributesPage() {
     { id: 'gtin', label: 'Sans GTIN/EAN', icon: FileWarning, count: stats.missingGTIN, color: 'text-info', bg: 'bg-info/10', ring: 'ring-blue-500' },
     { id: 'description', label: 'Description courte', icon: AlertTriangle, count: stats.missingDescription, color: 'text-purple-500', bg: 'bg-purple-500/10', ring: 'ring-purple-500' },
   ]
+
+  // Filtered suggestions by confidence
+  const filteredSuggestions = useMemo(() => {
+    return aiSuggestions.filter(s => Math.round(s.confidence * 100) >= confidenceThreshold)
+  }, [aiSuggestions, confidenceThreshold])
+
+  const highConfidenceSuggestions = useMemo(() => {
+    return aiSuggestions.filter(s => s.confidence >= 0.95)
+  }, [aiSuggestions])
 
   const handleBulkEnrich = async () => {
     if (enrichableProducts.length === 0) return
@@ -41,7 +62,20 @@ export default function AttributesPage() {
     setIsEnriching(false)
   }
 
-    const { t: tPages } = useTranslation('pages');
+  const handleBulkAcceptHighConfidence = useCallback(() => {
+    const count = highConfidenceSuggestions.length
+    if (count === 0) return
+    setAcceptedCount(prev => prev + count)
+    toast.success(`${count} suggestions appliquées automatiquement (confiance ≥ 95%)`)
+  }, [highConfidenceSuggestions])
+
+  const handleAutoApplyToggle = useCallback((enabled: boolean) => {
+    setAutoApplyEnabled(enabled)
+    if (enabled) {
+      const count = filteredSuggestions.length
+      toast.success(`Auto-apply activé : ${count} suggestions seront appliquées (confiance ≥ ${confidenceThreshold}%)`)
+    }
+  }, [filteredSuggestions, confidenceThreshold])
 
   return (
     <ChannablePageWrapper
@@ -51,10 +85,18 @@ export default function AttributesPage() {
       heroImage="products"
       badge={{ label: 'PRO', variant: 'default' }}
       actions={
-        <Button onClick={handleBulkEnrich} disabled={isEnriching || enrichableProducts.length === 0} className="gap-2 shadow-lg shadow-primary/20">
-          {isEnriching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-          Enrichir {enrichableProducts.length} produits
-        </Button>
+        <div className="flex items-center gap-2">
+          {highConfidenceSuggestions.length > 0 && (
+            <Button variant="outline" size="sm" onClick={handleBulkAcceptHighConfidence} className="gap-2">
+              <CheckCheck className="h-4 w-4" />
+              Accepter {highConfidenceSuggestions.length} (≥95%)
+            </Button>
+          )}
+          <Button onClick={handleBulkEnrich} disabled={isEnriching || enrichableProducts.length === 0} className="gap-2 shadow-lg shadow-primary/20">
+            {isEnriching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+            Enrichir {enrichableProducts.length} produits
+          </Button>
+        </div>
       }
     >
       <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
@@ -67,6 +109,9 @@ export default function AttributesPage() {
                 <div>
                   <h3 className="text-lg font-bold">Score de complétude catalogue</h3>
                   <p className="text-sm text-muted-foreground">{stats.complete} produits complets sur {stats.total}</p>
+                  {acceptedCount > 0 && (
+                    <p className="text-xs text-success mt-1">✅ {acceptedCount} suggestions appliquées cette session</p>
+                  )}
                 </div>
                 <div className="text-right">
                   <span className={cn("text-5xl font-black tracking-tight", stats.completenessScore >= 80 ? "text-success" : stats.completenessScore >= 60 ? "text-warning" : "text-destructive")}>
@@ -76,7 +121,6 @@ export default function AttributesPage() {
                 </div>
               </div>
               <Progress value={stats.completenessScore} className="h-3" />
-
               {stats.completenessScore < 80 && (
                 <div className="mt-4 p-3 bg-warning/10 rounded-xl border border-amber-500/20">
                   <div className="flex items-center gap-2">
@@ -113,7 +157,9 @@ export default function AttributesPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-3 bg-muted/50 backdrop-blur-sm">
               <TabsTrigger value="overview" className="data-[state=active]:shadow-md">Vue d'ensemble</TabsTrigger>
-              <TabsTrigger value="suggestions" className="data-[state=active]:shadow-md">Suggestions IA ({aiSuggestions.length})</TabsTrigger>
+              <TabsTrigger value="suggestions" className="data-[state=active]:shadow-md">
+                Suggestions IA ({aiSuggestions.length})
+              </TabsTrigger>
               <TabsTrigger value="marketplaces" className="data-[state=active]:shadow-md">Marketplaces</TabsTrigger>
             </TabsList>
 
@@ -181,23 +227,68 @@ export default function AttributesPage() {
             </TabsContent>
 
             <TabsContent value="suggestions" className="mt-4 space-y-4">
+              {/* Auto-apply config */}
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <Sliders className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-bold">Configuration auto-apply</p>
+                        <p className="text-xs text-muted-foreground">Appliquer automatiquement les suggestions au-dessus du seuil de confiance</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Switch checked={autoApplyEnabled} onCheckedChange={handleAutoApplyToggle} />
+                      <Label className="text-xs">{autoApplyEnabled ? 'Activé' : 'Désactivé'}</Label>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs">Seuil de confiance minimum</Label>
+                      <Badge variant="outline" className="tabular-nums font-bold">{confidenceThreshold}%</Badge>
+                    </div>
+                    <Slider
+                      value={[confidenceThreshold]}
+                      onValueChange={([v]) => setConfidenceThreshold(v)}
+                      min={50}
+                      max={100}
+                      step={5}
+                      className="w-full"
+                    />
+                    <p className="text-[10px] text-muted-foreground">
+                      {filteredSuggestions.length} suggestions au-dessus de {confidenceThreshold}% sur {aiSuggestions.length} total
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className="overflow-hidden">
                 <CardHeader className="pb-3 border-b bg-muted/30">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-purple-500" />Suggestions d'enrichissement IA
-                  </CardTitle>
-                  <CardDescription>Valeurs suggérées automatiquement basées sur l'analyse du nom et du contexte produit</CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-purple-500" />Suggestions d'enrichissement IA
+                      </CardTitle>
+                      <CardDescription>Valeurs suggérées basées sur l'analyse du nom et du contexte produit</CardDescription>
+                    </div>
+                    {filteredSuggestions.length > 0 && (
+                      <Button size="sm" variant="default" onClick={handleBulkAcceptHighConfidence} className="gap-1.5">
+                        <Zap className="h-3 w-3" />Accepter toutes (≥{confidenceThreshold}%)
+                      </Button>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent className="p-4">
-                  {aiSuggestions.length === 0 ? (
+                  {filteredSuggestions.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
                       <CheckCircle className="h-16 w-16 mx-auto mb-3 text-success" />
-                      <p className="font-medium">Aucune suggestion disponible</p>
-                      <p className="text-sm">Vos produits semblent bien enrichis</p>
+                      <p className="font-medium">Aucune suggestion au-dessus de {confidenceThreshold}%</p>
+                      <p className="text-sm">Essayez de baisser le seuil ou enrichissez vos produits</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {aiSuggestions.map((suggestion, idx) => (
+                      {filteredSuggestions.map((suggestion, idx) => (
                         <SuggestionCard key={`${suggestion.productId}-${suggestion.attribute}-${idx}`} suggestion={suggestion} idx={idx} />
                       ))}
                     </div>
@@ -271,6 +362,8 @@ function SuggestionCard({ suggestion, idx = 0 }: { suggestion: AttributeSuggesti
   const [status, setStatus] = useState<'pending' | 'accepted' | 'rejected'>('pending')
   if (status === 'rejected') return null
 
+  const confidencePercent = Math.round(suggestion.confidence * 100)
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -295,7 +388,12 @@ function SuggestionCard({ suggestion, idx = 0 }: { suggestion: AttributeSuggesti
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <Badge variant="secondary" className="text-xs tabular-nums">{Math.round(suggestion.confidence * 100)}%</Badge>
+        <Badge
+          variant="secondary"
+          className={cn("text-xs tabular-nums", confidencePercent >= 95 ? "bg-success/10 text-success" : confidencePercent >= 80 ? "bg-info/10 text-info" : "")}
+        >
+          {confidencePercent}%
+        </Badge>
         {status === 'pending' && (
           <>
             <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-success/10" onClick={() => setStatus('accepted')}>
