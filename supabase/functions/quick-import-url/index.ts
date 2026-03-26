@@ -2125,53 +2125,73 @@ async function scrapeProductData(url: string, platform: string, externalProductI
   
   try {
     if (firecrawlKey) {
-      console.log('🔥 Using Firecrawl for enhanced scraping')
+      console.log(`🔥 Using Firecrawl for enhanced scraping: ${effectiveUrl}`)
       
-      const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${firecrawlKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url,
-          formats: ['html', 'markdown', 'rawHtml'],
-          onlyMainContent: false,
-          waitFor: 5000, // Wait for JS rendering (increased for Amazon)
-        }),
-      })
-      
-      if (firecrawlResponse.ok) {
-        const firecrawlData = await firecrawlResponse.json()
-        html = firecrawlData.data?.rawHtml || firecrawlData.data?.html || firecrawlData.rawHtml || firecrawlData.html || ''
-        markdown = firecrawlData.data?.markdown || firecrawlData.markdown || ''
-        console.log(`✅ Firecrawl returned ${html.length} chars HTML, ${markdown.length} chars markdown`)
-      } else {
-        const errorText = await firecrawlResponse.text()
-        console.log('⚠️ Firecrawl failed:', errorText)
+      // Try with effectiveUrl first, retry with original if blocked
+      for (const tryUrl of [effectiveUrl, ...(effectiveUrl !== url ? [url] : [])]) {
+        const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${firecrawlKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            url: tryUrl,
+            formats: ['html', 'markdown', 'rawHtml'],
+            onlyMainContent: false,
+            waitFor: platform === 'amazon' ? 8000 : 5000,
+          }),
+        })
+        
+        if (firecrawlResponse.ok) {
+          const firecrawlData = await firecrawlResponse.json()
+          const candidateHtml = firecrawlData.data?.rawHtml || firecrawlData.data?.html || firecrawlData.rawHtml || firecrawlData.html || ''
+          const candidateMd = firecrawlData.data?.markdown || firecrawlData.markdown || ''
+          console.log(`✅ Firecrawl returned ${candidateHtml.length} chars HTML, ${candidateMd.length} chars markdown for ${tryUrl}`)
+          
+          // Check if blocked (captcha, robot check)
+          if (candidateHtml.length > 5000 && !isBlockedOrErrorHtml(candidateHtml)) {
+            html = candidateHtml
+            markdown = candidateMd
+            break
+          } else if (candidateHtml.length > 0) {
+            console.log(`⚠️ Firecrawl returned blocked/short HTML (${candidateHtml.length} chars), trying next URL...`)
+            // Keep as fallback if nothing better
+            if (candidateHtml.length > html.length) {
+              html = candidateHtml
+              markdown = candidateMd
+            }
+          }
+        } else {
+          const errorText = await firecrawlResponse.text()
+          console.log(`⚠️ Firecrawl failed for ${tryUrl}:`, errorText)
+        }
       }
     }
     
-    // Fallback to direct fetch
-    if (!html || html.length < 5000) {
-      console.log('📡 Using direct fetch...')
-      const response = await fetch(url, {
+    // Fallback to direct fetch if Firecrawl failed or returned too little
+    if (!html || html.length < 5000 || isBlockedOrErrorHtml(html)) {
+      console.log(`📡 Using direct fetch: ${effectiveUrl}`)
+      const response = await fetch(effectiveUrl, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
           'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
           'Accept-Encoding': 'gzip, deflate, br',
           'Sec-Fetch-Dest': 'document',
           'Sec-Fetch-Mode': 'navigate',
           'Sec-Fetch-Site': 'none',
-        }
+          'Sec-Fetch-User': '?1',
+          'Upgrade-Insecure-Requests': '1',
+          'Cache-Control': 'max-age=0',
+        },
+        redirect: 'follow',
       })
       
       if (response.ok) {
         const fetchedHtml = await response.text()
         console.log(`📡 Direct fetch returned ${fetchedHtml.length} chars`)
-        // Only use if better than Firecrawl
-        if (fetchedHtml.length > html.length) {
+        if (fetchedHtml.length > html.length && !isBlockedOrErrorHtml(fetchedHtml)) {
           html = fetchedHtml
         }
       }
