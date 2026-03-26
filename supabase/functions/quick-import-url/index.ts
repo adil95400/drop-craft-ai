@@ -2339,39 +2339,26 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // SECURITY: JWT-first authentication — never trust body user_id
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Authorization header required' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const token = authHeader.replace('Bearer ', '')
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 
-    // Create user-scoped client for RLS
-    const supabaseUser = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-      auth: { persistSession: false },
-    })
+    // Auth is optional for preview, mandatory for import
+    const authHeader = req.headers.get('authorization')
+    let user_id: string | null = null
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '')
+      const supabaseUser = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+        auth: { persistSession: false },
+      })
 
-    // Verify JWT
-    const { data: claimsData, error: claimsError } = await supabaseUser.auth.getUser(token)
-    if (claimsError || !claimsData?.user) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid or expired token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      const { data: claimsData, error: claimsError } = await supabaseUser.auth.getUser(token)
+      if (!claimsError && claimsData?.user?.id) {
+        user_id = claimsData.user.id
+      } else {
+        console.warn('⚠️ Invalid/expired token received for quick-import-url; continuing as anonymous for preview')
+      }
     }
-    const user_id = claimsData.user.id
-
-    // Service-role client only for cross-table writes (jobs, reviews)
-    const supabaseAdmin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
-      auth: { persistSession: false },
-    })
 
     const body = await req.json()
     const { url, action = 'preview', target_store_id, price_multiplier = 1.5 } = body
@@ -2428,6 +2415,18 @@ Deno.serve(async (req) => {
     
     // Import mode
     if (action === 'import') {
+      if (!user_id) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Authentification requise pour importer le produit' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Service-role client only for cross-table writes (products, reviews)
+      const supabaseAdmin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
+        auth: { persistSession: false },
+      })
+
       const overrideData = body.override_data || {}
       const finalTitle = overrideData.title || productData.title
       const finalDescription = overrideData.description || productData.description
