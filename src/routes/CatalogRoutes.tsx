@@ -14,6 +14,9 @@ const AttributesPage = lazy(() => import('@/pages/catalog/AttributesPage'));
 const CategoriesBrandsPage = lazy(() => import('@/pages/catalog/CategoriesBrandsPage'));
 const CatalogHealthPage = lazy(() => import('@/pages/catalog/CatalogHealthPage'));
 const ImageDeduplicationPage = lazy(() => import('@/pages/catalog/ImageDeduplicationPage'));
+const CatalogDashboardPage = lazy(() => import('@/pages/catalog/CatalogDashboardPage'));
+const PricingEnginePage = lazy(() => import('@/pages/catalog/PricingEnginePage'));
+const SupplierSyncPage = lazy(() => import('@/pages/catalog/SupplierSyncPage'));
 
 // Composant de chargement
 const CatalogLoadingSkeleton = () => (
