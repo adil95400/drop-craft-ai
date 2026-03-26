@@ -8966,6 +8966,45 @@ export type Database = {
         }
         Relationships: []
       }
+      media_enrichment_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          job_type: string
+          product_id: string
+          result: Json | null
+          started_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          job_type: string
+          product_id: string
+          result?: Json | null
+          started_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          job_type?: string
+          product_id?: string
+          result?: Json | null
+          started_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       media_folders: {
         Row: {
           color: string | null
@@ -10811,6 +10850,127 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "product_interactions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_media_assets: {
+        Row: {
+          asset_type: string | null
+          created_at: string | null
+          file_size: number | null
+          format: string | null
+          height: number | null
+          id: string
+          image_type: string | null
+          is_primary: boolean | null
+          media_set_id: string | null
+          metadata: Json | null
+          original_url: string
+          position: number | null
+          product_id: string
+          source: string | null
+          url: string
+          user_id: string
+          width: number | null
+        }
+        Insert: {
+          asset_type?: string | null
+          created_at?: string | null
+          file_size?: number | null
+          format?: string | null
+          height?: number | null
+          id?: string
+          image_type?: string | null
+          is_primary?: boolean | null
+          media_set_id?: string | null
+          metadata?: Json | null
+          original_url: string
+          position?: number | null
+          product_id: string
+          source?: string | null
+          url: string
+          user_id: string
+          width?: number | null
+        }
+        Update: {
+          asset_type?: string | null
+          created_at?: string | null
+          file_size?: number | null
+          format?: string | null
+          height?: number | null
+          id?: string
+          image_type?: string | null
+          is_primary?: boolean | null
+          media_set_id?: string | null
+          metadata?: Json | null
+          original_url?: string
+          position?: number | null
+          product_id?: string
+          source?: string | null
+          url?: string
+          user_id?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_media_assets_media_set_id_fkey"
+            columns: ["media_set_id"]
+            isOneToOne: false
+            referencedRelation: "product_media_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_media_sets: {
+        Row: {
+          created_at: string | null
+          duplicates_removed: number | null
+          id: string
+          last_enriched_at: string | null
+          media_score: number | null
+          media_status: string | null
+          product_id: string
+          score_breakdown: Json | null
+          scored_at: string | null
+          total_assets: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          duplicates_removed?: number | null
+          id?: string
+          last_enriched_at?: string | null
+          media_score?: number | null
+          media_status?: string | null
+          product_id: string
+          score_breakdown?: Json | null
+          scored_at?: string | null
+          total_assets?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          duplicates_removed?: number | null
+          id?: string
+          last_enriched_at?: string | null
+          media_score?: number | null
+          media_status?: string | null
+          product_id?: string
+          score_breakdown?: Json | null
+          scored_at?: string | null
+          total_assets?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_media_sets_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
