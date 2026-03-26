@@ -190,6 +190,19 @@ function isBlockedOrErrorHtml(html: string): boolean {
   )
 }
 
+function isUsableMarkdown(markdown: string): boolean {
+  if (!markdown || markdown.length < 500) return false
+  const m = markdown.toLowerCase()
+  return (
+    m.includes('prix') ||
+    m.includes('price') ||
+    m.includes('amazon') ||
+    m.includes('€') ||
+    m.includes('$') ||
+    m.includes('£')
+  )
+}
+
 // Extract high quality images from various sources
 function extractHQImages(html: string, platform: string, markdown: string = ''): string[] {
   const images: string[] = []
@@ -2196,13 +2209,45 @@ async function scrapeProductData(url: string, platform: string, externalProductI
         }
       }
     }
+
+    // Last-resort fallback for anti-bot pages (Amazon often blocks server-side fetches)
+    if ((!html || html.length < 5000 || isBlockedOrErrorHtml(html)) && platform === 'amazon') {
+      try {
+        const noScheme = effectiveUrl.replace(/^https?:\/\//i, '')
+        const proxyUrl = `https://r.jina.ai/http://${noScheme}`
+        console.log(`🛟 Trying Jina fallback: ${proxyUrl}`)
+
+        const proxyResp = await fetch(proxyUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0',
+            'Accept': 'text/plain, text/markdown;q=0.9, */*;q=0.8',
+          },
+        })
+
+        if (proxyResp.ok) {
+          const proxyMarkdown = await proxyResp.text()
+          console.log(`🛟 Jina fallback returned ${proxyMarkdown.length} chars markdown`)
+          if (proxyMarkdown.length > markdown.length && isUsableMarkdown(proxyMarkdown)) {
+            markdown = proxyMarkdown
+          }
+        }
+      } catch (proxyErr) {
+        console.log('⚠️ Jina fallback failed:', proxyErr)
+      }
+    }
+
+    const hasUsableMarkdown = isUsableMarkdown(markdown)
+    if ((!html || html.length < 500) && hasUsableMarkdown) {
+      // Allow extraction logic to continue even when HTML is blocked/empty.
+      html = markdown
+    }
     
     // Guard: if we still have no usable HTML, fail explicitly
     if (!html || html.length < 500) {
       throw new Error(`Impossible de récupérer la page produit. Le site (${platform}) a peut-être bloqué la requête. Réessayez dans quelques instants.`)
     }
     
-    if (isBlockedOrErrorHtml(html)) {
+    if (isBlockedOrErrorHtml(html) && !hasUsableMarkdown) {
       console.log('⚠️ HTML appears blocked (captcha/robot check detected)')
       throw new Error(`Le site ${platform} a bloqué la requête (captcha/protection anti-bot). Réessayez dans quelques instants ou essayez avec un lien produit plus court.`)
     }
@@ -2339,39 +2384,26 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // SECURITY: JWT-first authentication — never trust body user_id
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Authorization header required' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const token = authHeader.replace('Bearer ', '')
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 
-    // Create user-scoped client for RLS
-    const supabaseUser = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-      auth: { persistSession: false },
-    })
+    // Auth is optional for preview, mandatory for import
+    const authHeader = req.headers.get('authorization')
+    let user_id: string | null = null
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '')
+      const supabaseUser = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+        auth: { persistSession: false },
+      })
 
-    // Verify JWT
-    const { data: claimsData, error: claimsError } = await supabaseUser.auth.getUser(token)
-    if (claimsError || !claimsData?.user) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid or expired token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      const { data: claimsData, error: claimsError } = await supabaseUser.auth.getUser(token)
+      if (!claimsError && claimsData?.user?.id) {
+        user_id = claimsData.user.id
+      } else {
+        console.warn('⚠️ Invalid/expired token received for quick-import-url; continuing as anonymous for preview')
+      }
     }
-    const user_id = claimsData.user.id
-
-    // Service-role client only for cross-table writes (jobs, reviews)
-    const supabaseAdmin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
-      auth: { persistSession: false },
-    })
 
     const body = await req.json()
     const { url, action = 'preview', target_store_id, price_multiplier = 1.5 } = body
@@ -2428,6 +2460,18 @@ Deno.serve(async (req) => {
     
     // Import mode
     if (action === 'import') {
+      if (!user_id) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Authentification requise pour importer le produit' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Service-role client only for cross-table writes (products, reviews)
+      const supabaseAdmin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
+        auth: { persistSession: false },
+      })
+
       const overrideData = body.override_data || {}
       const finalTitle = overrideData.title || productData.title
       const finalDescription = overrideData.description || productData.description

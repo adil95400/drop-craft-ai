@@ -132,6 +132,43 @@ export default function AutoDSImportPage() {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const resolveEdgeFunctionError = async (err: unknown): Promise<string> => {
+    const fallback = err instanceof Error ? err.message : 'Erreur inconnue'
+
+    if (err && typeof err === 'object' && 'context' in err) {
+      const context = (err as any).context
+
+      try {
+        if (context?.json) {
+          const payload = await context.json()
+          if (payload?.error && typeof payload.error === 'string') return payload.error
+          if (payload?.message && typeof payload.message === 'string') return payload.message
+        }
+      } catch {
+        // ignore json parsing and fallback below
+      }
+
+      try {
+        if (context?.text) {
+          const text = await context.text()
+          if (text) {
+            try {
+              const payload = JSON.parse(text)
+              if (payload?.error && typeof payload.error === 'string') return payload.error
+              if (payload?.message && typeof payload.message === 'string') return payload.message
+            } catch {
+              return text
+            }
+          }
+        }
+      } catch {
+        // ignore text parsing and return fallback
+      }
+    }
+
+    return fallback
+  }
+
   // === URL Import Functions ===
   const addUrlsToQueue = () => {
     const urls = urlInput.split(/[\n,\s]+/).map(u => u.trim()).filter(u => u && (u.startsWith('http://') || u.startsWith('https://')))
@@ -156,7 +193,8 @@ export default function AutoDSImportPage() {
         if (!data.success) throw new Error(data.error)
         setQueuedUrls(prev => prev.map(q => q.id === item.id ? { ...q, status: 'success' as const, preview: data.data } : q))
       } catch (err) {
-        setQueuedUrls(prev => prev.map(q => q.id === item.id ? { ...q, status: 'error' as const, error: err instanceof Error ? err.message : 'Erreur inconnue' } : q))
+        const errorMessage = await resolveEdgeFunctionError(err)
+        setQueuedUrls(prev => prev.map(q => q.id === item.id ? { ...q, status: 'error' as const, error: errorMessage } : q))
       }
     }
     setIsProcessingUrls(false)
@@ -189,7 +227,8 @@ export default function AutoDSImportPage() {
       setQueuedUrls(prev => prev.filter(q => q.id !== item.id))
       toast.success(`"${productData.title?.slice(0, 50)}..." importé`)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Erreur lors de l\'import')
+      const errorMessage = await resolveEdgeFunctionError(err)
+      toast.error(errorMessage)
       setQueuedUrls(prev => prev.map(q => q.id === item.id ? { ...q, status: 'success' as const } : q))
     } finally { setIsImportingFromModal(false) }
   }
