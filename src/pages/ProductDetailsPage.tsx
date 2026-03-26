@@ -14,6 +14,7 @@ import { ProductAuditBlock } from '@/components/products/ProductAuditBlock'
 import { ProductPerformanceMetrics } from '@/components/products/ProductPerformanceMetrics'
 import { OptimizationHistory } from '@/components/products/OptimizationHistory'
 import { MultiChannelReadiness } from '@/components/products/MultiChannelReadiness'
+import { ChannelDataSpecifications } from '@/components/products/ChannelDataSpecifications'
 import { ProductImageEditor } from '@/components/products/ProductImageEditor'
 import { ProductMediaQualityPanel } from '@/components/products/ProductMediaQualityPanel'
 
