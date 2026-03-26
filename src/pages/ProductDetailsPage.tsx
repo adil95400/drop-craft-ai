@@ -100,6 +100,7 @@ export default function ProductDetailsPage() {
   const [showImageEditor, setShowImageEditor] = useState(false)
   const [editingImageUrl, setEditingImageUrl] = useState('')
   const [isInlineEditing, setIsInlineEditing] = useState(false)
+  const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null)
 
   // Inline edit state
   const [editForm, setEditForm] = useState({
