@@ -2197,6 +2197,16 @@ async function scrapeProductData(url: string, platform: string, externalProductI
       }
     }
     
+    // Guard: if we still have no usable HTML, fail explicitly
+    if (!html || html.length < 500) {
+      throw new Error(`Impossible de récupérer la page produit. Le site (${platform}) a peut-être bloqué la requête. Réessayez dans quelques instants.`)
+    }
+    
+    if (isBlockedOrErrorHtml(html)) {
+      console.log('⚠️ HTML appears blocked (captcha/robot check detected)')
+      throw new Error(`Le site ${platform} a bloqué la requête (captcha/protection anti-bot). Réessayez dans quelques instants ou essayez avec un lien produit plus court.`)
+    }
+
     // Extract all product data
     let productData: any = {
       source_url: url,
