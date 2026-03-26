@@ -448,7 +448,7 @@ export function ChannelDataSpecifications({ product }: ChannelDataSpecifications
       const { data, error } = await supabase.functions.invoke('ai-product-edit-assist', {
         body: {
           systemPrompt: `Expert e-commerce multi-canal. Tu dois générer les données manquantes pour publier ce produit sur ${currentSpec.name}. Champs manquants: ${missing}. Respecte strictement les limites de caractères de la plateforme. Retourne un JSON avec les valeurs optimisées.`,
-          userPrompt: `Produit: "${product.name}"\nDescription: ${product.description?.slice(0, 500) || 'Aucune'}\nPrix: ${product.price} ${product.currency || 'EUR'}\nCatégorie: ${product.category || 'Non définie'}\nMarque: ${(product as any).brand || 'Non définie'}`,
+          userPrompt: `Produit: "${product.name}"\nDescription: ${product.description?.slice(0, 500) || 'Aucune'}\nPrix: ${product.price} EUR\nCatégorie: ${product.category || 'Non définie'}\nMarque: ${(product as any).brand || 'Non définie'}`,
           field: 'multi_channel_spec_fix'
         }
       })
