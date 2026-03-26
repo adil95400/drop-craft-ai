@@ -1,8 +1,9 @@
 /**
- * Product Details Page — Shopify Admin Style v5.0
+ * Product Details Page — Shopify Admin Style v6.0
  * Two-column layout: Main content + Sidebar
+ * Enhanced: Inline editing, SEO fields in modal, product notes, activity timeline
  */
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProductTranslations, ProductReviews } from '@/components/products'
@@ -29,6 +30,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Progress } from '@/components/ui/progress'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
   ArrowLeft, Package, Languages, MessageSquare, Images, Target, 
   TrendingUp, History, Globe, Edit, Copy, Sparkles,
@@ -37,7 +39,8 @@ import {
   Share2, Download, Eye, Clock, FileText, Video, Truck,
   Lightbulb, AlertCircle, ImagePlus, DollarSign, FileSearch,
   Loader2, Palette, ChevronDown, Search, ExternalLink,
-  Star, Zap, Shield, Settings, Hash, Weight, Barcode
+  Star, Zap, Shield, Settings, Hash, Weight, Barcode,
+  StickyNote, Plus, X, Check, Pencil, Save
 } from 'lucide-react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useProduct } from '@/hooks/useUnifiedProducts'
@@ -80,6 +83,51 @@ function SectionCard({ title, description, children, actions, className }: {
   )
 }
 
+/** Inline editable text field */
+function InlineEdit({ value, onSave, multiline, placeholder, className }: {
+  value: string; onSave: (val: string) => void; multiline?: boolean; placeholder?: string; className?: string
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value)
+
+  const commit = () => {
+    if (draft.trim() !== value) onSave(draft.trim())
+    setEditing(false)
+  }
+
+  if (!editing) {
+    return (
+      <div className={cn("group flex items-start gap-1.5 cursor-pointer rounded-md -mx-1.5 px-1.5 py-0.5 hover:bg-muted/60 transition-colors", className)} onClick={() => { setDraft(value); setEditing(true) }}>
+        <div className="flex-1 min-w-0">
+          {value ? (
+            multiline 
+              ? <p className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">{value}</p>
+              : <p className="text-sm font-medium">{value}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">{placeholder || 'Cliquez pour modifier'}</p>
+          )}
+        </div>
+        <Pencil className="h-3 w-3 text-muted-foreground/0 group-hover:text-muted-foreground/60 flex-shrink-0 mt-1 transition-colors" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-1.5 -mx-1.5">
+      {multiline ? (
+        <Textarea autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} rows={4} className="text-sm resize-y min-h-[80px]" placeholder={placeholder} onKeyDown={(e) => { if (e.key === 'Escape') setEditing(false) }} />
+      ) : (
+        <Input autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} className="text-sm h-9" placeholder={placeholder}
+          onKeyDown={(e) => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setEditing(false) }} />
+      )}
+      <div className="flex gap-1.5">
+        <Button size="sm" className="h-7 text-xs gap-1" onClick={commit}><Check className="h-3 w-3" /> Enregistrer</Button>
+        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setEditing(false)}>Annuler</Button>
+      </div>
+    </div>
+  )
+}
+
 export default function ProductDetailsPage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -100,16 +148,20 @@ export default function ProductDetailsPage() {
   const [aiGeneratingField, setAiGeneratingField] = useState<string | null>(null)
   const [showImageEditor, setShowImageEditor] = useState(false)
   const [editingImageUrl, setEditingImageUrl] = useState('')
-  const [isInlineEditing, setIsInlineEditing] = useState(false)
   const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null)
+  const [productNote, setProductNote] = useState('')
+  const [showNoteInput, setShowNoteInput] = useState(false)
 
-  // Inline edit state
+  // Extended edit form with SEO, tags, barcode, weight
   const [editForm, setEditForm] = useState({
-    name: '', description: '', price: 0, cost_price: 0,
+    name: '', description: '', price: 0, cost_price: 0, compare_at_price: 0,
     stock_quantity: 0, sku: '', category: '', status: 'draft',
+    barcode: '', weight: '', weight_unit: 'g',
+    seo_title: '', seo_description: '',
+    tags: '' as string,
   })
 
-  const handleAIGenerate = async (field: 'title' | 'description' | 'category') => {
+  const handleAIGenerate = async (field: 'title' | 'description' | 'category' | 'seo_title' | 'seo_description' | 'tags') => {
     setAiGeneratingField(field)
     try {
       const prompts: Record<string, { system: string; user: string }> = {
@@ -124,6 +176,18 @@ export default function ProductDetailsPage() {
         category: {
           system: 'Expert catégorisation e-commerce. Retourne UNIQUEMENT le nom de la catégorie la plus pertinente (1-3 mots, en français). Pas d\'explication.',
           user: `Produit: "${editForm.name}"\nDescription: ${editForm.description?.slice(0, 200) || 'Aucune'}`
+        },
+        seo_title: {
+          system: 'Expert SEO. Génère un titre SEO optimisé (50-60 chars) avec mots-clés pertinents. Retourne UNIQUEMENT le titre.',
+          user: `Produit: "${editForm.name}"\nCatégorie: ${editForm.category || ''}\nDescription: ${editForm.description?.slice(0, 200) || ''}`
+        },
+        seo_description: {
+          system: 'Expert SEO. Génère une méta-description optimisée (140-155 chars) avec CTA. Retourne UNIQUEMENT la description.',
+          user: `Produit: "${editForm.name}"\nPrix: ${editForm.price}€\nDescription: ${editForm.description?.slice(0, 300) || ''}`
+        },
+        tags: {
+          system: 'Expert e-commerce. Génère 5-8 tags pertinents séparés par des virgules. Retourne UNIQUEMENT les tags.',
+          user: `Produit: "${editForm.name}"\nCatégorie: ${editForm.category || ''}\nDescription: ${editForm.description?.slice(0, 200) || ''}`
         }
       }
       const { system, user: userPrompt } = prompts[field]
@@ -133,10 +197,9 @@ export default function ProductDetailsPage() {
       if (error) throw error
       const result = data?.result?.trim()
       if (result) {
-        if (field === 'title') setEditForm(prev => ({ ...prev, name: result }))
-        else if (field === 'description') setEditForm(prev => ({ ...prev, description: result }))
-        else if (field === 'category') setEditForm(prev => ({ ...prev, category: result }))
-        toast.success(`${field === 'title' ? 'Titre' : field === 'description' ? 'Description' : 'Catégorie'} généré(e) par l'IA`)
+        const fieldMap: Record<string, string> = { title: 'name', description: 'description', category: 'category', seo_title: 'seo_title', seo_description: 'seo_description', tags: 'tags' }
+        setEditForm(prev => ({ ...prev, [fieldMap[field]]: result }))
+        toast.success(`Généré par l'IA avec succès`)
       }
     } catch (e) {
       console.error('AI generation error:', e)
@@ -161,11 +224,31 @@ export default function ProductDetailsPage() {
     setEditForm({
       name: product.name || '', description: product.description || '',
       price: product.price || 0, cost_price: product.cost_price || 0,
+      compare_at_price: (product as any).compare_at_price || 0,
       stock_quantity: product.stock_quantity || 0, sku: product.sku || '',
       category: product.category || '', status: product.status || 'draft',
+      barcode: (product as any).barcode || '', weight: (product as any).weight?.toString() || '',
+      weight_unit: (product as any).weight_unit || 'g',
+      seo_title: product.seo_title || '', seo_description: product.seo_description || '',
+      tags: (product.tags || []).join(', '),
     })
     setShowEditModal(true)
   }
+
+  /** Quick inline save for a single field */
+  const quickSave = useCallback((field: string, value: any) => {
+    if (!id) return
+    const updateMap: Record<string, any> = {
+      name: { title: value },
+      description: { description: value },
+    }
+    const updates = updateMap[field]
+    if (!updates) return
+    updateProduct.mutate({ id, updates }, {
+      onSuccess: () => { refetch(); toast.success('Mis à jour') },
+      onError: () => toast.error('Erreur de mise à jour')
+    })
+  }, [id, updateProduct, refetch])
 
   const healthScore = useMemo(() => {
     if (!product) return 0
@@ -193,6 +276,7 @@ export default function ProductDetailsPage() {
 
   const handleSaveEdit = () => {
     if (!id) return
+    const tagsArray = editForm.tags.split(',').map(t => t.trim()).filter(Boolean)
     updateProduct.mutate({
       id,
       updates: {
@@ -201,7 +285,21 @@ export default function ProductDetailsPage() {
         stock: editForm.stock_quantity, status: editForm.status,
       },
     }, {
-      onSuccess: () => { setShowEditModal(false); refetch() },
+      onSuccess: async () => {
+        // Save extended fields directly
+        try {
+          await supabase.from('products').update({
+            seo_title: editForm.seo_title || null,
+            seo_description: editForm.seo_description || null,
+            tags: tagsArray.length > 0 ? tagsArray : null,
+            barcode: editForm.barcode || null,
+            weight: editForm.weight ? parseFloat(editForm.weight) : null,
+            compare_at_price: editForm.compare_at_price > 0 ? editForm.compare_at_price : null,
+          }).eq('id', id)
+        } catch {}
+        setShowEditModal(false)
+        refetch()
+      },
     })
   }
 
@@ -248,6 +346,30 @@ export default function ProductDetailsPage() {
     setShowDeleteConfirm(false)
   }
 
+  const handleQuickStatusChange = (newStatus: string) => {
+    if (!id) return
+    updateProduct.mutate({ id, updates: { status: newStatus } }, {
+      onSuccess: () => { refetch(); toast.success(`Statut → ${newStatus === 'active' ? 'Actif' : newStatus === 'draft' ? 'Brouillon' : newStatus}`) }
+    })
+  }
+
+  const handleSaveNote = async () => {
+    if (!productNote.trim() || !id || !user) return
+    try {
+      await supabase.from('activity_logs').insert({
+        user_id: user.id,
+        action: 'product_note_added',
+        entity_type: 'product',
+        entity_id: id,
+        description: productNote.trim(),
+        source: 'manual'
+      })
+      toast.success('Note ajoutée')
+      setProductNote('')
+      setShowNoteInput(false)
+    } catch { toast.error('Erreur') }
+  }
+
   // --- Loading / Not found ---
   if (isLoading) {
     return (
@@ -279,6 +401,8 @@ export default function ProductDetailsPage() {
   const mainImage = images[selectedImageIndex] || '/placeholder.svg'
   const margin = product.cost_price > 0 && product.price > 0 
     ? ((product.price - product.cost_price) / product.price * 100) : null
+  const compareAtPrice = (product as any).compare_at_price
+  const isOnSale = compareAtPrice && compareAtPrice > product.price
 
   const statusLabel = ['active', 'published'].includes(product.status) ? 'Actif' 
     : product.status === 'draft' ? 'Brouillon' 
@@ -295,12 +419,22 @@ export default function ProductDetailsPage() {
           </Button>
           <Separator orientation="vertical" className="h-5" />
           <h1 className="text-lg font-semibold truncate max-w-md">{product.name}</h1>
+          <Badge variant={['active', 'published'].includes(product.status) ? 'default' : 'secondary'} className="text-[10px] h-5">
+            {statusLabel}
+          </Badge>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()}>
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Actualiser</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Button variant="outline" size="sm" onClick={openEditModal} className="gap-1.5">
             <Edit className="h-3.5 w-3.5" /> Modifier
           </Button>
@@ -319,6 +453,11 @@ export default function ProductDetailsPage() {
               <DropdownMenuItem onClick={handleExport}><Download className="h-4 w-4 mr-2" />Exporter JSON</DropdownMenuItem>
               <DropdownMenuItem onClick={handleShare}><Share2 className="h-4 w-4 mr-2" />Copier le lien</DropdownMenuItem>
               <DropdownMenuSeparator />
+              {product.status !== 'archived' && (
+                <DropdownMenuItem onClick={() => handleQuickStatusChange('archived')}>
+                  <Box className="h-4 w-4 mr-2" />Archiver
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={handleDelete} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" />Supprimer</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -366,6 +505,11 @@ export default function ProductDetailsPage() {
                     <Badge className="absolute top-2 left-2 bg-background/80 backdrop-blur text-foreground text-[10px] h-5">
                       {selectedImageIndex + 1}/{images.length}
                     </Badge>
+                    {isOnSale && (
+                      <Badge className="absolute top-2 right-2 bg-destructive text-destructive-foreground text-[10px] h-5">
+                        -{Math.round((1 - product.price / compareAtPrice) * 100)}%
+                      </Badge>
+                    )}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur rounded-full p-2">
                         <Eye className="h-5 w-5" />
@@ -411,7 +555,7 @@ export default function ProductDetailsPage() {
             )}
           </SectionCard>
 
-          {/* TITLE & DESCRIPTION */}
+          {/* TITLE & DESCRIPTION — Inline editable */}
           <SectionCard 
             title="Titre et description"
             actions={
@@ -424,13 +568,22 @@ export default function ProductDetailsPage() {
             <div className="space-y-4">
               <div>
                 <Label className="text-xs text-muted-foreground mb-1.5 block">Titre</Label>
-                <p className="text-sm font-medium">{product.name || <span className="text-muted-foreground italic">Non défini</span>}</p>
+                <InlineEdit
+                  value={product.name || ''}
+                  onSave={(val) => quickSave('name', val)}
+                  placeholder="Cliquez pour ajouter un titre"
+                />
               </div>
               <Separator />
               <div>
                 <Label className="text-xs text-muted-foreground mb-1.5 block">Description</Label>
                 {product.description ? (
-                  <p className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">{product.description}</p>
+                  <InlineEdit
+                    value={product.description}
+                    onSave={(val) => quickSave('description', val)}
+                    multiline
+                    placeholder="Cliquez pour modifier la description"
+                  />
                 ) : (
                   <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                     <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0" />
@@ -444,15 +597,23 @@ export default function ProductDetailsPage() {
             </div>
           </SectionCard>
 
-          {/* PRICING */}
+          {/* PRICING — Enhanced with compare at price */}
           <SectionCard title="Tarification">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
               <div>
                 <Label className="text-xs text-muted-foreground">Prix de vente</Label>
                 <p className="text-xl font-bold tabular-nums mt-1">
                   {product.price > 0 ? `${product.price.toFixed(2)} €` : <span className="text-destructive text-sm">Non défini</span>}
                 </p>
               </div>
+              {isOnSale && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">Prix barré</Label>
+                  <p className="text-lg font-semibold tabular-nums mt-1 text-muted-foreground line-through">
+                    {compareAtPrice.toFixed(2)} €
+                  </p>
+                </div>
+              )}
               <div>
                 <Label className="text-xs text-muted-foreground">Coût</Label>
                 <p className="text-xl font-semibold tabular-nums mt-1 text-muted-foreground">
@@ -474,9 +635,9 @@ export default function ProductDetailsPage() {
             </div>
           </SectionCard>
 
-          {/* INVENTORY */}
-          <SectionCard title="Inventaire">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {/* INVENTORY — Enhanced */}
+          <SectionCard title="Inventaire & Expédition">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
               <div>
                 <Label className="text-xs text-muted-foreground">SKU</Label>
                 <div className="flex items-center gap-1.5 mt-1">
@@ -490,9 +651,14 @@ export default function ProductDetailsPage() {
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">En stock</Label>
-                <p className={cn("text-lg font-bold tabular-nums mt-1", product.stock_quantity <= 0 && "text-destructive")}>
-                  {product.stock_quantity ?? 0}
-                </p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <p className={cn("text-lg font-bold tabular-nums", product.stock_quantity <= 0 && "text-destructive", product.stock_quantity > 0 && product.stock_quantity < 10 && "text-amber-500")}>
+                    {product.stock_quantity ?? 0}
+                  </p>
+                  {product.stock_quantity > 0 && product.stock_quantity < 10 && (
+                    <Badge variant="secondary" className="text-[9px] h-4 bg-amber-500/10 text-amber-600 border-amber-500/20">Stock faible</Badge>
+                  )}
+                </div>
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Code-barres</Label>
@@ -500,7 +666,15 @@ export default function ProductDetailsPage() {
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Poids</Label>
-                <p className="text-sm mt-1">{(product as any).weight ? `${(product as any).weight} g` : '—'}</p>
+                <p className="text-sm mt-1">{(product as any).weight ? `${(product as any).weight} ${(product as any).weight_unit || 'g'}` : '—'}</p>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Suivi inventaire</Label>
+                <div className="mt-1.5">
+                  <Badge variant="secondary" className="text-[10px]">
+                    {product.stock_quantity != null ? 'Activé' : 'Désactivé'}
+                  </Badge>
+                </div>
               </div>
             </div>
           </SectionCard>
@@ -537,7 +711,7 @@ export default function ProductDetailsPage() {
             </SectionCard>
           )}
 
-          {/* SEO */}
+          {/* SEO — Enhanced */}
           <SectionCard 
             title="Référencement SEO" 
             actions={
@@ -550,7 +724,9 @@ export default function ProductDetailsPage() {
             <div className="space-y-3">
               {/* Google preview */}
               <div className="p-4 rounded-lg bg-muted/30 border">
-                <p className="text-xs text-muted-foreground mb-2">Aperçu Google</p>
+                <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+                  <Search className="h-3 w-3" /> Aperçu Google
+                </p>
                 <p className="text-blue-600 text-sm font-medium hover:underline cursor-default truncate">
                   {product.seo_title || product.name || 'Titre du produit'}
                 </p>
@@ -561,6 +737,39 @@ export default function ProductDetailsPage() {
                   {product.seo_description || product.description?.slice(0, 160) || 'Aucune méta-description définie.'}
                 </p>
               </div>
+
+              {/* SEO score bar */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-muted-foreground">Score SEO</span>
+                    <span className={cn("text-xs font-bold", 
+                      product.seo_title && product.seo_description ? "text-emerald-600" 
+                      : product.seo_title || product.seo_description ? "text-amber-500" 
+                      : "text-destructive"
+                    )}>
+                      {product.seo_title && product.seo_description ? 'Bon' : product.seo_title || product.seo_description ? 'Partiel' : 'À configurer'}
+                    </span>
+                  </div>
+                  <Progress value={product.seo_title && product.seo_description ? 100 : product.seo_title || product.seo_description ? 50 : 0} className="h-1.5" />
+                </div>
+              </div>
+
+              {/* SEO checklist */}
+              <div className="space-y-1.5">
+                {[
+                  { label: 'Titre SEO', ok: !!product.seo_title, hint: `${(product.seo_title || '').length}/60 chars` },
+                  { label: 'Méta-description', ok: !!product.seo_description, hint: `${(product.seo_description || '').length}/160 chars` },
+                  { label: 'Slug URL', ok: true, hint: product.id?.slice(0, 12) + '...' },
+                ].map(item => (
+                  <div key={item.label} className="flex items-center gap-2 text-xs">
+                    {item.ok ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> : <AlertCircle className="h-3.5 w-3.5 text-amber-500" />}
+                    <span className="text-muted-foreground">{item.label}</span>
+                    <span className="ml-auto text-muted-foreground/60">{item.hint}</span>
+                  </div>
+                ))}
+              </div>
+
               {!product.seo_title && !product.seo_description && (
                 <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
                   <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
@@ -662,15 +871,35 @@ export default function ProductDetailsPage() {
         {/* ===== RIGHT SIDEBAR ===== */}
         <div className="space-y-4">
 
-          {/* STATUS */}
+          {/* STATUS — Enhanced with quick toggle */}
           <Card className="shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold">Statut</CardTitle>
             </CardHeader>
             <CardContent className="pt-0 space-y-4">
-              <div className="flex items-center gap-2.5">
-                <StatusDot status={product.status} />
-                <span className="text-sm font-medium">{statusLabel}</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <StatusDot status={product.status} />
+                  <span className="text-sm font-medium">{statusLabel}</span>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
+                      Changer <ChevronDown className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleQuickStatusChange('active')}>
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 mr-2" /> Actif
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleQuickStatusChange('draft')}>
+                      <span className="h-2 w-2 rounded-full bg-amber-500 mr-2" /> Brouillon
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleQuickStatusChange('archived')}>
+                      <span className="h-2 w-2 rounded-full bg-muted-foreground mr-2" /> Archivé
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <Separator />
               <div className="space-y-3">
@@ -703,20 +932,17 @@ export default function ProductDetailsPage() {
               <Progress value={healthScore} className="h-2 mb-3" />
               <div className="space-y-2 text-xs">
                 {[
-                  { label: 'Titre', ok: product.name?.length >= 10 },
-                  { label: 'Description', ok: product.description?.length >= 50 },
-                  { label: 'Images', ok: images.length > 0 },
-                  { label: 'SKU', ok: !!product.sku },
-                  { label: 'Catégorie', ok: !!product.category },
-                  { label: 'Prix', ok: product.price > 0 },
+                  { label: 'Titre', ok: product.name?.length >= 10, pts: 20 },
+                  { label: 'Description', ok: product.description?.length >= 50, pts: 20 },
+                  { label: 'Images', ok: images.length > 0, pts: 20 },
+                  { label: 'SKU', ok: !!product.sku, pts: 15 },
+                  { label: 'Catégorie', ok: !!product.category, pts: 15 },
+                  { label: 'Prix', ok: product.price > 0, pts: 10 },
                 ].map(item => (
-                  <div key={item.label} className="flex items-center justify-between">
-                    <span className="text-muted-foreground">{item.label}</span>
-                    {item.ok ? (
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                    ) : (
-                      <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
-                    )}
+                  <div key={item.label} className="flex items-center gap-2">
+                    {item.ok ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> : <AlertCircle className="h-3.5 w-3.5 text-muted-foreground/40" />}
+                    <span className={item.ok ? "text-foreground" : "text-muted-foreground"}>{item.label}</span>
+                    <span className="ml-auto text-muted-foreground/60">{item.ok ? `+${item.pts}` : `0/${item.pts}`}</span>
                   </div>
                 ))}
               </div>
@@ -726,22 +952,19 @@ export default function ProductDetailsPage() {
           {/* ORGANIZATION */}
           <Card className="shadow-sm">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold">Organisation</CardTitle>
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Tag className="h-4 w-4" /> Organisation
+              </CardTitle>
             </CardHeader>
             <CardContent className="pt-0 space-y-3">
               <div>
                 <Label className="text-xs text-muted-foreground">Catégorie</Label>
-                <p className="text-sm mt-0.5">{product.category || <span className="text-muted-foreground italic">Non assignée</span>}</p>
+                <p className="text-sm mt-0.5 font-medium">{product.category || <span className="text-muted-foreground italic">Non définie</span>}</p>
               </div>
               <Separator />
               <div>
                 <Label className="text-xs text-muted-foreground">Type de produit</Label>
                 <p className="text-sm mt-0.5">{(product as any).product_type || <span className="text-muted-foreground italic">—</span>}</p>
-              </div>
-              <Separator />
-              <div>
-                <Label className="text-xs text-muted-foreground">Fournisseur</Label>
-                <p className="text-sm mt-0.5">{(product as any).vendor || (product as any).supplier_name || <span className="text-muted-foreground italic">—</span>}</p>
               </div>
               <Separator />
               <div>
@@ -753,6 +976,11 @@ export default function ProductDetailsPage() {
                     <p className="text-xs text-muted-foreground italic">Aucun tag</p>
                   )}
                 </div>
+              </div>
+              <Separator />
+              <div>
+                <Label className="text-xs text-muted-foreground">Source</Label>
+                <Badge variant="outline" className="text-[10px] h-5 mt-1">{product.source || 'products'}</Badge>
               </div>
             </CardContent>
           </Card>
@@ -779,7 +1007,7 @@ export default function ProductDetailsPage() {
                     <a href={product.source_url} target="_blank" rel="noopener noreferrer" 
                       className="text-xs text-primary hover:underline flex items-center gap-1 mt-0.5 truncate">
                       <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                      {new URL(product.source_url).hostname}
+                      {(() => { try { return new URL(product.source_url).hostname } catch { return product.source_url.slice(0, 30) } })()}
                     </a>
                   </div>
                 </>
@@ -799,30 +1027,26 @@ export default function ProductDetailsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0 space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Google Shopping</span>
-                <Badge variant={product.category && product.image_url ? "default" : "secondary"} className="text-[10px]">
-                  {product.category && product.image_url ? '✓ Prêt' : 'Incomplet'}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Meta Commerce</span>
-                <Badge variant={product.image_url && product.description ? "default" : "secondary"} className="text-[10px]">
-                  {product.image_url && product.description ? '✓ Prêt' : 'Incomplet'}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Amazon</span>
-                <Badge variant={product.sku && product.category ? "default" : "secondary"} className="text-[10px]">
-                  {product.sku && product.category ? '✓ Prêt' : 'Incomplet'}
-                </Badge>
-              </div>
+              {[
+                { name: 'Google Shopping', ok: !!(product.category && product.image_url) },
+                { name: 'Meta Commerce', ok: !!(product.image_url && product.description) },
+                { name: 'Amazon', ok: !!(product.sku && product.category) },
+                { name: 'TikTok Shop', ok: !!(product.image_url && product.name) },
+              ].map(ch => (
+                <div key={ch.name} className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">{ch.name}</span>
+                  <Badge variant={ch.ok ? "default" : "secondary"} className="text-[10px]">
+                    {ch.ok ? '✓ Prêt' : 'Incomplet'}
+                  </Badge>
+                </div>
+              ))}
               <Button variant="outline" size="sm" className="w-full text-xs gap-1.5 mt-1" onClick={() => setActiveTab('channels')}>
                 <Globe className="h-3 w-3" /> Voir la compatibilité
               </Button>
             </CardContent>
           </Card>
 
+          {/* METRICS */}
           <Card className="shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -847,16 +1071,54 @@ export default function ProductDetailsPage() {
             </CardContent>
           </Card>
 
+          {/* NOTES */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <StickyNote className="h-4 w-4" /> Notes
+                </CardTitle>
+                <Button variant="ghost" size="sm" className="h-6 text-xs gap-1" onClick={() => setShowNoteInput(!showNoteInput)}>
+                  <Plus className="h-3 w-3" /> Ajouter
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <AnimatePresence>
+                {showNoteInput && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                    <div className="space-y-2 mb-3">
+                      <Textarea value={productNote} onChange={(e) => setProductNote(e.target.value)} placeholder="Ajouter une note..." rows={3} className="text-xs resize-none" />
+                      <div className="flex gap-1.5">
+                        <Button size="sm" className="h-7 text-xs flex-1" onClick={handleSaveNote} disabled={!productNote.trim()}>
+                          <Save className="h-3 w-3 mr-1" /> Enregistrer
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setShowNoteInput(false); setProductNote('') }}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <p className="text-xs text-muted-foreground italic">Les notes sont enregistrées dans le journal d'activité.</p>
+            </CardContent>
+          </Card>
+
           {/* DATES */}
           <Card className="shadow-sm">
             <CardContent className="pt-4 pb-4 space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Créé le</span>
+                <span className="text-muted-foreground flex items-center gap-1.5"><Clock className="h-3 w-3" /> Créé le</span>
                 <span>{product.created_at ? new Date(product.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Modifié le</span>
+                <span className="text-muted-foreground flex items-center gap-1.5"><Edit className="h-3 w-3" /> Modifié le</span>
                 <span>{product.updated_at ? new Date(product.updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground flex items-center gap-1.5"><Hash className="h-3 w-3" /> ID</span>
+                <span className="font-mono text-muted-foreground/70">{product.id?.slice(0, 8)}...</span>
               </div>
             </CardContent>
           </Card>
@@ -894,6 +1156,12 @@ export default function ProductDetailsPage() {
                     <p className="text-[10px] text-muted-foreground">+15 pts • Organisation</p>
                   </button>
                 )}
+                {!(product.tags?.length > 0) && (
+                  <button onClick={openEditModal} className="w-full text-left p-2.5 rounded-lg bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors">
+                    <p className="text-xs font-medium">Ajouter des tags</p>
+                    <p className="text-[10px] text-muted-foreground">Facilite la recherche</p>
+                  </button>
+                )}
               </CardContent>
             </Card>
           )}
@@ -908,9 +1176,10 @@ export default function ProductDetailsPage() {
         confirmText="Supprimer" variant="destructive" onConfirm={confirmDelete}
       />
 
+      {/* ===== ENHANCED EDIT MODAL ===== */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="pb-4 border-b">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="pb-4 border-b flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Edit className="h-5 w-5 text-primary" />
@@ -922,73 +1191,41 @@ export default function ProductDetailsPage() {
             </div>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="edit-name" className="text-sm font-semibold">Nom du produit</Label>
-                <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-primary" disabled={aiGeneratingField === 'title'} onClick={() => handleAIGenerate('title')}>
-                  {aiGeneratingField === 'title' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} Générer IA
-                </Button>
-              </div>
-              <Input id="edit-name" value={editForm.name} onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))} placeholder="Ex: Machine à café Nespresso..." className="h-11" />
-              <p className="text-xs text-muted-foreground">{editForm.name.length}/150 caractères</p>
-            </div>
+          <ScrollArea className="flex-1 -mx-6 px-6">
+            <Tabs defaultValue="general" className="mt-4">
+              <TabsList className="w-full h-9 p-0.5">
+                <TabsTrigger value="general" className="text-xs flex-1">Général</TabsTrigger>
+                <TabsTrigger value="pricing" className="text-xs flex-1">Prix & Stock</TabsTrigger>
+                <TabsTrigger value="seo" className="text-xs flex-1">SEO</TabsTrigger>
+                <TabsTrigger value="organization" className="text-xs flex-1">Organisation</TabsTrigger>
+              </TabsList>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="edit-description" className="text-sm font-semibold">Description</Label>
-                <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-primary" disabled={aiGeneratingField === 'description'} onClick={() => handleAIGenerate('description')}>
-                  {aiGeneratingField === 'description' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} Rédiger IA
-                </Button>
-              </div>
-              <Textarea id="edit-description" value={editForm.description} onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))} rows={5} placeholder="Décrivez votre produit..." className="resize-y min-h-[100px]" />
-              <p className="text-xs text-muted-foreground">{editForm.description.length}/2000 caractères</p>
-            </div>
-
-            <Separator />
-
-            <div>
-              <p className="text-sm font-semibold mb-3">Tarification</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Prix de vente (€)</Label>
-                  <Input type="number" step="0.01" min="0" value={editForm.price} onChange={(e) => setEditForm(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))} className="h-11 text-lg font-semibold" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Prix d'achat (€)</Label>
-                  <Input type="number" step="0.01" min="0" value={editForm.cost_price} onChange={(e) => setEditForm(prev => ({ ...prev, cost_price: parseFloat(e.target.value) || 0 }))} className="h-11" />
-                </div>
-              </div>
-              {editForm.price > 0 && editForm.cost_price > 0 && (
-                <div className="mt-3 p-3 rounded-lg bg-muted/50 flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Marge estimée</span>
-                  <span className={cn("font-bold", ((editForm.price - editForm.cost_price) / editForm.price * 100) >= 30 ? "text-emerald-600" : "text-destructive")}>
-                    {((editForm.price - editForm.cost_price) / editForm.price * 100).toFixed(1)}% ({(editForm.price - editForm.cost_price).toFixed(2)}€)
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <Separator />
-
-            <div>
-              <p className="text-sm font-semibold mb-3">Organisation</p>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Stock</Label>
-                  <Input type="number" min="0" value={editForm.stock_quantity} onChange={(e) => setEditForm(prev => ({ ...prev, stock_quantity: parseInt(e.target.value) || 0 }))} className="h-11" />
-                </div>
+              {/* GENERAL TAB */}
+              <TabsContent value="general" className="space-y-5 mt-4 pb-4">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">Catégorie</Label>
-                    <Button variant="ghost" size="sm" className="h-5 text-[10px] gap-1 text-primary px-1.5" disabled={aiGeneratingField === 'category'} onClick={() => handleAIGenerate('category')}>
-                      {aiGeneratingField === 'category' ? <Loader2 className="h-2.5 w-2.5 animate-spin" /> : <Sparkles className="h-2.5 w-2.5" />} IA
+                    <Label htmlFor="edit-name" className="text-sm font-semibold">Nom du produit</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-primary" disabled={aiGeneratingField === 'title'} onClick={() => handleAIGenerate('title')}>
+                      {aiGeneratingField === 'title' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} Générer IA
                     </Button>
                   </div>
-                  <Input value={editForm.category} onChange={(e) => setEditForm(prev => ({ ...prev, category: e.target.value }))} placeholder="Ex: Électroménager" className="h-11" />
+                  <Input id="edit-name" value={editForm.name} onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))} placeholder="Ex: Machine à café Nespresso..." className="h-11" />
+                  <p className="text-xs text-muted-foreground">{editForm.name.length}/150 caractères</p>
                 </div>
+
                 <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Statut</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="edit-description" className="text-sm font-semibold">Description</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-primary" disabled={aiGeneratingField === 'description'} onClick={() => handleAIGenerate('description')}>
+                      {aiGeneratingField === 'description' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} Rédiger IA
+                    </Button>
+                  </div>
+                  <Textarea id="edit-description" value={editForm.description} onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))} rows={6} placeholder="Décrivez votre produit..." className="resize-y min-h-[120px]" />
+                  <p className="text-xs text-muted-foreground">{editForm.description.length}/2000 caractères</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Statut</Label>
                   <select value={editForm.status} onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.value }))}
                     className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <option value="draft">Brouillon</option>
@@ -997,16 +1234,163 @@ export default function ProductDetailsPage() {
                     <option value="archived">Archivé</option>
                   </select>
                 </div>
-              </div>
-            </div>
+              </TabsContent>
 
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">SKU / Référence</Label>
-              <Input value={editForm.sku} onChange={(e) => setEditForm(prev => ({ ...prev, sku: e.target.value }))} placeholder="Ex: NESP-PIXIE-BLUE" className="h-11 font-mono text-sm" />
-            </div>
-          </div>
+              {/* PRICING TAB */}
+              <TabsContent value="pricing" className="space-y-5 mt-4 pb-4">
+                <div>
+                  <p className="text-sm font-semibold mb-3">Tarification</p>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Prix de vente (€)</Label>
+                      <Input type="number" step="0.01" min="0" value={editForm.price} onChange={(e) => setEditForm(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))} className="h-11 text-lg font-semibold" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Prix barré (€)</Label>
+                      <Input type="number" step="0.01" min="0" value={editForm.compare_at_price} onChange={(e) => setEditForm(prev => ({ ...prev, compare_at_price: parseFloat(e.target.value) || 0 }))} className="h-11" placeholder="Optionnel" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Prix d'achat (€)</Label>
+                      <Input type="number" step="0.01" min="0" value={editForm.cost_price} onChange={(e) => setEditForm(prev => ({ ...prev, cost_price: parseFloat(e.target.value) || 0 }))} className="h-11" />
+                    </div>
+                  </div>
+                  {editForm.price > 0 && editForm.cost_price > 0 && (
+                    <div className="mt-3 p-3 rounded-lg bg-muted/50 flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Marge estimée</span>
+                      <span className={cn("font-bold", ((editForm.price - editForm.cost_price) / editForm.price * 100) >= 30 ? "text-emerald-600" : "text-destructive")}>
+                        {((editForm.price - editForm.cost_price) / editForm.price * 100).toFixed(1)}% ({(editForm.price - editForm.cost_price).toFixed(2)}€)
+                      </span>
+                    </div>
+                  )}
+                  {editForm.compare_at_price > 0 && editForm.price > 0 && editForm.compare_at_price > editForm.price && (
+                    <div className="mt-2 p-3 rounded-lg bg-destructive/5 border border-destructive/10 flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Réduction affichée</span>
+                      <Badge variant="destructive" className="text-xs">
+                        -{Math.round((1 - editForm.price / editForm.compare_at_price) * 100)}%
+                      </Badge>
+                    </div>
+                  )}
+                </div>
 
-          <DialogFooter className="border-t pt-4 gap-2">
+                <Separator />
+
+                <div>
+                  <p className="text-sm font-semibold mb-3">Inventaire & Expédition</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Stock</Label>
+                      <Input type="number" min="0" value={editForm.stock_quantity} onChange={(e) => setEditForm(prev => ({ ...prev, stock_quantity: parseInt(e.target.value) || 0 }))} className="h-11" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">SKU / Référence</Label>
+                      <Input value={editForm.sku} onChange={(e) => setEditForm(prev => ({ ...prev, sku: e.target.value }))} placeholder="Ex: NESP-PIXIE-BLUE" className="h-11 font-mono text-sm" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Code-barres (EAN/UPC)</Label>
+                      <Input value={editForm.barcode} onChange={(e) => setEditForm(prev => ({ ...prev, barcode: e.target.value }))} placeholder="Ex: 3614271234567" className="h-11 font-mono text-sm" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Poids</Label>
+                      <div className="flex gap-2">
+                        <Input type="number" step="0.1" min="0" value={editForm.weight} onChange={(e) => setEditForm(prev => ({ ...prev, weight: e.target.value }))} placeholder="0.0" className="h-11 flex-1" />
+                        <select value={editForm.weight_unit} onChange={(e) => setEditForm(prev => ({ ...prev, weight_unit: e.target.value }))}
+                          className="h-11 w-20 rounded-md border border-input bg-background px-2 text-sm">
+                          <option value="g">g</option>
+                          <option value="kg">kg</option>
+                          <option value="lb">lb</option>
+                          <option value="oz">oz</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* SEO TAB */}
+              <TabsContent value="seo" className="space-y-5 mt-4 pb-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold">Titre SEO</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-primary" disabled={aiGeneratingField === 'seo_title'} onClick={() => handleAIGenerate('seo_title')}>
+                      {aiGeneratingField === 'seo_title' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} Générer IA
+                    </Button>
+                  </div>
+                  <Input value={editForm.seo_title} onChange={(e) => setEditForm(prev => ({ ...prev, seo_title: e.target.value }))} placeholder="Titre optimisé pour les moteurs de recherche" className="h-11" />
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">{editForm.seo_title.length}/60 caractères</p>
+                    <Progress value={Math.min((editForm.seo_title.length / 60) * 100, 100)} className="h-1 w-20" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold">Méta-description</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-primary" disabled={aiGeneratingField === 'seo_description'} onClick={() => handleAIGenerate('seo_description')}>
+                      {aiGeneratingField === 'seo_description' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} Générer IA
+                    </Button>
+                  </div>
+                  <Textarea value={editForm.seo_description} onChange={(e) => setEditForm(prev => ({ ...prev, seo_description: e.target.value }))} rows={3} placeholder="Description pour les résultats de recherche" className="resize-none" />
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">{editForm.seo_description.length}/160 caractères</p>
+                    <Progress value={Math.min((editForm.seo_description.length / 160) * 100, 100)} className="h-1 w-20" />
+                  </div>
+                </div>
+
+                {/* Google preview in modal */}
+                {(editForm.seo_title || editForm.name) && (
+                  <div className="p-4 rounded-lg bg-muted/30 border">
+                    <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+                      <Search className="h-3 w-3" /> Aperçu Google
+                    </p>
+                    <p className="text-blue-600 text-sm font-medium truncate">
+                      {editForm.seo_title || editForm.name}
+                    </p>
+                    <p className="text-emerald-700 text-xs truncate mt-0.5">
+                      {window.location.origin}/products/...
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {editForm.seo_description || editForm.description?.slice(0, 160) || 'Aucune méta-description'}
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* ORGANIZATION TAB */}
+              <TabsContent value="organization" className="space-y-5 mt-4 pb-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold">Catégorie</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-primary" disabled={aiGeneratingField === 'category'} onClick={() => handleAIGenerate('category')}>
+                      {aiGeneratingField === 'category' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} Suggérer IA
+                    </Button>
+                  </div>
+                  <Input value={editForm.category} onChange={(e) => setEditForm(prev => ({ ...prev, category: e.target.value }))} placeholder="Ex: Électroménager" className="h-11" />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold">Tags</Label>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-primary" disabled={aiGeneratingField === 'tags'} onClick={() => handleAIGenerate('tags')}>
+                      {aiGeneratingField === 'tags' ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} Générer IA
+                    </Button>
+                  </div>
+                  <Textarea value={editForm.tags} onChange={(e) => setEditForm(prev => ({ ...prev, tags: e.target.value }))} rows={2} placeholder="tag1, tag2, tag3 (séparés par des virgules)" className="resize-none" />
+                  <p className="text-xs text-muted-foreground">
+                    {editForm.tags ? editForm.tags.split(',').filter(t => t.trim()).length : 0} tags
+                  </p>
+                  {editForm.tags && (
+                    <div className="flex flex-wrap gap-1">
+                      {editForm.tags.split(',').filter(t => t.trim()).map((tag, i) => (
+                        <Badge key={i} variant="secondary" className="text-[10px] h-5">{tag.trim()}</Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </ScrollArea>
+
+          <DialogFooter className="border-t pt-4 gap-2 flex-shrink-0">
             <Button variant="outline" onClick={() => setShowEditModal(false)}>Annuler</Button>
             <Button onClick={handleSaveEdit} disabled={updateProduct.isPending} className="min-w-[140px]">
               {updateProduct.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
