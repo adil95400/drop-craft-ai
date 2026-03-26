@@ -100,6 +100,7 @@ export default function ProductDetailsPage() {
   const [showImageEditor, setShowImageEditor] = useState(false)
   const [editingImageUrl, setEditingImageUrl] = useState('')
   const [isInlineEditing, setIsInlineEditing] = useState(false)
+  const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null)
 
   // Inline edit state
   const [editForm, setEditForm] = useState({
@@ -335,6 +336,9 @@ export default function ProductDetailsPage() {
             description={`${images.length} image${images.length !== 1 ? 's' : ''}`}
             actions={
               <div className="flex gap-1.5">
+                <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setActiveTab('gallery')}>
+                  <ImagePlus className="h-3 w-3" /> Scraper
+                </Button>
                 {product?.images?.[0] && (
                   <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => {
                     setEditingImageUrl(product.images[0]); setShowImageEditor(true)
@@ -342,57 +346,66 @@ export default function ProductDetailsPage() {
                     <Palette className="h-3 w-3" /> Éditeur
                   </Button>
                 )}
-                <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => setActiveTab('gallery')}>
-                  <ImagePlus className="h-3 w-3" /> Gérer
+                <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => setActiveTab('gallery')}>
+                  <Images className="h-3 w-3" /> Gérer tout
                 </Button>
               </div>
             }
           >
             {images.length > 0 ? (
-              <div className="grid grid-cols-[1fr_auto] gap-3">
-                {/* Main image */}
-                <div className="relative aspect-square rounded-xl overflow-hidden bg-muted border">
-                  <img 
-                    src={mainImage} alt={product.name} 
-                    className="w-full h-full object-contain"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg' }}
-                  />
-                  <Badge className="absolute top-2 left-2 bg-background/80 backdrop-blur text-foreground text-[10px] h-5">
-                    {selectedImageIndex + 1}/{images.length}
-                  </Badge>
-                </div>
-                {/* Thumbnails column */}
-                {images.length > 1 && (
-                  <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-1">
-                    {images.slice(0, 8).map((img, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedImageIndex(idx)}
-                        className={cn(
-                          "w-16 h-16 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0",
-                          idx === selectedImageIndex 
-                            ? "border-primary ring-1 ring-primary/30" 
-                            : "border-border hover:border-muted-foreground/40"
-                        )}
-                      >
-                        <img src={img as string} alt="" className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                    {images.length > 8 && (
-                      <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center text-xs font-medium">
-                        +{images.length - 8}
+              <div className="space-y-3">
+                <div className="grid grid-cols-[1fr_auto] gap-3">
+                  {/* Main image */}
+                  <div className="relative aspect-square rounded-xl overflow-hidden bg-muted border group cursor-pointer" onClick={() => setZoomImageUrl(mainImage)}>
+                    <img 
+                      src={mainImage} alt={product.name} 
+                      className="w-full h-full object-contain transition-transform group-hover:scale-105"
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg' }}
+                    />
+                    <Badge className="absolute top-2 left-2 bg-background/80 backdrop-blur text-foreground text-[10px] h-5">
+                      {selectedImageIndex + 1}/{images.length}
+                    </Badge>
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur rounded-full p-2">
+                        <Eye className="h-5 w-5" />
                       </div>
-                    )}
+                    </div>
                   </div>
-                )}
+                  {/* Thumbnails column */}
+                  {images.length > 1 && (
+                    <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-1">
+                      {images.slice(0, 8).map((img, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedImageIndex(idx)}
+                          className={cn(
+                            "w-16 h-16 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0",
+                            idx === selectedImageIndex 
+                              ? "border-primary ring-1 ring-primary/30" 
+                              : "border-border hover:border-muted-foreground/40"
+                          )}
+                        >
+                          <img src={img as string} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                      {images.length > 8 && (
+                        <button onClick={() => setActiveTab('gallery')} className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center text-xs font-medium hover:bg-muted/80 transition-colors">
+                          +{images.length - 8}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="aspect-video rounded-xl border-2 border-dashed border-muted-foreground/20 flex flex-col items-center justify-center gap-3 bg-muted/30">
                 <Images className="h-10 w-10 text-muted-foreground/40" />
                 <p className="text-sm text-muted-foreground">Aucune image</p>
-                <Button variant="outline" size="sm" onClick={() => setActiveTab('gallery')}>
-                  <ImagePlus className="h-3.5 w-3.5 mr-1.5" /> Ajouter des images
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setActiveTab('gallery')}>
+                    <ImagePlus className="h-3.5 w-3.5 mr-1.5" /> Scraper des images
+                  </Button>
+                </div>
               </div>
             )}
           </SectionCard>
@@ -738,7 +751,72 @@ export default function ProductDetailsPage() {
             </CardContent>
           </Card>
 
-          {/* QUICK METRICS */}
+          {/* SUPPLIER QUICK INFO */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Truck className="h-4 w-4" /> Fournisseur
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">Principal</Label>
+                <p className="text-sm mt-0.5 font-medium">
+                  {(product as any).supplier_name || (product as any).vendor || <span className="text-muted-foreground italic">Non assigné</span>}
+                </p>
+              </div>
+              {product.source_url && (
+                <>
+                  <Separator />
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Source</Label>
+                    <a href={product.source_url} target="_blank" rel="noopener noreferrer" 
+                      className="text-xs text-primary hover:underline flex items-center gap-1 mt-0.5 truncate">
+                      <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                      {new URL(product.source_url).hostname}
+                    </a>
+                  </div>
+                </>
+              )}
+              <Separator />
+              <Button variant="outline" size="sm" className="w-full text-xs gap-1.5" onClick={() => setActiveTab('suppliers')}>
+                <Truck className="h-3 w-3" /> Gérer les fournisseurs
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* MULTI-CHANNEL QUICK */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Globe className="h-4 w-4" /> Multi-canal
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Google Shopping</span>
+                <Badge variant={product.category && product.image_url ? "default" : "secondary"} className="text-[10px]">
+                  {product.category && product.image_url ? '✓ Prêt' : 'Incomplet'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Meta Commerce</span>
+                <Badge variant={product.image_url && product.description ? "default" : "secondary"} className="text-[10px]">
+                  {product.image_url && product.description ? '✓ Prêt' : 'Incomplet'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Amazon</span>
+                <Badge variant={product.sku && product.category ? "default" : "secondary"} className="text-[10px]">
+                  {product.sku && product.category ? '✓ Prêt' : 'Incomplet'}
+                </Badge>
+              </div>
+              <Button variant="outline" size="sm" className="w-full text-xs gap-1.5 mt-1" onClick={() => setActiveTab('channels')}>
+                <Globe className="h-3 w-3" /> Voir la compatibilité
+              </Button>
+            </CardContent>
+          </Card>
+
           <Card className="shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -944,6 +1022,15 @@ export default function ProductDetailsPage() {
           }}
         />
       )}
+
+      {/* Zoom Image Dialog */}
+      <Dialog open={!!zoomImageUrl} onOpenChange={() => setZoomImageUrl(null)}>
+        <DialogContent className="sm:max-w-3xl p-2">
+          {zoomImageUrl && (
+            <img src={zoomImageUrl} alt="Zoom" className="w-full h-auto max-h-[80vh] object-contain rounded-lg" />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
