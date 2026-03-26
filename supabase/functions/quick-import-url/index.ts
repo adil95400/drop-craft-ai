@@ -190,6 +190,19 @@ function isBlockedOrErrorHtml(html: string): boolean {
   )
 }
 
+function isUsableMarkdown(markdown: string): boolean {
+  if (!markdown || markdown.length < 500) return false
+  const m = markdown.toLowerCase()
+  return (
+    m.includes('prix') ||
+    m.includes('price') ||
+    m.includes('amazon') ||
+    m.includes('€') ||
+    m.includes('$') ||
+    m.includes('£')
+  )
+}
+
 // Extract high quality images from various sources
 function extractHQImages(html: string, platform: string, markdown: string = ''): string[] {
   const images: string[] = []
@@ -2196,13 +2209,45 @@ async function scrapeProductData(url: string, platform: string, externalProductI
         }
       }
     }
+
+    // Last-resort fallback for anti-bot pages (Amazon often blocks server-side fetches)
+    if ((!html || html.length < 5000 || isBlockedOrErrorHtml(html)) && platform === 'amazon') {
+      try {
+        const noScheme = effectiveUrl.replace(/^https?:\/\//i, '')
+        const proxyUrl = `https://r.jina.ai/http://${noScheme}`
+        console.log(`🛟 Trying Jina fallback: ${proxyUrl}`)
+
+        const proxyResp = await fetch(proxyUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0',
+            'Accept': 'text/plain, text/markdown;q=0.9, */*;q=0.8',
+          },
+        })
+
+        if (proxyResp.ok) {
+          const proxyMarkdown = await proxyResp.text()
+          console.log(`🛟 Jina fallback returned ${proxyMarkdown.length} chars markdown`)
+          if (proxyMarkdown.length > markdown.length && isUsableMarkdown(proxyMarkdown)) {
+            markdown = proxyMarkdown
+          }
+        }
+      } catch (proxyErr) {
+        console.log('⚠️ Jina fallback failed:', proxyErr)
+      }
+    }
+
+    const hasUsableMarkdown = isUsableMarkdown(markdown)
+    if ((!html || html.length < 500) && hasUsableMarkdown) {
+      // Allow extraction logic to continue even when HTML is blocked/empty.
+      html = markdown
+    }
     
     // Guard: if we still have no usable HTML, fail explicitly
     if (!html || html.length < 500) {
       throw new Error(`Impossible de récupérer la page produit. Le site (${platform}) a peut-être bloqué la requête. Réessayez dans quelques instants.`)
     }
     
-    if (isBlockedOrErrorHtml(html)) {
+    if (isBlockedOrErrorHtml(html) && !hasUsableMarkdown) {
       console.log('⚠️ HTML appears blocked (captcha/robot check detected)')
       throw new Error(`Le site ${platform} a bloqué la requête (captcha/protection anti-bot). Réessayez dans quelques instants ou essayez avec un lien produit plus court.`)
     }
