@@ -1,6 +1,6 @@
 /**
  * SupplierSyncPage — Surveillance & Sync Fournisseurs
- * Phase 4 de l'audit global
+ * Phase 4 de l'audit global + Sync Continue Attributs
  */
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
@@ -14,13 +14,14 @@ import { Switch } from '@/components/ui/switch'
 import {
   RefreshCw, Truck, AlertTriangle, CheckCircle, XCircle, Clock,
   Link2, Unlink, TrendingUp, Package, Zap, Settings, Activity,
-  ArrowRightLeft, Database, Shield, Globe, BarChart3
+  ArrowRightLeft, Database, Shield, Globe, BarChart3, GitCompare
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { AttributeSyncPanel } from '@/components/catalog/AttributeSyncPanel'
 
 const fadeUp = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }
 const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } }
