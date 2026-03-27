@@ -204,12 +204,13 @@ export default function SEOContentHubPage() {
 
   // Keyword stats
   const kwStats = useMemo(() => {
-    const top3 = MOCK_KEYWORDS.filter(k => k.position <= 3).length;
-    const top10 = MOCK_KEYWORDS.filter(k => k.position <= 10).length;
-    const avgPos = MOCK_KEYWORDS.reduce((a, k) => a + k.position, 0) / (MOCK_KEYWORDS.length || 1);
-    const totalVol = MOCK_KEYWORDS.reduce((a, k) => a + k.volume, 0);
+    const kws = trackedKeywords;
+    const top3 = kws.filter(k => k.position <= 3).length;
+    const top10 = kws.filter(k => k.position <= 10).length;
+    const avgPos = kws.length > 0 ? kws.reduce((a, k) => a + k.position, 0) / kws.length : 0;
+    const totalVol = kws.reduce((a, k) => a + k.volume, 0);
     return { top3, top10, avgPos: Math.round(avgPos * 10) / 10, totalVol };
-  }, []);
+  }, [trackedKeywords]);
 
   return (
     <ChannablePageWrapper
