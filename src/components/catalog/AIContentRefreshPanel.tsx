@@ -36,7 +36,8 @@ export function AIContentRefreshPanel() {
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
       for (const link of links) {
-        const history = link.metadata?.change_history || []
+        const meta = link.metadata as Record<string, any> | null
+        const history = meta?.change_history || []
         const recentApplied = history.filter(
           (h: any) => (h.status === 'applied' || h.status === 'auto_applied') &&
                        (h.applied_at || h.detected_at) > oneDayAgo
