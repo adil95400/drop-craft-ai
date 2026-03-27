@@ -121,6 +121,7 @@ export default function SEOContentHubPage() {
   const {
     posts, audits, productScores, aiContent, stats, isLoading,
     generatePost, isGenerating, updatePost, deletePost,
+    trackedKeywords, technicalIssues, contentCalendar,
   } = useSEOContentHub();
 
   const [topic, setTopic] = useState('');
