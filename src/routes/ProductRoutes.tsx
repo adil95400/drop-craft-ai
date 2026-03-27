@@ -70,8 +70,8 @@ export function ProductRoutes() {
       <Route path="import/*" element={<Navigate to="/import" replace />} />
       
       {/* Dynamic product ID route (must be after specific routes) */}
-      <Route path=":id" element={<ProductDetailsPage />} />
-      <Route path=":id/edit" element={<ProductDetailsPage />} />
+      <Route path=":id" element={<ProductPreviewPage />} />
+      <Route path=":id/edit" element={<ProductPreviewPage />} />
       
       {/* Product Module Structure */}
       <Route path="rules" element={<Navigate to="/products?tab=rules" replace />} />
