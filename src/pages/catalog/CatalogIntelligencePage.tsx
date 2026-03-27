@@ -79,7 +79,8 @@ export default function CatalogIntelligencePage() {
   const qualityTrend = Array.from({ length: 5 }, (_, i) => {
     const d = new Date(now)
     d.setMonth(d.getMonth() - (4 - i))
-    const base = Math.max(30, avgScore - (4 - i) * 3 + Math.round(Math.random() * 4 - 2))
+    // Deterministic progression toward current score
+    const base = Math.max(30, avgScore - (4 - i) * 3 + (i % 3 - 1))
     return {
       date: d.toISOString().slice(0, 7),
       score: i === 4 ? avgScore : Math.min(100, base),

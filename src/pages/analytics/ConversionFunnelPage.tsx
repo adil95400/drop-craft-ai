@@ -24,12 +24,16 @@ const ABANDONMENT_DATA = [
   { stage: 'Paiement → Confirmation', rate: 15.1, lost: 134 },
 ];
 
-const DAILY_CONVERSIONS = Array.from({ length: 14 }, (_, i) => ({
-  date: new Date(Date.now() - (13 - i) * 86400000).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
-  visitors: Math.floor(800 + Math.random() * 400),
-  conversions: Math.floor(40 + Math.random() * 30),
-  rate: +(3 + Math.random() * 4).toFixed(1),
-}));
+// Seeded deterministic daily data based on date index
+const DAILY_CONVERSIONS = Array.from({ length: 14 }, (_, i) => {
+  const seed = i * 7 + 3;
+  return {
+    date: new Date(Date.now() - (13 - i) * 86400000).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
+    visitors: 800 + (seed * 37) % 400,
+    conversions: 40 + (seed * 13) % 30,
+    rate: +(3 + ((seed * 19) % 40) / 10).toFixed(1),
+  };
+});
 
 const ConversionFunnelPage = () => {
   const [period, setPeriod] = useState('7d');
