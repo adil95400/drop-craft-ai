@@ -95,6 +95,7 @@ const DocumentationPage = lazy(() => import('@/pages/documentation/Documentation
 const HelpCenterPage = lazy(() => import('@/pages/help/HelpCenterPage'));
 const SEOContentHubPage = lazy(() => import('@/pages/seo/SEOContentHubPage'));
 const CustomerReturnsPortal = lazy(() => import('@/pages/returns/CustomerReturnsPortal'));
+const BrandedTrackingPage = lazy(() => import('@/pages/tracking/BrandedTrackingPage'));
 const AdvancedMediaEditorPage = lazy(() => import('@/pages/media/AdvancedMediaEditorPage'));
 
 // Profile & Subscription (Settings group)
@@ -153,6 +154,8 @@ export function AppRoutes() {
           <Route path="/academy/course/:id" element={<AcademyCoursePage />} />
           <Route path="/pwa-install" element={<PWAInstallPage />} />
           <Route path="/returns" element={<CustomerReturnsPortal />} />
+          <Route path="/tracking" element={<BrandedTrackingPage />} />
+          <Route path="/tracking/:orderNumber" element={<BrandedTrackingPage />} />
 
           {/* ═══════════════════════════════════════════════════════════════
               CORE PROTECTED ROUTES - Modules principaux
