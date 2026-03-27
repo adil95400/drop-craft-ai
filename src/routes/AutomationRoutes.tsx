@@ -28,8 +28,6 @@ const UnifiedSyncDashboard = lazy(() => import('@/components/sync/UnifiedSyncDas
 // Advanced Automation - Using AutomationPage for workflows
 const ProductRecommendationsPage = lazy(() => import('@/pages/ProductRecommendationsPage'));
 
-// Content Generation (replaces AI Studio references)
-const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage'));
 const WorkflowStudioPage = lazy(() => import('@/pages/automation/WorkflowStudioPage'));
 const WorkflowHistoryPage = lazy(() => import('@/pages/automation/WorkflowHistoryPage'));
 const WorkflowBuilderPage = lazy(() => import('@/pages/automation/WorkflowBuilderPage'));
