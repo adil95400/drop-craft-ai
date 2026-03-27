@@ -1555,12 +1555,12 @@ export default function ProductPreviewPage() {
                 </Card>
               )}
 
-              {/* ── Import Summary ── */}
+              {/* ── Summary ── */}
               <Card className="border-primary/30 shadow-sm bg-primary/5">
                 <CardContent className="p-4 space-y-2">
                   <h4 className="text-sm font-semibold flex items-center gap-2">
                     <BarChart3 className="h-4 w-4 text-primary" />
-                    Résumé de l'import
+                    {isEditMode ? 'Résumé du produit' : "Résumé de l'import"}
                   </h4>
                   <div className="space-y-1.5 text-xs">
                     <div className="flex justify-between">
@@ -1592,19 +1592,19 @@ export default function ProductPreviewPage() {
                   </div>
                   <Separator className="my-2" />
                   <Button
-                    onClick={handleConfirm}
-                    disabled={isImporting || validSelectedCount === 0}
+                    onClick={isEditMode ? handleSave : handleConfirm}
+                    disabled={isEditMode ? isSaving : (isImporting || validSelectedCount === 0)}
                     className="w-full bg-primary hover:bg-primary/90 shadow-sm"
                   >
-                    {isImporting ? (
+                    {(isEditMode ? isSaving : isImporting) ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Import en cours...
+                        {isEditMode ? 'Mise à jour...' : 'Import en cours...'}
                       </>
                     ) : (
                       <>
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        Confirmer l'import
+                        {isEditMode ? <Save className="h-4 w-4 mr-2" /> : <ShoppingCart className="h-4 w-4 mr-2" />}
+                        {isEditMode ? 'Mettre à jour le produit' : "Confirmer l'import"}
                       </>
                     )}
                   </Button>
