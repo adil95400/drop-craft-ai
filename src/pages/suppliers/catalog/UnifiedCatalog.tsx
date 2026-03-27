@@ -175,7 +175,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
         const retailPrice = costPrice * 2;
         const profit = retailPrice - costPrice;
         const profitMargin = retailPrice > 0 ? (profit / retailPrice) * 100 : 50;
-        const aiScore = 0.6 + Math.random() * 0.35;
+        const aiScore = Math.min(0.95, 0.6 + (profitMargin / 200) + ((p.stock_quantity || 0) > 20 ? 0.1 : 0));
 
         return {
           id: p.id,
@@ -197,7 +197,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
           currency: p.currency || 'EUR',
           shipping_time: '3-7 jours',
           rating: p.suppliers?.rating || 4.5,
-          orders_count: Math.floor(Math.random() * 1000) + 100,
+          orders_count: p.sales_count || 0,
           sku: p.sku || `SKU-${p.id?.slice(0, 6)?.toUpperCase() || index}`,
           is_winner: aiScore > 0.85,
           is_trending: index % 5 === 0,

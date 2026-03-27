@@ -82,14 +82,15 @@ const BlogPage = () => {
     return "ShopOpti+";
   };
 
-  const getViews = (post: typeof allPosts[0]) => {
+  const getViews = (post: typeof allPosts[0], index: number) => {
     if ('views' in post && (post as any).views) return (post as any).views;
-    return Math.floor(Math.random() * 3000) + 500;
+    // Deterministic view count based on post index
+    return 500 + ((index + 1) * 317) % 2500;
   };
 
-  const getComments = (post: typeof allPosts[0]) => {
+  const getComments = (post: typeof allPosts[0], index: number) => {
     if ('comments' in post && (post as any).comments) return (post as any).comments;
-    return Math.floor(Math.random() * 20) + 2;
+    return 2 + ((index + 1) * 7) % 18;
   };
 
   const isFeatured = (post: typeof allPosts[0], index: number) => {
