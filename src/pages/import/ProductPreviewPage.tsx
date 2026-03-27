@@ -146,11 +146,72 @@ function CollapsibleCard({ title, icon: Icon, badge, children, defaultOpen = tru
 export default function ProductPreviewPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const params = useParams<{ id?: string }>()
+  const productId = params.id
+  const isEditMode = !!productId
+
   const { product, returnTo, queuedItemId } = (location.state || {}) as {
     product?: ProductPreviewData
     returnTo?: string
     queuedItemId?: string
   }
+
+  // DB loading for edit mode (/products/:id)
+  const { data: dbProduct, isLoading: isLoadingDb } = useQuery({
+    queryKey: ['product-preview', productId],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', productId!)
+        .eq('user_id', user.id)
+        .single()
+      if (error) throw error
+      // Convert DB product to ProductPreviewData
+      const images: string[] = []
+      if (data.images && Array.isArray(data.images)) {
+        images.push(...(data.images as string[]))
+      } else if (data.image_url) {
+        images.push(data.image_url)
+      }
+      return {
+        title: data.title || data.name || '',
+        description: data.description || '',
+        price: data.cost_price || data.price || 0,
+        currency: 'EUR',
+        suggested_price: data.price || 0,
+        profit_margin: data.profit_margin || 0,
+        images,
+        brand: data.brand || data.vendor || '',
+        vendor: data.vendor || '',
+        sku: data.sku || '',
+        platform_detected: data.source_url ? 'importé' : 'manuel',
+        source_url: data.source_url || '',
+        variants: Array.isArray(data.variants) ? data.variants as any[] : [],
+        videos: [],
+        extracted_reviews: [],
+        reviews: { rating: null, count: null },
+        specifications: {},
+        category: data.category || data.product_type || '',
+        subcategory: '',
+        product_type: data.product_type || '',
+        tags: Array.isArray(data.tags) ? data.tags as string[] : [],
+        original_price: data.compare_at_price,
+        handle: data.handle || '',
+        stock_quantity: data.stock_quantity || 0,
+        seo: {
+          metaTitle: data.seo_title || '',
+          metaDescription: data.seo_description || '',
+          keywords: Array.isArray(data.seo_keywords) ? data.seo_keywords as string[] : [],
+        },
+      } as ProductPreviewData
+    },
+    enabled: isEditMode && !product,
+  })
+
+  const initialProduct = product || dbProduct
 
   const [editedProduct, setEditedProduct] = useState<ProductPreviewData | null>(null)
   const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set())
@@ -166,22 +227,19 @@ export default function ProductPreviewPage() {
   const [isImporting, setIsImporting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [productStatus, setProductStatus] = useState('draft')
-  const [category, setCategory] = useState(product?.category || product?.product_type || '')
-  const [subcategory, setSubcategory] = useState(product?.subcategory || '')
-  const [tags, setTags] = useState<string[]>(product?.tags || [])
+  const [category, setCategory] = useState('')
+  const [subcategory, setSubcategory] = useState('')
+  const [tags, setTags] = useState<string[]>([])
   const [suggestedCategories, setSuggestedCategories] = useState<{category: string, subcategory: string, confidence: number}[]>([])
   const [showAddReview, setShowAddReview] = useState(false)
   const [newReview, setNewReview] = useState({ customer_name: '', rating: 5, title: '', comment: '', verified_purchase: false })
 
   useEffect(() => {
-    if (!product) {
-      navigate(returnTo || '/import/autods')
-      return
-    }
-    const originalCount = product.images?.length || 0
-    const uniqueImages = deduplicateImages(product.images || [])
+    if (!initialProduct) return
+    const originalCount = initialProduct.images?.length || 0
+    const uniqueImages = deduplicateImages(initialProduct.images || [])
     setDuplicatesRemoved(originalCount - uniqueImages.length)
-    const rawBrand = product.brand ? cleanHtmlEntities(product.brand) : ''
+    const rawBrand = initialProduct.brand ? cleanHtmlEntities(initialProduct.brand) : ''
     const cleanedBrand = rawBrand
       .replace(/^Marque\s*:\s*/i, '')
       .replace(/^Brand\s*:\s*/i, '')
@@ -189,13 +247,32 @@ export default function ProductPreviewPage() {
       .replace(/^Visit\s*the\s*/i, '')
       .replace(/\s*Store$/i, '')
       .trim()
-    setEditedProduct({ ...product, images: uniqueImages, brand: cleanedBrand })
+    setEditedProduct({ ...initialProduct, images: uniqueImages, brand: cleanedBrand })
     setSelectedImages(new Set(uniqueImages.map((_, i) => i)))
     setMainImageIndex(0)
     setFailedImages(new Set())
-  }, [product])
+    setCategory(initialProduct.category || initialProduct.product_type || '')
+    setSubcategory(initialProduct.subcategory || '')
+    setTags(initialProduct.tags || [])
+    if (isEditMode) {
+      setProductStatus(initialProduct.stock_quantity != null && initialProduct.stock_quantity > 0 ? 'active' : 'draft')
+    }
+  }, [initialProduct])
 
-  if (!editedProduct) return null
+  if (isLoadingDb && isEditMode) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (!editedProduct) {
+    if (!isEditMode) {
+      navigate(returnTo || '/import/autods')
+    }
+    return null
+  }
 
   const optimizeWithAI = async (field: 'title' | 'description') => {
     const setter = field === 'title' ? setIsOptimizingTitle : setIsOptimizingDesc
