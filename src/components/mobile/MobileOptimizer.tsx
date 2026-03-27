@@ -111,23 +111,25 @@ export function MobileOptimizer() {
       manufacturer: 'Browser',
       isVirtual: false,
       memUsed: (performance as any).memory?.usedJSHeapSize || 0,
-      diskFree: Math.random() * 50 + 10,
-      diskTotal: Math.random() * 30 + 64
+      diskFree: 30,
+      diskTotal: 64
     });
 
+    const connApi = (navigator as any).connection;
     setNetworkInfo({
       connected: navigator.onLine,
-      connectionType: (navigator as any).connection?.effectiveType || 'unknown',
-      downloadSpeed: (navigator as any).connection?.downlink || Math.random() * 50 + 10,
-      uploadSpeed: Math.random() * 20 + 5
+      connectionType: connApi?.effectiveType || 'unknown',
+      downloadSpeed: connApi?.downlink || 20,
+      uploadSpeed: connApi?.downlink ? Math.round(connApi.downlink * 0.4) : 8
     });
 
+    const rtt = connApi?.rtt;
     setPerformanceMetrics({
       loadTime: navigationEntry?.loadEventEnd - navigationEntry?.fetchStart || 2000,
       renderTime: navigationEntry?.domContentLoadedEventEnd - navigationEntry?.domContentLoadedEventStart || 500,
       memoryUsage: ((performance as any).memory?.usedJSHeapSize / 1024 / 1024) || 25,
-      batteryLevel: Math.random() * 40 + 60,
-      networkLatency: Math.random() * 100 + 20
+      batteryLevel: 80,
+      networkLatency: rtt || 50
     });
 
     setLoading(false);
