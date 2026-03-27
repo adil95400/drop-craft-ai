@@ -45,16 +45,61 @@ function json(data: any, status = 200) {
 let tablesEnsured = false;
 async function ensureTables(supabase: any) {
   if (tablesEnsured) return;
-  try {
-    await supabase.rpc("ensure_attribute_sync_tables");
-  } catch {
-    // Tables may already exist or RPC not available, try direct query
-    try {
-      // Just try a select to check if tables exist
-      await supabase.from("attribute_sync_configs").select("id").limit(1);
-      await supabase.from("attribute_sync_changes").select("id").limit(1);
-    } catch {
-      console.warn("attribute_sync tables may not exist yet - proceeding anyway");
+  // Quick check if tables exist
+  const { error: e1 } = await supabase.from("attribute_sync_configs").select("id").limit(1);
+  const { error: e2 } = await supabase.from("attribute_sync_changes").select("id").limit(1);
+  
+  if (e1 || e2) {
+    // Tables don't exist - create via raw SQL using service role
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    
+    const sqlStatements = [
+      `CREATE TABLE IF NOT EXISTS public.attribute_sync_configs (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL,
+        attribute_name TEXT NOT NULL,
+        sync_enabled BOOLEAN DEFAULT true,
+        auto_apply BOOLEAN DEFAULT false,
+        threshold_percent NUMERIC(5,2) DEFAULT NULL,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
+        UNIQUE(user_id, attribute_name)
+      )`,
+      `CREATE TABLE IF NOT EXISTS public.attribute_sync_changes (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL,
+        link_id UUID,
+        product_id UUID,
+        attribute_name TEXT NOT NULL,
+        old_value TEXT,
+        new_value TEXT,
+        change_percent NUMERIC(8,2) DEFAULT NULL,
+        status TEXT DEFAULT 'pending',
+        detected_at TIMESTAMPTZ DEFAULT now(),
+        applied_at TIMESTAMPTZ DEFAULT NULL,
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ DEFAULT now()
+      )`,
+      `CREATE INDEX IF NOT EXISTS idx_attr_sync_changes_user_status ON public.attribute_sync_changes(user_id, status)`,
+      `CREATE INDEX IF NOT EXISTS idx_attr_sync_changes_product ON public.attribute_sync_changes(product_id)`,
+      `ALTER TABLE public.attribute_sync_configs ENABLE ROW LEVEL SECURITY`,
+      `ALTER TABLE public.attribute_sync_changes ENABLE ROW LEVEL SECURITY`,
+    ];
+    
+    for (const sql of sqlStatements) {
+      try {
+        const resp = await fetch(`${supabaseUrl}/rest/v1/rpc/`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${serviceKey}`,
+            "apikey": serviceKey,
+            "Content-Type": "application/json",
+          },
+        });
+      } catch (err) {
+        console.warn("Table setup query failed:", err);
+      }
     }
   }
   tablesEnsured = true;
