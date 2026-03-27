@@ -80,7 +80,7 @@ const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'
 const AcademyHomePage = lazy(() => import('@/pages/academy/AcademyHomePage'));
 const AcademyCoursePage = lazy(() => import('@/pages/academy/AcademyCoursePage'));
 const SupportMainPage = lazy(() => import('@/pages/support/SupportMainPage'));
-const CatalogIntelligencePage = lazy(() => import('@/pages/catalog/CatalogIntelligencePage'));
+
 const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
 const PageBuilderPage = lazy(() => import('@/pages/PageBuilderPage'));
 const PageEditorPage = lazy(() => import('@/pages/PageEditorPage'));
@@ -103,7 +103,7 @@ const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard')
 const ChoosePlanPage = lazy(() => import('@/pages/ChoosePlanPage'));
 const BillingPage = lazy(() => import('@/pages/BillingPage'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
-const APIDocumentationPage = lazy(() => import('@/pages/APIDocumentationPage'));
+
 const ApiDocsPage = lazy(() => import('@/pages/api/ApiDocsPage'));
 
 // Loading components
@@ -246,7 +246,7 @@ export function AppRoutes() {
           <Route path="/media-editor" element={<Protected><AdvancedMediaEditorPage /></Protected>} />
           <Route path="/advanced" element={<Protected><AdvancedAnalyticsPage /></Protected>} />
           <Route path="/monitoring" element={<Protected><PerformanceMonitoringPage /></Protected>} />
-          <Route path="/catalog-intelligence" element={<Protected><CatalogIntelligencePage /></Protected>} />
+          <Route path="/catalog-intelligence" element={<Navigate to="/ai/catalog" replace />} />
           <Route path="/coupons" element={<Protected><CouponsManagementPage /></Protected>} />
           <Route path="/trial" element={<Protected><FreeTrialActivationPage /></Protected>} />
           <Route path="/ab-testing" element={<Protected><ABTestingPage /></Protected>} />
@@ -263,7 +263,7 @@ export function AppRoutes() {
           <Route path="/profile" element={<Protected><ProfilePage /></Protected>} />
           <Route path="/subscription" element={<Protected><SubscriptionDashboard /></Protected>} />
           <Route path="/choose-plan" element={<Protected><ChoosePlanPage /></Protected>} />
-          <Route path="/api/documentation" element={<Protected><APIDocumentationPage /></Protected>} />
+          <Route path="/api/documentation" element={<Navigate to="/api-docs" replace />} />
           
           {/* Ads Spy - redirect to research */}
           <Route path="/ads-spy" element={<Navigate to="/research/ads" replace />} />
@@ -280,7 +280,7 @@ export function AppRoutes() {
           <Route path="/knowledge-base" element={<Protected><KnowledgeBasePage /></Protected>} />
           <Route path="/support" element={<Protected><SupportMainPage /></Protected>} />
           <Route path="/support/chat" element={<Protected><SupportMainPage /></Protected>} />
-          <Route path="/api-documentation" element={<Protected><APIDocumentationPage /></Protected>} />
+          <Route path="/api-documentation" element={<Navigate to="/api-docs" replace />} />
           
           {/* Sitemap */}
           <Route path="/sitemap" element={<Protected><Sitemap /></Protected>} />

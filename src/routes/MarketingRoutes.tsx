@@ -28,7 +28,6 @@ const LoyaltyProgramPage = lazy(() => import('@/pages/LoyaltyProgramPage'));
 const CouponsManagementPage = lazy(() => import('@/pages/CouponsManagementPage'));
 const MarketingCalendarPage = lazy(() => import('@/pages/MarketingCalendarPage'));
 const SocialCommercePage = lazy(() => import('@/pages/SocialCommercePage'));
-const CreativeStudioPage = lazy(() => import('@/pages/ContentGenerationPage'));
 const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage'));
 const UpsellCrossSellPage = lazy(() => import('@/pages/marketing/UpsellCrossSellPage'));
 
@@ -75,8 +74,8 @@ export function MarketingRoutes() {
       <Route path="coupons" element={<CouponsManagementPage />} />
       <Route path="calendar" element={<MarketingCalendarPage />} />
       <Route path="social-commerce" element={<SocialCommercePage />} />
-      <Route path="creative-studio" element={<CreativeStudioPage />} />
-      <Route path="content-generation" element={<ContentGenerationPage />} />
+      <Route path="creative-studio" element={<Navigate to="/ai/content" replace />} />
+      <Route path="content-generation" element={<Navigate to="/ai/content" replace />} />
       <Route path="automation" element={<MarketingAutomationPage />} />
       <Route path="upsell" element={<UpsellCrossSellPage />} />
       
@@ -87,8 +86,6 @@ export function MarketingRoutes() {
       <Route path="seo/multilingual" element={<MultilingualSEOPage />} />
       <Route path="seo/content-hub" element={<SEOContentHubPage />} />
       
-      {/* Creative Studio */}
-      <Route path="creative-studio" element={<CreativeStudioPage />} />
       
       {/* Legacy redirects */}
       <Route path="crm-ultra-pro" element={<Navigate to="/crm" replace />} />
