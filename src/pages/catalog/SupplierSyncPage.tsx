@@ -22,6 +22,9 @@ import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { AttributeSyncPanel } from '@/components/catalog/AttributeSyncPanel'
+import { MultiSourceEnrichPanel } from '@/components/catalog/MultiSourceEnrichPanel'
+import { AIContentRefreshPanel } from '@/components/catalog/AIContentRefreshPanel'
+import { AutoFallbackPanel } from '@/components/catalog/AutoFallbackPanel'
 
 const fadeUp = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }
 const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } }
@@ -174,10 +177,22 @@ export default function SupplierSyncPage() {
         </motion.div>
 
         <Tabs defaultValue="sync-changes" className="space-y-4">
-          <TabsList>
+          <TabsList className="flex-wrap">
             <TabsTrigger value="sync-changes">
               <GitCompare className="h-3.5 w-3.5 mr-1" />
               Sync Continue
+            </TabsTrigger>
+            <TabsTrigger value="multi-source">
+              <Database className="h-3.5 w-3.5 mr-1" />
+              Multi-Source
+            </TabsTrigger>
+            <TabsTrigger value="ai-refresh">
+              <Zap className="h-3.5 w-3.5 mr-1" />
+              IA Dynamique
+            </TabsTrigger>
+            <TabsTrigger value="auto-fallback">
+              <ArrowRightLeft className="h-3.5 w-3.5 mr-1" />
+              Fallback Auto
             </TabsTrigger>
             <TabsTrigger value="suppliers">Fournisseurs</TabsTrigger>
             <TabsTrigger value="mapping">Mapping</TabsTrigger>
@@ -186,6 +201,18 @@ export default function SupplierSyncPage() {
 
           <TabsContent value="sync-changes">
             <AttributeSyncPanel />
+          </TabsContent>
+
+          <TabsContent value="multi-source">
+            <MultiSourceEnrichPanel />
+          </TabsContent>
+
+          <TabsContent value="ai-refresh">
+            <AIContentRefreshPanel />
+          </TabsContent>
+
+          <TabsContent value="auto-fallback">
+            <AutoFallbackPanel />
           </TabsContent>
 
           <TabsContent value="suppliers" className="space-y-4">
