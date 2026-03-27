@@ -82,16 +82,16 @@ export function MobileOptimizer() {
         osVersion: '15.0',
         manufacturer: 'Unknown',
         isVirtual: false,
-        memUsed: Math.random() * 50 + 20,
-        diskFree: Math.random() * 50 + 10,
-        diskTotal: Math.random() * 30 + 64
+        memUsed: 35,
+        diskFree: 28,
+        diskTotal: 64
       });
 
       setNetworkInfo({
         connected: true,
         connectionType: 'wifi',
-        downloadSpeed: Math.random() * 50 + 10,
-        uploadSpeed: Math.random() * 20 + 5
+        downloadSpeed: 25,
+        uploadSpeed: 10
       });
 
       measurePerformance();
@@ -111,37 +111,40 @@ export function MobileOptimizer() {
       manufacturer: 'Browser',
       isVirtual: false,
       memUsed: (performance as any).memory?.usedJSHeapSize || 0,
-      diskFree: Math.random() * 50 + 10,
-      diskTotal: Math.random() * 30 + 64
+      diskFree: 30,
+      diskTotal: 64
     });
 
+    const connApi = (navigator as any).connection;
     setNetworkInfo({
       connected: navigator.onLine,
-      connectionType: (navigator as any).connection?.effectiveType || 'unknown',
-      downloadSpeed: (navigator as any).connection?.downlink || Math.random() * 50 + 10,
-      uploadSpeed: Math.random() * 20 + 5
+      connectionType: connApi?.effectiveType || 'unknown',
+      downloadSpeed: connApi?.downlink || 20,
+      uploadSpeed: connApi?.downlink ? Math.round(connApi.downlink * 0.4) : 8
     });
 
+    const rtt = connApi?.rtt;
     setPerformanceMetrics({
       loadTime: navigationEntry?.loadEventEnd - navigationEntry?.fetchStart || 2000,
       renderTime: navigationEntry?.domContentLoadedEventEnd - navigationEntry?.domContentLoadedEventStart || 500,
       memoryUsage: ((performance as any).memory?.usedJSHeapSize / 1024 / 1024) || 25,
-      batteryLevel: Math.random() * 40 + 60,
-      networkLatency: Math.random() * 100 + 20
+      batteryLevel: 80,
+      networkLatency: rtt || 50
     });
 
     setLoading(false);
   };
 
   const measurePerformance = () => {
-    // Simulate performance measurement
     setTimeout(() => {
+      const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+      const connApi = (navigator as any).connection;
       setPerformanceMetrics({
-        loadTime: Math.random() * 2000 + 1000,
-        renderTime: Math.random() * 500 + 200,
-        memoryUsage: Math.random() * 50 + 20,
-        batteryLevel: Math.random() * 40 + 60,
-        networkLatency: Math.random() * 100 + 20
+        loadTime: navEntry ? navEntry.loadEventEnd - navEntry.fetchStart : 1500,
+        renderTime: navEntry ? navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart : 400,
+        memoryUsage: ((performance as any).memory?.usedJSHeapSize / 1024 / 1024) || 30,
+        batteryLevel: 80,
+        networkLatency: connApi?.rtt || 50
       });
       setLoading(false);
     }, 1000);

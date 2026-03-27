@@ -127,7 +127,7 @@ export function useCatalogHealth() {
     }
   }, [products, snapshots])
 
-  // Évolution simulée basée sur les métriques actuelles
+  // Évolution déterministe basée sur les métriques actuelles (hash-based, pas de random)
   const evolution = useMemo<HealthEvolutionPoint[]>(() => {
     if (!metrics) return []
     
@@ -135,8 +135,9 @@ export function useCatalogHealth() {
     const days = 15
     
     return Array.from({ length: days }, (_, i) => {
-      // Tendance légèrement croissante
-      const variation = (Math.random() - 0.5) * 8
+      // Variation déterministe basée sur l'index (pas de Math.random)
+      const seed = ((i + 1) * 7) % 13
+      const variation = (seed - 6) * 0.8
       const trendFactor = (i / days) * metrics.trend
       const score = Math.max(0, Math.min(100, baseScore - 10 + trendFactor + variation))
       

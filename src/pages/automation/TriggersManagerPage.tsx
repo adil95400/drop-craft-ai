@@ -1,81 +1,35 @@
 /**
  * Triggers Manager - Gestion des déclencheurs d'automatisation
- * Permet de créer et gérer les événements qui lancent les workflows
+ * Connecté à la table automation_workflows (trigger_type)
  */
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChannablePageWrapper } from '@/components/channable/ChannablePageWrapper';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import {
   Play, Plus, Search, Zap, ShoppingCart, Package,
-  DollarSign, AlertTriangle, Mail, Clock, RefreshCw,
-  CheckCircle2, XCircle, MoreVertical, TrendingUp
+  DollarSign, AlertTriangle, Mail, Clock, RefreshCw, Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface Trigger {
-  id: string;
-  name: string;
-  eventType: string;
-  icon: typeof Zap;
-  description: string;
-  isActive: boolean;
-  linkedWorkflows: number;
-  triggerCount: number;
-  lastTriggered: string | null;
-  conditions: string[];
-  category: string;
-}
-
-const MOCK_TRIGGERS: Trigger[] = [
-  {
-    id: '1', name: 'Nouvelle commande', eventType: 'order.created',
-    icon: ShoppingCart, description: 'Se déclenche quand une nouvelle commande est reçue',
-    isActive: true, linkedWorkflows: 3, triggerCount: 245,
-    lastTriggered: 'Il y a 2 min', conditions: ['Montant > 50€'], category: 'orders'
-  },
-  {
-    id: '2', name: 'Stock bas', eventType: 'inventory.low',
-    icon: Package, description: 'Alerte quand le stock passe sous le seuil configuré',
-    isActive: true, linkedWorkflows: 2, triggerCount: 18,
-    lastTriggered: 'Il y a 1h', conditions: ['Stock < 5 unités'], category: 'inventory'
-  },
-  {
-    id: '3', name: 'Prix concurrent modifié', eventType: 'competitor.price_change',
-    icon: DollarSign, description: 'Détecte les changements de prix chez les concurrents',
-    isActive: true, linkedWorkflows: 1, triggerCount: 67,
-    lastTriggered: 'Il y a 30 min', conditions: ['Variation > 5%'], category: 'pricing'
-  },
-  {
-    id: '4', name: 'Panier abandonné', eventType: 'cart.abandoned',
-    icon: AlertTriangle, description: 'Détecte les paniers abandonnés après 30 minutes',
-    isActive: false, linkedWorkflows: 1, triggerCount: 412,
-    lastTriggered: 'Il y a 3h', conditions: ['Délai > 30 min', 'Montant > 20€'], category: 'marketing'
-  },
-  {
-    id: '5', name: 'Avis client reçu', eventType: 'review.created',
-    icon: Mail, description: 'Notification quand un client laisse un avis',
-    isActive: true, linkedWorkflows: 1, triggerCount: 34,
-    lastTriggered: 'Il y a 45 min', conditions: ['Note < 3 étoiles'], category: 'customers'
-  },
-  {
-    id: '6', name: 'Sync boutique échouée', eventType: 'sync.failed',
-    icon: RefreshCw, description: 'Alerte en cas d\'échec de synchronisation avec une boutique',
-    isActive: true, linkedWorkflows: 2, triggerCount: 5,
-    lastTriggered: 'Il y a 2 jours', conditions: ['3 échecs consécutifs'], category: 'integrations'
-  },
-  {
-    id: '7', name: 'Planifié (Cron)', eventType: 'schedule.cron',
-    icon: Clock, description: 'Exécution planifiée à intervalle régulier',
-    isActive: true, linkedWorkflows: 4, triggerCount: 730,
-    lastTriggered: 'Il y a 15 min', conditions: ['Toutes les 15 min'], category: 'system'
-  },
-];
+const ICON_MAP: Record<string, typeof Zap> = {
+  'order.created': ShoppingCart,
+  'inventory.low': Package,
+  'competitor.price_change': DollarSign,
+  'cart.abandoned': AlertTriangle,
+  'review.created': Mail,
+  'sync.failed': RefreshCw,
+  'schedule.cron': Clock,
+};
 
 const CATEGORIES = [
   { id: 'all', label: 'Tous' },
@@ -88,17 +42,69 @@ const CATEGORIES = [
   { id: 'system', label: 'Système' },
 ];
 
+function guessCategoryFromType(triggerType: string | null): string {
+  if (!triggerType) return 'system';
+  const t = triggerType.toLowerCase();
+  if (t.includes('order') || t.includes('cart')) return 'orders';
+  if (t.includes('stock') || t.includes('inventory')) return 'inventory';
+  if (t.includes('price') || t.includes('competitor')) return 'pricing';
+  if (t.includes('marketing') || t.includes('campaign') || t.includes('cart.abandoned')) return 'marketing';
+  if (t.includes('customer') || t.includes('review')) return 'customers';
+  if (t.includes('sync') || t.includes('webhook')) return 'integrations';
+  return 'system';
+}
+
 export default function TriggersManagerPage() {
   const { t: tPages } = useTranslation('pages');
-  const [triggers, setTriggers] = useState(MOCK_TRIGGERS);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  const toggleTrigger = (id: string) => {
-    setTriggers(prev => prev.map(t =>
-      t.id === id ? { ...t, isActive: !t.isActive } : t
-    ));
-  };
+  const { data: workflows, isLoading } = useQuery({
+    queryKey: ['trigger-workflows', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('automation_workflows')
+        .select('id, name, description, trigger_type, trigger_config, is_active, trigger_count, last_triggered_at, conditions')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+    staleTime: 30_000,
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const { error } = await supabase
+        .from('automation_workflows')
+        .update({ is_active: isActive })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['trigger-workflows'] });
+      toast.success('Déclencheur mis à jour');
+    },
+    onError: () => toast.error('Erreur lors de la mise à jour'),
+  });
+
+  const triggers = (workflows || []).map(w => ({
+    id: w.id,
+    name: w.name,
+    eventType: w.trigger_type || 'custom',
+    description: w.description || '',
+    isActive: w.is_active ?? false,
+    triggerCount: w.trigger_count ?? 0,
+    lastTriggered: w.last_triggered_at
+      ? new Date(w.last_triggered_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })
+      : null,
+    conditions: Array.isArray(w.conditions) ? (w.conditions as any[]).map((c: any) => c.label || c.field || String(c)) : [],
+    category: guessCategoryFromType(w.trigger_type),
+  }));
 
   const filtered = triggers.filter(t => {
     const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -139,8 +145,10 @@ export default function TriggersManagerPage() {
           </Card>
           <Card>
             <CardContent className="pt-4 pb-3">
-              <div className="text-sm text-muted-foreground">Workflows liés</div>
-              <div className="text-2xl font-bold text-foreground">{triggers.reduce((s, t) => s + t.linkedWorkflows, 0)}</div>
+              <div className="text-sm text-muted-foreground">Catégories</div>
+              <div className="text-2xl font-bold text-foreground">
+                {new Set(triggers.map(t => t.category)).size}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -168,59 +176,69 @@ export default function TriggersManagerPage() {
               </Button>
             ))}
           </div>
-          <Button className="gap-1.5">
-            <Plus className="h-4 w-4" /> Nouveau
-          </Button>
         </div>
 
         {/* Liste */}
-        <div className="space-y-3">
-          {filtered.map(trigger => {
-            const Icon = trigger.icon;
-            return (
-              <Card key={trigger.id}>
-                <CardContent className="py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className={cn(
-                        'p-2 rounded-lg',
-                        trigger.isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                      )}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-semibold text-foreground">{trigger.name}</h3>
-                          <Badge variant="outline" className="text-xs font-mono">{trigger.eventType}</Badge>
-                          {trigger.isActive && (
-                            <Badge variant="default" className="text-xs">Actif</Badge>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center text-muted-foreground">
+              {triggers.length === 0
+                ? 'Aucun déclencheur configuré. Créez un workflow avec un trigger pour commencer.'
+                : 'Aucun déclencheur ne correspond aux filtres.'}
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {filtered.map(trigger => {
+              const Icon = ICON_MAP[trigger.eventType] || Zap;
+              return (
+                <Card key={trigger.id}>
+                  <CardContent className="py-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className={cn(
+                          'p-2 rounded-lg',
+                          trigger.isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                        )}>
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold text-foreground">{trigger.name}</h3>
+                            <Badge variant="outline" className="text-xs font-mono">{trigger.eventType}</Badge>
+                            {trigger.isActive && (
+                              <Badge variant="default" className="text-xs">Actif</Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-0.5">{trigger.description}</p>
+                          <div className="flex items-center gap-4 mt-1.5 text-xs text-muted-foreground">
+                            <span>{trigger.triggerCount} déclenchements</span>
+                            {trigger.lastTriggered && <span>Dernier: {trigger.lastTriggered}</span>}
+                          </div>
+                          {trigger.conditions.length > 0 && (
+                            <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                              {trigger.conditions.map((c, i) => (
+                                <Badge key={i} variant="secondary" className="text-xs">{c}</Badge>
+                              ))}
+                            </div>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground mt-0.5">{trigger.description}</p>
-                        <div className="flex items-center gap-4 mt-1.5 text-xs text-muted-foreground">
-                          <span>{trigger.linkedWorkflows} workflow(s)</span>
-                          <span>{trigger.triggerCount} déclenchements</span>
-                          {trigger.lastTriggered && <span>Dernier: {trigger.lastTriggered}</span>}
-                        </div>
-                        {trigger.conditions.length > 0 && (
-                          <div className="flex gap-1.5 mt-1.5 flex-wrap">
-                            {trigger.conditions.map((c, i) => (
-                              <Badge key={i} variant="secondary" className="text-xs">{c}</Badge>
-                            ))}
-                          </div>
-                        )}
                       </div>
+                      <Switch
+                        checked={trigger.isActive}
+                        onCheckedChange={(checked) => toggleMutation.mutate({ id: trigger.id, isActive: checked })}
+                      />
                     </div>
-                    <Switch
-                      checked={trigger.isActive}
-                      onCheckedChange={() => toggleTrigger(trigger.id)}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </ChannablePageWrapper>
     </>
   );

@@ -214,7 +214,7 @@ class SEOAnalyticsService {
       keyword: `${baseKeyword}${v.suffix}`,
       volume: v.volume,
       difficulty: v.difficulty,
-      cpc: +(Math.random() * 2 + 0.3).toFixed(2),
+      cpc: +((v.difficulty * 0.04 + 0.3)).toFixed(2),
       competition: v.difficulty > 45 ? 'High' : v.difficulty > 30 ? 'Medium' : 'Low',
       trend: 'stable' as const,
       relatedKeywords: [],
