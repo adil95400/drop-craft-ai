@@ -57,9 +57,12 @@ export const HeroSection = memo(({ onNavigate }: HeroSectionProps) => (
           animate="visible"
           variants={fadeUp}
         >
+          <Badge className="px-4 py-2 text-sm bg-success/15 text-success border-success/30 shadow-sm inline-flex items-center gap-2 backdrop-blur-sm font-medium mb-4">
+            🚀 Beta Launch — Early Access
+          </Badge>
           <Badge className="px-4 py-2 text-sm bg-primary/10 text-primary border-primary/20 shadow-sm inline-flex items-center gap-2 backdrop-blur-sm font-medium mb-8">
             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-            AI-Powered Shopify Automation
+            AI-Powered Dropshipping Automation
           </Badge>
         </motion.div>
 
