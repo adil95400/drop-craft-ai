@@ -154,6 +154,8 @@ export function AppRoutes() {
           <Route path="/academy/course/:id" element={<AcademyCoursePage />} />
           <Route path="/pwa-install" element={<PWAInstallPage />} />
           <Route path="/returns" element={<CustomerReturnsPortal />} />
+          <Route path="/tracking" element={<BrandedTrackingPage />} />
+          <Route path="/tracking/:orderNumber" element={<BrandedTrackingPage />} />
 
           {/* ═══════════════════════════════════════════════════════════════
               CORE PROTECTED ROUTES - Modules principaux
