@@ -1,3 +1,5 @@
+import { supabase } from '@/integrations/supabase/client';
+
 export interface AutomationWorkflow {
   id: string;
   name: string;
@@ -54,49 +56,68 @@ export class AutomationEngine {
   }
 
   async getWorkflows(userId: string): Promise<AutomationWorkflow[]> {
-    // Mock workflows for demo
-    return [
-      {
-        id: '1',
-        name: 'Automated Stock Reorder',
-        description: 'Automatically reorder products when stock is low',
-        trigger_type: 'condition',
-        trigger_config: { threshold: 10 },
-        steps: [
-          { id: '1', type: 'condition', config: { stock_level: '<= 10' }, order: 1 },
-          { id: '2', type: 'action', config: { action_type: 'reorder', quantity: 100 }, order: 2 }
-        ],
-        status: 'active',
-        user_id: userId,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        execution_count: 45,
-        success_count: 42,
-        failure_count: 3
-      }
-    ];
+    const { data, error } = await supabase
+      .from('automation_workflows')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false });
+
+    if (error || !data) return [];
+
+    return data.map((w: any) => ({
+      id: w.id,
+      name: w.name,
+      description: w.description,
+      trigger_type: w.trigger_type || 'event',
+      trigger_config: w.trigger_config || {},
+      steps: Array.isArray(w.steps) ? w.steps : [],
+      status: w.status === 'active' ? 'active' : w.status === 'paused' ? 'paused' : 'draft',
+      user_id: w.user_id,
+      created_at: w.created_at,
+      updated_at: w.updated_at,
+      last_executed_at: w.last_run_at,
+      execution_count: w.execution_count || w.run_count || 0,
+      success_count: w.execution_count || w.run_count || 0,
+      failure_count: 0,
+    }));
   }
 
   async getExecutions(): Promise<AutomationExecution[]> {
-    // Mock executions for demo
-    return [
-      {
-        id: '1',
-        workflow_id: '1',
-        status: 'completed',
-        started_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(),
-        execution_time_ms: 1500,
-        step_results: [
-          { step_id: '1', status: 'success', execution_time_ms: 500, output: { condition_met: true } },
-          { step_id: '2', status: 'success', execution_time_ms: 1000, output: { order_placed: true } }
-        ]
-      }
-    ];
+    const { data, error } = await supabase
+      .from('activity_logs')
+      .select('*')
+      .eq('entity_type', 'automation_execution')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error || !data) return [];
+
+    return data.map((log: any) => ({
+      id: log.id,
+      workflow_id: log.entity_id || '',
+      status: log.severity === 'error' ? 'failed' : 'completed',
+      started_at: log.created_at,
+      completed_at: log.created_at,
+      execution_time_ms: (log.details as any)?.duration_ms || 0,
+      step_results: [],
+    }));
   }
 
   async updateWorkflow(workflow: AutomationWorkflow): Promise<AutomationWorkflow> {
-    // Mock update
+    const { error } = await supabase
+      .from('automation_workflows')
+      .update({
+        name: workflow.name,
+        description: workflow.description,
+        status: workflow.status,
+        steps: workflow.steps as any,
+        trigger_type: workflow.trigger_type,
+        trigger_config: workflow.trigger_config as any,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', workflow.id);
+
+    if (error) throw error;
     return { ...workflow, updated_at: new Date().toISOString() };
   }
 

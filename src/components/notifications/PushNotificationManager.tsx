@@ -108,11 +108,25 @@ export function PushNotificationManager() {
   const loadDevices = async () => {
     if (!user) return;
     
-    // Mock devices for demo
-    setDevices([
-      { id: '1', platform: 'web', last_active: new Date().toISOString(), is_active: true },
-      { id: '2', platform: 'android', last_active: new Date(Date.now() - 86400000).toISOString(), is_active: true },
-    ]);
+    // Load real device registrations from notifications table
+    const { data } = await supabase
+      .from('notifications')
+      .select('id, type, created_at, metadata')
+      .eq('user_id', user.id)
+      .eq('type', 'device_token')
+      .order('created_at', { ascending: false })
+      .limit(10);
+    
+    if (data && data.length > 0) {
+      setDevices(data.map((d: any) => ({
+        id: d.id,
+        platform: (d.metadata as any)?.platform || 'web',
+        last_active: d.created_at,
+        is_active: true,
+      })));
+    } else {
+      setDevices([]);
+    }
   };
 
   const requestPermission = async () => {
