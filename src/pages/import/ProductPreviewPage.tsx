@@ -560,7 +560,11 @@ export default function ProductPreviewPage() {
   }
 
   const handleGoBack = () => {
-    navigate(returnTo || '/import/autods')
+    if (isEditMode) {
+      navigate('/products')
+    } else {
+      navigate(returnTo || '/import/autods')
+    }
   }
 
   const handleSave = async () => {
