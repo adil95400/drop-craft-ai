@@ -74,8 +74,8 @@ export function MarketingRoutes() {
       <Route path="coupons" element={<CouponsManagementPage />} />
       <Route path="calendar" element={<MarketingCalendarPage />} />
       <Route path="social-commerce" element={<SocialCommercePage />} />
-      <Route path="creative-studio" element={<CreativeStudioPage />} />
-      <Route path="content-generation" element={<ContentGenerationPage />} />
+      <Route path="creative-studio" element={<Navigate to="/ai/content" replace />} />
+      <Route path="content-generation" element={<Navigate to="/ai/content" replace />} />
       <Route path="automation" element={<MarketingAutomationPage />} />
       <Route path="upsell" element={<UpsellCrossSellPage />} />
       
