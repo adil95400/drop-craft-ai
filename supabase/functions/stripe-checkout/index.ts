@@ -86,23 +86,22 @@ Deno.serve(
       customerId = customers.data[0].id;
     }
 
-    // Define pricing
-    const priceData = {
-      pro: {
-        unit_amount: 999, // $9.99
-        product_name: "Plan Pro"
-      },
-      ultra_pro: {
-        unit_amount: 1999, // $19.99
-        product_name: "Plan Ultra Pro"
-      }
+    // Real Stripe Price IDs (EUR)
+    const PLAN_PRICE_IDS: Record<string, string> = {
+      standard: "price_1SwUB8FdyZLEbAYasNL2RWyn",  // 29€/mo
+      pro: "price_1SwUBEFdyZLEbAYaBInbPnb7",       // 49€/mo
+      ultra_pro: "price_1S7KaNFdyZLEbAYaovKWFgc4",  // 99€/mo
     };
+
+    const priceId = PLAN_PRICE_IDS[plan];
+    if (!priceId) throw new ValidationError(`Unknown plan: ${plan}`);
 
     // SECURITY: Validate origin
     const origin = req.headers.get("origin");
     const allowedOrigins = [
       Deno.env.get("SITE_URL"),
       "https://drop-craft-ai.lovable.app",
+      "https://shopopti.io",
       "https://id-preview--7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovable.app"
     ].filter(Boolean);
     
@@ -113,28 +112,16 @@ Deno.serve(
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      client_reference_id: user.id, // Link to our user
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: { 
-              name: priceData[plan].product_name,
-              description: `Abonnement ${plan === 'pro' ? 'Pro' : 'Ultra Pro'} mensuel`
-            },
-            unit_amount: priceData[plan].unit_amount,
-            recurring: { interval: "month" },
-          },
-          quantity: 1,
-        },
-      ],
+      client_reference_id: user.id,
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
+      subscription_data: {
+        trial_period_days: 14,
+        metadata: { user_id: user.id, plan }
+      },
       success_url: `${returnUrl}/modern/billing?success=true`,
       cancel_url: `${returnUrl}/modern/billing?canceled=true`,
-      metadata: {
-        user_id: user.id,
-        plan: plan
-      }
+      metadata: { user_id: user.id, plan },
     });
 
     logStep("Checkout session created", { sessionId: session.id?.slice(0, 10), plan });
