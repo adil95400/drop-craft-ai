@@ -266,6 +266,50 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'catalog'
   },
 
+  catalogDashboard: {
+    id: 'catalogDashboard',
+    name: 'Dashboard Catalogue',
+    icon: 'LayoutDashboard',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/catalog/dashboard',
+    features: ['kpis', 'alerts', 'distribution', 'trends'],
+    description: 'KPIs unifiés et alertes critiques',
+    category: 'product',
+    order: 10,
+    groupId: 'catalog'
+  },
+
+  pricingEngine: {
+    id: 'pricingEngine',
+    name: 'Moteur de Pricing',
+    icon: 'Calculator',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/catalog/pricing-engine',
+    features: ['margin-analysis', 'bulk-repricing', 'pricing-rules'],
+    description: 'Analyse des marges et repricing automatisé',
+    category: 'product',
+    order: 11,
+    groupId: 'catalog',
+    badge: 'pro'
+  },
+
+  supplierSync: {
+    id: 'supplierSync',
+    name: 'Sync Fournisseurs',
+    icon: 'RefreshCw',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/catalog/supplier-sync',
+    features: ['supplier-health', 'multi-mapping', 'auto-sync'],
+    description: 'Monitoring et synchronisation fournisseurs',
+    category: 'product',
+    order: 12,
+    groupId: 'catalog',
+    badge: 'pro'
+  },
+
   productViews: {
     id: 'productViews',
     name: 'Vues Produits',
@@ -276,7 +320,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['saved-views', 'smart-filters', 'predefined-views'],
     description: 'Filtres prédéfinis et vues enregistrées',
     category: 'product',
-    order: 10,
+    order: 13,
     groupId: 'catalog'
   },
 
