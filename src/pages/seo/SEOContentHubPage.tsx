@@ -161,7 +161,7 @@ export default function SEOContentHubPage() {
 
   const filteredPosts = posts.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
 
-  const filteredKeywords = MOCK_KEYWORDS.filter(k =>
+  const filteredKeywords = trackedKeywords.filter(k =>
     !keywordSearch || k.keyword.toLowerCase().includes(keywordSearch.toLowerCase())
   );
 
