@@ -346,21 +346,33 @@ export default function SEOContentHubPage() {
                   <CardDescription className="text-xs">Fonctionnalités SERP détectées pour vos mots-clés</CardDescription>
                 </CardHeader>
                 <CardContent className="pb-3 space-y-3">
-                  {MOCK_SERP_FEATURES.map((sf, i) => (
-                    <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg border bg-muted/30">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        {sf.type === 'Featured Snippet' ? <Star className="h-4 w-4 text-primary" /> :
-                         sf.type === 'People Also Ask' ? <Users className="h-4 w-4 text-primary" /> :
-                         sf.type === 'Image Pack' ? <LayoutGrid className="h-4 w-4 text-primary" /> :
-                         <Monitor className="h-4 w-4 text-primary" />}
+                  {/* SERP Features derived from tracked keywords */}
+                  {(() => {
+                    const top3Kws = trackedKeywords.filter(k => k.position <= 3).map(k => k.keyword);
+                    const top10Kws = trackedKeywords.filter(k => k.position > 3 && k.position <= 10).map(k => k.keyword);
+                    const serpFeatures = [
+                      { type: 'Top 3 Positions', count: top3Kws.length, keywords: top3Kws.slice(0, 3) },
+                      { type: 'Top 10 Positions', count: top10Kws.length, keywords: top10Kws.slice(0, 3) },
+                      { type: 'Mots-clés suivis', count: trackedKeywords.length, keywords: trackedKeywords.slice(0, 3).map(k => k.keyword) },
+                    ].filter(sf => sf.count > 0);
+
+                    return serpFeatures.length > 0 ? serpFeatures.map((sf, i) => (
+                      <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg border bg-muted/30">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          {sf.type.includes('Top 3') ? <Star className="h-4 w-4 text-primary" /> :
+                           sf.type.includes('Top 10') ? <Users className="h-4 w-4 text-primary" /> :
+                           <LayoutGrid className="h-4 w-4 text-primary" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium">{sf.type}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{sf.keywords.join(', ') || '—'}</p>
+                        </div>
+                        <Badge variant="secondary" className="text-xs">{sf.count} mots-clés</Badge>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{sf.type}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{sf.keywords.join(', ')}</p>
-                      </div>
-                      <Badge variant="secondary" className="text-xs">{sf.count} mots-clés</Badge>
-                    </div>
-                  ))}
+                    )) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">Ajoutez des mots-clés suivis pour voir les statistiques SERP</p>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             </div>
