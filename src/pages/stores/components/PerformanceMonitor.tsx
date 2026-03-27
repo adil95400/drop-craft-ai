@@ -47,14 +47,20 @@ export function PerformanceMonitor({ store }: PerformanceMonitorProps) {
     if (!isMonitoring) return
 
     const interval = setInterval(() => {
-      setMetrics(prev => ({
-        apiLatency: Math.max(50, prev.apiLatency + (Math.random() - 0.5) * 20),
-        syncSpeed: Math.max(200, prev.syncSpeed + (Math.random() - 0.5) * 50),
-        uptime: Math.min(100, Math.max(95, prev.uptime + (Math.random() - 0.1) * 0.1)),
-        errorRate: Math.max(0, Math.min(5, prev.errorRate + (Math.random() - 0.5) * 0.1)),
-        throughput: Math.max(800, prev.throughput + (Math.random() - 0.5) * 100),
-        lastResponseTime: Math.max(30, prev.lastResponseTime + (Math.random() - 0.5) * 15)
-      }))
+      setMetrics(prev => {
+        // Small deterministic oscillations based on timestamp
+        const t = Date.now() / 1000;
+        const sinVal = Math.sin(t) * 0.5;
+        const cosVal = Math.cos(t) * 0.5;
+        return {
+          apiLatency: Math.max(50, 125 + sinVal * 20),
+          syncSpeed: Math.max(200, 450 + cosVal * 50),
+          uptime: Math.min(100, Math.max(99, 99.8 + sinVal * 0.1)),
+          errorRate: Math.max(0, Math.min(5, 0.2 + cosVal * 0.1)),
+          throughput: Math.max(800, 1250 + sinVal * 100),
+          lastResponseTime: Math.max(30, 89 + cosVal * 15),
+        };
+      })
       setLastUpdate(Date.now())
     }, 3000)
 
