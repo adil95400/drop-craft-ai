@@ -9,8 +9,7 @@ import { lazy } from 'react';
 // Products
 const CatalogProductsPage = lazy(() => import('@/pages/products/CatalogProductsPage'));
 const ProductCockpitPage = lazy(() => import('@/pages/products/ProductCockpitPage'));
-const ProductDetailsPage = lazy(() => import('@/pages/ProductDetailsPage'));
-const ProductPublishing = lazy(() => import('@/pages/ProductPublishing'));
+const ProductPreviewPage = lazy(() => import('@/pages/import/ProductPreviewPage'));
 
 // Import - Redirects to /import module
 const ImportHub = lazy(() => import('@/pages/import/ImportHub'));
