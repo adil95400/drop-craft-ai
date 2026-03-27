@@ -598,26 +598,33 @@ export default function ProductPreviewPage() {
         stock_quantity: editedProduct.stock_quantity ?? 0,
         status: productStatus,
         profit_margin: marginVal,
-        user_id: user.id,
       }
 
-      const { data: insertedProduct, error } = await supabase.from('products').insert(productData).select('id').single()
-      if (error) throw error
+      if (isEditMode && productId) {
+        // Update existing product
+        const { error } = await supabase.from('products').update(productData).eq('id', productId).eq('user_id', user.id)
+        if (error) throw error
+        toast({
+          title: '✅ Produit mis à jour',
+          description: `"${editedProduct.title}" a été sauvegardé`,
+        })
+      } else {
+        // Insert new product
+        const { data: insertedProduct, error } = await supabase.from('products').insert({ ...productData, user_id: user.id }).select('id').single()
+        if (error) throw error
 
-      // Save reviews
-      const reviewsCount = await saveReviewsToDb(
-        insertedProduct.id, user.id,
-        editedProduct.extracted_reviews || [],
-        editedProduct.source_url || '', editedProduct.platform_detected
-      )
+        const reviewsCount = await saveReviewsToDb(
+          insertedProduct.id, user.id,
+          editedProduct.extracted_reviews || [],
+          editedProduct.source_url || '', editedProduct.platform_detected
+        )
+        await createImportJobRecord(user.id, editedProduct.platform_detected, editedProduct.source_url || '', editedProduct.title, reviewsCount, true)
 
-      // Create job record for history
-      await createImportJobRecord(user.id, editedProduct.platform_detected, editedProduct.source_url || '', editedProduct.title, reviewsCount, true)
-
-      toast({
-        title: '✅ Produit sauvegardé',
-        description: `"${editedProduct.title}" a été enregistré${reviewsCount > 0 ? ` avec ${reviewsCount} avis` : ''}`,
-      })
+        toast({
+          title: '✅ Produit sauvegardé',
+          description: `"${editedProduct.title}" a été enregistré${reviewsCount > 0 ? ` avec ${reviewsCount} avis` : ''}`,
+        })
+      }
       navigate(returnTo || '/products')
     } catch (err) {
       toast({
