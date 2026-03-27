@@ -82,16 +82,16 @@ export function MobileOptimizer() {
         osVersion: '15.0',
         manufacturer: 'Unknown',
         isVirtual: false,
-        memUsed: Math.random() * 50 + 20,
-        diskFree: Math.random() * 50 + 10,
-        diskTotal: Math.random() * 30 + 64
+        memUsed: 35,
+        diskFree: 28,
+        diskTotal: 64
       });
 
       setNetworkInfo({
         connected: true,
         connectionType: 'wifi',
-        downloadSpeed: Math.random() * 50 + 10,
-        uploadSpeed: Math.random() * 20 + 5
+        downloadSpeed: 25,
+        uploadSpeed: 10
       });
 
       measurePerformance();
