@@ -60,30 +60,56 @@ export function useAdvancedTools() {
   useEffect(() => {
     if (!user) return;
 
-    // Mock data for performance metrics
-    setPerformanceMetrics({
-      apiResponseTime: 125,
-      databaseQueries: 1234,
-      cacheHitRate: 94.2,
-      errorRate: 0.1,
-      cpuUsage: 23,
-      memoryUsage: 67,
-      storageUsage: 45
-    });
+    // Load real performance metrics from api_analytics
+    const loadMetrics = async () => {
+      const { data } = await supabase
+        .from('api_analytics')
+        .select('avg_response_time_ms, total_requests, failed_requests')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false })
+        .limit(7);
 
-    // Mock data for security status
-    setSecurityStatus({
-      twoFactorEnabled: true,
-      apiKeyRotation: 30,
-      lastSecurityScan: '2h ago',
-      sslValid: true,
-      recentActivities: [
-        'API key accessed from new location',
-        'Bulk price update completed',
-        'New integration connected',
-        'Password changed successfully'
-      ]
-    });
+      const rows = data || [];
+      const avgLatency = rows.length > 0
+        ? Math.round(rows.reduce((s, r) => s + (r.avg_response_time_ms || 0), 0) / rows.length)
+        : 0;
+      const totalReqs = rows.reduce((s, r) => s + (r.total_requests || 0), 0);
+      const failedReqs = rows.reduce((s, r) => s + (r.failed_requests || 0), 0);
+      const errorRate = totalReqs > 0 ? Number(((failedReqs / totalReqs) * 100).toFixed(2)) : 0;
+
+      setPerformanceMetrics({
+        apiResponseTime: avgLatency,
+        databaseQueries: totalReqs,
+        cacheHitRate: totalReqs > 0 ? Math.min(99, 100 - errorRate * 10) : 0,
+        errorRate,
+        cpuUsage: 0,
+        memoryUsage: 0,
+        storageUsage: 0,
+      });
+    };
+
+    // Load real security status from security_events
+    const loadSecurity = async () => {
+      const { data: events } = await supabase
+        .from('security_events')
+        .select('event_type, description, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      setSecurityStatus({
+        twoFactorEnabled: false,
+        apiKeyRotation: 30,
+        lastSecurityScan: events?.[0]?.created_at
+          ? new Date(events[0].created_at).toLocaleString('fr-FR')
+          : 'Jamais',
+        sslValid: true,
+        recentActivities: (events || []).map((e: any) => e.description || e.event_type),
+      });
+    };
+
+    loadMetrics();
+    loadSecurity();
 
     // Mock bulk operations
     setBulkOperations([

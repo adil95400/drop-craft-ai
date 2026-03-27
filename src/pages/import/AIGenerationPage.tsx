@@ -57,7 +57,7 @@ const AIGenerationPage: React.FC = () => {
         const products = JSON.parse(jsonMatch[0]).map((p: any, i: number) => ({
           id: i + 1,
           ...p,
-          price: p.price || Math.floor(Math.random() * 100) + 20,
+          price: p.price || (20 + (i * 17) % 80),
         }));
         setGeneratedProducts(products);
         toast.success('Produits générés avec succès!');

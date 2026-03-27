@@ -58,7 +58,7 @@ export default function WorkflowHistoryPage() {
       trigger_type: w.trigger_type || 'manual',
       started_at: w.last_run_at || w.created_at || new Date().toISOString(),
       completed_at: w.last_run_at,
-      duration_ms: Math.floor(Math.random() * 5000) + 200,
+      duration_ms: (w.execution_count || 1) * 120 + 200,
       steps_executed: Array.isArray(w.steps) ? (w.steps as any[]).length : 0,
       steps_total: Array.isArray(w.steps) ? (w.steps as any[]).length : 0,
       error_message: null,

@@ -30,69 +30,44 @@ export interface ReviewStats {
   recentReviews: Review[]
 }
 
-// Mock reviews for demo purposes
-const mockReviews: Review[] = [
-  {
-    id: '1',
-    external_id: 'rev_001',
-    platform: 'internal',
-    product_id: '1',
-    customer_name: 'Marie Dupont',
-    title: 'Excellent produit !',
-    content: 'Très satisfaite de mon achat, livraison rapide.',
-    rating: 5,
-    status: 'published',
-    verified_purchase: true,
-    helpful_count: 12,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: '2',
-    external_id: 'rev_002',
-    platform: 'internal',
-    product_id: '2',
-    customer_name: 'Pierre Martin',
-    title: 'Bon rapport qualité/prix',
-    content: 'Produit conforme à la description.',
-    rating: 4,
-    status: 'published',
-    verified_purchase: true,
-    helpful_count: 8,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: '3',
-    external_id: 'rev_003',
-    platform: 'internal',
-    product_id: '1',
-    customer_name: 'Sophie Bernard',
-    title: 'Très bien',
-    content: 'Je recommande ce produit.',
-    rating: 5,
-    status: 'published',
-    verified_purchase: false,
-    helpful_count: 5,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
-]
-
 export const useRealReviews = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
   const {
-    data: reviews = mockReviews,
+    data: reviews = [],
     isLoading,
     error
   } = useQuery({
     queryKey: ['real-reviews'],
     queryFn: async (): Promise<Review[]> => {
-      // Since there's no reviews table, return mock data
-      // In a real implementation, you would query the reviews table
-      return mockReviews
+      // Query reviews from activity_logs where entity_type = 'review'
+      const { data, error } = await supabase
+        .from('activity_logs')
+        .select('*')
+        .eq('entity_type', 'review')
+        .order('created_at', { ascending: false })
+        .limit(50)
+      
+      if (error) throw error
+      
+      if (!data || data.length === 0) return []
+      
+      return data.map((row: any) => ({
+        id: row.id,
+        external_id: row.entity_id || row.id,
+        platform: (row.details as any)?.platform || 'internal',
+        product_id: row.entity_id,
+        customer_name: (row.details as any)?.customer_name || 'Client',
+        title: (row.details as any)?.title || row.description,
+        content: row.description,
+        rating: (row.details as any)?.rating || 5,
+        status: ((row.details as any)?.status || 'published') as 'published' | 'pending' | 'rejected',
+        verified_purchase: (row.details as any)?.verified_purchase || false,
+        helpful_count: (row.details as any)?.helpful_count || 0,
+        created_at: row.created_at,
+        updated_at: row.created_at,
+      }))
     },
     meta: {
       onError: () => {

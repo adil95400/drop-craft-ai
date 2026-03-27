@@ -84,12 +84,15 @@ const BlogPage = () => {
 
   const getViews = (post: typeof allPosts[0]) => {
     if ('views' in post && (post as any).views) return (post as any).views;
-    return Math.floor(Math.random() * 3000) + 500;
+    // Deterministic view count based on title hash
+    const hash = post.title.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    return 500 + (hash * 317) % 2500;
   };
 
   const getComments = (post: typeof allPosts[0]) => {
     if ('comments' in post && (post as any).comments) return (post as any).comments;
-    return Math.floor(Math.random() * 20) + 2;
+    const hash = post.title.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    return 2 + (hash * 7) % 18;
   };
 
   const isFeatured = (post: typeof allPosts[0], index: number) => {

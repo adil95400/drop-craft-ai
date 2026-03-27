@@ -106,19 +106,26 @@ const MOCK_SERP_FEATURES = [
   { type: 'Video Carousel', count: 1, keywords: ['tutoriel dropshipping'] },
 ];
 
-const MOCK_RANKING_HISTORY = Array.from({ length: 30 }, (_, i) => ({
-  date: new Date(Date.now() - (29 - i) * 86400000).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
-  top3: Math.floor(2 + Math.random() * 3),
-  top10: Math.floor(8 + Math.random() * 5),
-  top50: Math.floor(20 + Math.random() * 10),
-}));
+// Deterministic ranking/traffic data using seeded values
+const MOCK_RANKING_HISTORY = Array.from({ length: 30 }, (_, i) => {
+  const seed = (i + 1) * 7;
+  return {
+    date: new Date(Date.now() - (29 - i) * 86400000).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
+    top3: 2 + (seed % 3),
+    top10: 8 + (seed % 5),
+    top50: 20 + (seed % 10),
+  };
+});
 
-const MOCK_TRAFFIC_DATA = Array.from({ length: 30 }, (_, i) => ({
-  date: new Date(Date.now() - (29 - i) * 86400000).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
-  organic: Math.floor(150 + Math.random() * 100 + i * 3),
-  paid: Math.floor(50 + Math.random() * 40),
-  direct: Math.floor(80 + Math.random() * 30),
-}));
+const MOCK_TRAFFIC_DATA = Array.from({ length: 30 }, (_, i) => {
+  const seed = (i + 1) * 11;
+  return {
+    date: new Date(Date.now() - (29 - i) * 86400000).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
+    organic: 150 + (seed % 100) + i * 3,
+    paid: 50 + (seed % 40),
+    direct: 80 + (seed % 30),
+  };
+});
 
 const MOCK_CONTENT_CALENDAR = [
   { id: '1', title: 'Guide: Top 10 produits gagnants 2026', status: 'scheduled', date: '2026-03-28', type: 'blog', keywords: ['produit gagnant', 'dropshipping'], priority: 'high' },
