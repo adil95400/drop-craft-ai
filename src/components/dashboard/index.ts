@@ -1,1 +1,1 @@
-export { JobsDashboardWidget } from './JobsDashboardWidget';
+// Dashboard module - main export is ChannableDashboard (used by pages/Dashboard.tsx)
