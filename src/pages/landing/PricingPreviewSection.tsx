@@ -90,7 +90,7 @@ export const PricingPreviewSection = memo(({ onNavigate }: PricingPreviewSection
                   <CardTitle className="text-xl">{p.name}</CardTitle>
                   <CardDescription>{p.desc}</CardDescription>
                   <div className="pt-4">
-                    <span className="text-4xl font-bold">${price}</span>
+                    <span className="text-4xl font-bold">€{price}</span>
                     <span className="text-muted-foreground">/mo</span>
                     {isAnnual && (
                       <Badge
