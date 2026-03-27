@@ -199,12 +199,12 @@ export default function ProductPreviewPage() {
         product_type: data.product_type || '',
         tags: Array.isArray(data.tags) ? data.tags as string[] : [],
         original_price: data.compare_at_price,
-        handle: data.handle || '',
+        handle: (data as any).handle || '',
         stock_quantity: data.stock_quantity || 0,
         seo: {
           metaTitle: data.seo_title || '',
           metaDescription: data.seo_description || '',
-          keywords: Array.isArray(data.seo_keywords) ? data.seo_keywords as string[] : [],
+          keywords: Array.isArray((data as any).seo_keywords) ? (data as any).seo_keywords as string[] : [],
         },
       } as ProductPreviewData
     },
