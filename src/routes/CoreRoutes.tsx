@@ -8,12 +8,9 @@ import { lazy } from 'react';
 
 // Dashboard sub-pages only
 const DashboardHome = lazy(() => import('@/pages/Dashboard'));
-const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const ChannableSettingsPage = lazy(() => import('@/pages/ChannableSettingsPage'));
-const SyncManagerPage = lazy(() => import('@/pages/sync/SyncManagerPage'));
 const StoreSyncDashboard = lazy(() => import('@/pages/StoreSyncDashboard'));
 const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard'));
-const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 const EmailTemplatesPage = lazy(() => import('@/pages/notifications/EmailTemplatesPage'));
 const WebhooksOutgoingPage = lazy(() => import('@/pages/notifications/WebhooksOutgoingPage'));
 const StockManagement = lazy(() => import('@/pages/stock/StockManagementPage'));
