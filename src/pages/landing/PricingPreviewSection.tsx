@@ -13,8 +13,8 @@ const annualSavings = (plan: PlanConfig) => {
 
 // Feature comparison data
 const COMPARISON_FEATURES = [
-  { label: "Products", values: ["500", "10,000", "Unlimited"] },
-  { label: "Stores", values: ["1", "Unlimited", "Unlimited"] },
+  { label: "Products", values: ["1,000", "10,000", "Unlimited"] },
+  { label: "Integrations", values: ["3", "Unlimited", "Unlimited"] },
   { label: "AI Optimization", values: [true, true, true] },
   { label: "Predictive Analytics", values: [false, true, true] },
   { label: "Marketing Automation", values: [false, true, true] },
