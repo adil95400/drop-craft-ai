@@ -37,32 +37,41 @@ export function SupplierChat({ supplierId, supplierName }: SupplierChatProps) {
   const [message, setMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Fetch messages from supplier_messages table
+  // Fetch messages - stored in activity_logs with entity_type 'supplier_message'
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ['supplier-messages', supplierId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('supplier_messages')
+        .from('activity_logs')
         .select('*')
-        .eq('supplier_id', supplierId)
+        .eq('entity_type', 'supplier_message')
+        .eq('entity_id', supplierId)
         .eq('user_id', user?.id)
         .order('created_at', { ascending: true });
       if (error) throw error;
-      return (data || []) as Message[];
+      return (data || []).map((row: any) => ({
+        id: row.id,
+        content: row.description || '',
+        sender_type: (row.details as any)?.sender_type || 'user',
+        created_at: row.created_at,
+        read: (row.details as any)?.read ?? true,
+      })) as Message[];
     },
     enabled: !!user?.id && !!supplierId,
-    refetchInterval: 10000, // Poll every 10s
+    refetchInterval: 10000,
   });
 
   // Send message
   const sendMutation = useMutation({
     mutationFn: async (content: string) => {
-      const { error } = await supabase.from('supplier_messages').insert({
-        supplier_id: supplierId,
+      const { error } = await supabase.from('activity_logs').insert({
         user_id: user!.id,
-        content,
-        sender_type: 'user',
-        read: true,
+        action: 'supplier_message_sent',
+        entity_type: 'supplier_message',
+        entity_id: supplierId,
+        description: content,
+        details: { sender_type: 'user', read: true },
+        source: 'supplier_chat',
       });
       if (error) throw error;
     },

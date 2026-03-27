@@ -272,14 +272,14 @@ export default function BrandedTrackingPage() {
               </Card>
 
               {/* Estimated delivery */}
-              {order.estimated_delivery && (
+              {(order as any).estimated_delivery && (
                 <Card className="border-primary/20 bg-primary/5">
                   <CardContent className="p-4 flex items-center gap-3">
                     <Truck className="h-5 w-5 text-primary" />
                     <div>
                       <p className="font-medium text-sm">Livraison estimée</p>
                       <p className="text-sm text-muted-foreground">
-                        {format(new Date(order.estimated_delivery), 'dd MMMM yyyy', { locale: fr })}
+                        {format(new Date((order as any).estimated_delivery), 'dd MMMM yyyy', { locale: fr })}
                       </p>
                     </div>
                   </CardContent>
