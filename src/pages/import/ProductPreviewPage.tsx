@@ -657,9 +657,14 @@ export default function ProductPreviewPage() {
             <h1 className="text-base font-semibold truncate max-w-[400px]">
               {editedProduct.title?.slice(0, 60) || 'Nouveau produit'}
             </h1>
-            <Badge variant="outline" className="capitalize text-xs">
-              {editedProduct.platform_detected}
-            </Badge>
+            {!isEditMode && (
+              <Badge variant="outline" className="capitalize text-xs">
+                {editedProduct.platform_detected}
+              </Badge>
+            )}
+            {isEditMode && (
+              <Badge variant="secondary" className="text-xs">Édition</Badge>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Select value={productStatus} onValueChange={setProductStatus}>
@@ -669,34 +674,38 @@ export default function ProductPreviewPage() {
               <SelectContent>
                 <SelectItem value="draft">Brouillon</SelectItem>
                 <SelectItem value="active">Actif</SelectItem>
+                <SelectItem value="archived">Archivé</SelectItem>
               </SelectContent>
             </Select>
             <Button
               onClick={handleSave}
               disabled={isSaving}
               size="sm"
-              variant="outline"
-              className="gap-1.5"
+              className="bg-primary hover:bg-primary/90 shadow-sm gap-1.5"
             >
               {isSaving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              Sauvegarder
+              {isEditMode ? 'Mettre à jour' : 'Sauvegarder'}
             </Button>
-            <Button
-              onClick={handleConfirm}
-              disabled={isImporting || validSelectedCount === 0}
-              size="sm"
-              className="bg-primary hover:bg-primary/90 shadow-sm gap-1.5"
-            >
-              {isImporting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <ShoppingCart className="h-4 w-4" />
-              )}
-              Importer le produit
+            {!isEditMode && (
+              <Button
+                onClick={handleConfirm}
+                disabled={isImporting || validSelectedCount === 0}
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+              >
+                {isImporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ShoppingCart className="h-4 w-4" />
+                )}
+                Importer le produit
+              </Button>
+            )}
             </Button>
           </div>
         </div>
