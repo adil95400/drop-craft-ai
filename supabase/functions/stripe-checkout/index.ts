@@ -10,8 +10,8 @@ import { parseJsonValidated, z } from '../_shared/validators.ts';
 import { checkRateLimit } from '../_shared/rate-limiter.ts';
 
 const BodySchema = z.object({
-  plan: z.enum(['pro', 'ultra_pro'], {
-    errorMap: () => ({ message: 'Plan must be pro or ultra_pro' })
+  plan: z.enum(['standard', 'pro', 'ultra_pro'], {
+    errorMap: () => ({ message: 'Plan must be standard, pro, or ultra_pro' })
   })
 });
 
