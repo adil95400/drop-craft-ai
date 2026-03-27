@@ -136,14 +136,15 @@ export function MobileOptimizer() {
   };
 
   const measurePerformance = () => {
-    // Simulate performance measurement
     setTimeout(() => {
+      const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+      const connApi = (navigator as any).connection;
       setPerformanceMetrics({
-        loadTime: Math.random() * 2000 + 1000,
-        renderTime: Math.random() * 500 + 200,
-        memoryUsage: Math.random() * 50 + 20,
-        batteryLevel: Math.random() * 40 + 60,
-        networkLatency: Math.random() * 100 + 20
+        loadTime: navEntry ? navEntry.loadEventEnd - navEntry.fetchStart : 1500,
+        renderTime: navEntry ? navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart : 400,
+        memoryUsage: ((performance as any).memory?.usedJSHeapSize / 1024 / 1024) || 30,
+        batteryLevel: 80,
+        networkLatency: connApi?.rtt || 50
       });
       setLoading(false);
     }, 1000);

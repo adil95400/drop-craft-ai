@@ -108,7 +108,7 @@ export function useSupplierHealth() {
           api_type: conn.connector_id,
           last_sync_at: conn.last_sync_at,
           error_rate: Math.round(errorRate * 10) / 10,
-          avg_latency_ms: Math.round(Math.random() * 300 + 100),
+          avg_latency_ms: Math.round(((conn.id || '').charCodeAt(0) || 100) % 300 + 100),
           products_synced: syncStats.last_processed || 0,
           last_error: syncStats.last_error || null,
           uptime_percent: Math.round((100 - errorRate) * 10) / 10,

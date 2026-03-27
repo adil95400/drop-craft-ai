@@ -13,14 +13,17 @@ export function TopWinnersSection() {
   const { data, isLoading, refetch } = useTrendingAds(undefined, 10);
   const analyzeAd = useAnalyzeAd();
 
-  // Simulated data for different periods
+  // Deterministic data for different periods (hash-based, no random)
   const getMockWinners = (periodType: string): CompetitorAd[] => {
     const baseAds: CompetitorAd[] = data?.ads || [];
-    return baseAds.map((ad, index) => ({
-      ...ad,
-      engagement_score: Math.floor(Math.random() * 30) + 70,
-      running_days: periodType === 'day' ? 1 : periodType === 'week' ? Math.floor(Math.random() * 7) + 1 : Math.floor(Math.random() * 30) + 1,
-    }));
+    return baseAds.map((ad, index) => {
+      const hash = (ad.id || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+      return {
+        ...ad,
+        engagement_score: 70 + (hash % 30),
+        running_days: periodType === 'day' ? 1 : periodType === 'week' ? 1 + (hash % 7) : 1 + (hash % 30),
+      };
+    });
   };
 
   const periodLabels = {
