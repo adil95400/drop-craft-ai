@@ -42,6 +42,24 @@ function json(data: any, status = 200) {
   });
 }
 
+let tablesEnsured = false;
+async function ensureTables(supabase: any) {
+  if (tablesEnsured) return;
+  try {
+    await supabase.rpc("ensure_attribute_sync_tables");
+  } catch {
+    // Tables may already exist or RPC not available, try direct query
+    try {
+      // Just try a select to check if tables exist
+      await supabase.from("attribute_sync_configs").select("id").limit(1);
+      await supabase.from("attribute_sync_changes").select("id").limit(1);
+    } catch {
+      console.warn("attribute_sync tables may not exist yet - proceeding anyway");
+    }
+  }
+  tablesEnsured = true;
+}
+
 /**
  * Check for attribute changes by re-scraping supplier URLs
  */
