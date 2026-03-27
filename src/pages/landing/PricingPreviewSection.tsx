@@ -13,8 +13,8 @@ const annualSavings = (plan: PlanConfig) => {
 
 // Feature comparison data
 const COMPARISON_FEATURES = [
-  { label: "Products", values: ["500", "10,000", "Unlimited"] },
-  { label: "Stores", values: ["1", "Unlimited", "Unlimited"] },
+  { label: "Products", values: ["1,000", "10,000", "Unlimited"] },
+  { label: "Integrations", values: ["3", "Unlimited", "Unlimited"] },
   { label: "AI Optimization", values: [true, true, true] },
   { label: "Predictive Analytics", values: [false, true, true] },
   { label: "Marketing Automation", values: [false, true, true] },
@@ -90,7 +90,7 @@ export const PricingPreviewSection = memo(({ onNavigate }: PricingPreviewSection
                   <CardTitle className="text-xl">{p.name}</CardTitle>
                   <CardDescription>{p.desc}</CardDescription>
                   <div className="pt-4">
-                    <span className="text-4xl font-bold">${price}</span>
+                    <span className="text-4xl font-bold">€{price}</span>
                     <span className="text-muted-foreground">/mo</span>
                     {isAnnual && (
                       <Badge
@@ -102,7 +102,7 @@ export const PricingPreviewSection = memo(({ onNavigate }: PricingPreviewSection
                     )}
                   </div>
                   {isAnnual && (
-                    <p className="text-xs text-muted-foreground">Billed ${price * 12}/year</p>
+                    <p className="text-xs text-muted-foreground">Billed €{price * 12}/year</p>
                   )}
                 </CardHeader>
                 <CardContent className="space-y-4">

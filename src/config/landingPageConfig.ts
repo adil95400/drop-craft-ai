@@ -17,13 +17,13 @@ export interface PlanConfig {
 
 export const PLANS: PlanConfig[] = [
   {
-    name: "Basic",
+    name: "Standard",
     monthlyPrice: 29,
     annualPrice: 23,
     desc: "For new merchants getting started",
     features: [
-      "500 products",
-      "1 store",
+      "1,000 products",
+      "3 integrations",
       "AI optimization",
       "Email support",
       "Basic analytics",
@@ -33,12 +33,12 @@ export const PLANS: PlanConfig[] = [
   },
   {
     name: "Pro",
-    monthlyPrice: 79,
-    annualPrice: 63,
+    monthlyPrice: 49,
+    annualPrice: 39,
     desc: "For growing stores ready to scale",
     features: [
       "10,000 products",
-      "Unlimited stores",
+      "Unlimited integrations",
       "Advanced AI + Predictive Analytics",
       "Priority support 24/7",
       "Marketing automation",
@@ -49,8 +49,8 @@ export const PLANS: PlanConfig[] = [
   },
   {
     name: "Ultra Pro",
-    monthlyPrice: 199,
-    annualPrice: 159,
+    monthlyPrice: 99,
+    annualPrice: 79,
     desc: "For power sellers & agencies",
     features: [
       "Unlimited products",

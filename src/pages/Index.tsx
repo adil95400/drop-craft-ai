@@ -37,7 +37,7 @@ const jsonLdSchemas = [
       "@type": "AggregateOffer",
       lowPrice: String(PLANS[0].monthlyPrice),
       highPrice: String(PLANS[PLANS.length - 1].monthlyPrice),
-      priceCurrency: "USD",
+      priceCurrency: "EUR",
       offerCount: String(PLANS.length),
     },
     aggregateRating: {

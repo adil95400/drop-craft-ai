@@ -11,6 +11,7 @@ const VideoTutorialsPage = lazy(() => import('@/pages/admin/VideoTutorialsPage')
 const AdminSupplierManagementPage = lazy(() => import('@/pages/admin/AdminSupplierManagementPage'));
 const AdminConsumptionPage = lazy(() => import('@/pages/admin/AdminConsumptionPage'));
 const AdminSecurityPage = lazy(() => import('@/pages/admin/AdminSecurityPage'));
+const BetaLaunchChecklist = lazy(() => import('@/pages/admin/BetaLaunchChecklist'));
 
 export function AdminRoutes() {
   return (
@@ -32,6 +33,9 @@ export function AdminRoutes() {
       
       {/* Consumption Tracking */}
       <Route path="consumption" element={<AdminConsumptionPage />} />
+      
+      {/* Beta Launch Checklist */}
+      <Route path="beta-launch" element={<BetaLaunchChecklist />} />
     </Routes>
   );
 }
