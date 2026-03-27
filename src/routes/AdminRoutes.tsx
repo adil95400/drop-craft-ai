@@ -33,6 +33,9 @@ export function AdminRoutes() {
       
       {/* Consumption Tracking */}
       <Route path="consumption" element={<AdminConsumptionPage />} />
+      
+      {/* Beta Launch Checklist */}
+      <Route path="beta-launch" element={<BetaLaunchChecklist />} />
     </Routes>
   );
 }
