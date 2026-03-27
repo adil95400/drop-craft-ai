@@ -95,6 +95,7 @@ const DocumentationPage = lazy(() => import('@/pages/documentation/Documentation
 const HelpCenterPage = lazy(() => import('@/pages/help/HelpCenterPage'));
 const SEOContentHubPage = lazy(() => import('@/pages/seo/SEOContentHubPage'));
 const CustomerReturnsPortal = lazy(() => import('@/pages/returns/CustomerReturnsPortal'));
+const BrandedTrackingPage = lazy(() => import('@/pages/tracking/BrandedTrackingPage'));
 const AdvancedMediaEditorPage = lazy(() => import('@/pages/media/AdvancedMediaEditorPage'));
 
 // Profile & Subscription (Settings group)
