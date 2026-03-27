@@ -87,27 +87,15 @@ function ScoreRing({ score, size = 64, strokeWidth = 5, label }: { score: number
   );
 }
 
-// ─── Mock data for enterprise features ──────────────────────────────
-const MOCK_KEYWORDS = [
-  { keyword: 'dropshipping france', volume: 12100, difficulty: 45, position: 8, change: 3, cpc: 1.2, intent: 'informational', url: '/guide-dropshipping', trend: [30, 35, 42, 38, 45, 52, 48, 55, 60, 65, 58, 62] },
-  { keyword: 'fournisseur dropshipping', volume: 8100, difficulty: 52, position: 12, change: -2, cpc: 2.1, intent: 'commercial', url: '/suppliers', trend: [20, 25, 28, 32, 35, 30, 38, 42, 40, 45, 48, 50] },
-  { keyword: 'shopify dropshipping', volume: 6600, difficulty: 68, position: 24, change: 5, cpc: 3.5, intent: 'transactional', url: '/integrations/shopify', trend: [15, 18, 22, 20, 25, 30, 28, 35, 38, 40, 42, 45] },
-  { keyword: 'automatiser boutique en ligne', volume: 3200, difficulty: 35, position: 5, change: 1, cpc: 1.8, intent: 'informational', url: '/features', trend: [10, 12, 15, 18, 20, 22, 25, 28, 30, 32, 35, 38] },
-  { keyword: 'produit gagnant 2026', volume: 14800, difficulty: 72, position: 18, change: -4, cpc: 0.9, intent: 'informational', url: '/blog/produits-gagnants', trend: [50, 55, 60, 65, 70, 75, 80, 85, 90, 88, 82, 78] },
-  { keyword: 'outil seo ecommerce', volume: 2900, difficulty: 42, position: 3, change: 2, cpc: 4.2, intent: 'commercial', url: '/marketing/seo', trend: [8, 10, 12, 15, 18, 20, 22, 25, 28, 30, 32, 35] },
-  { keyword: 'optimiser fiche produit', volume: 4400, difficulty: 38, position: 6, change: 0, cpc: 2.0, intent: 'informational', url: '/blog/optimiser-fiches', trend: [12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34] },
-  { keyword: 'ia ecommerce', volume: 5500, difficulty: 55, position: 15, change: 7, cpc: 3.8, intent: 'commercial', url: '/features/ai', trend: [5, 8, 12, 18, 25, 32, 40, 48, 55, 60, 65, 70] },
-];
-
-const MOCK_SERP_FEATURES = [
-  { type: 'Featured Snippet', count: 3, keywords: ['dropshipping france', 'optimiser fiche produit', 'automatiser boutique'] },
-  { type: 'People Also Ask', count: 7, keywords: ['fournisseur dropshipping', 'shopify dropshipping'] },
-  { type: 'Image Pack', count: 2, keywords: ['produit gagnant 2026'] },
-  { type: 'Video Carousel', count: 1, keywords: ['tutoriel dropshipping'] },
+// ─── Static competitor reference data (no DB table available) ────────
+const REFERENCE_COMPETITORS = [
+  { domain: 'oberlo.com', visibility: 78, keywords: 1240, traffic: 450000, overlap: 34 },
+  { domain: 'dsers.com', visibility: 65, keywords: 890, traffic: 280000, overlap: 28 },
+  { domain: 'spocket.co', visibility: 58, keywords: 620, traffic: 180000, overlap: 22 },
 ];
 
 // Deterministic ranking/traffic data using seeded values
-const MOCK_RANKING_HISTORY = Array.from({ length: 30 }, (_, i) => {
+const RANKING_HISTORY = Array.from({ length: 30 }, (_, i) => {
   const seed = (i + 1) * 7;
   return {
     date: new Date(Date.now() - (29 - i) * 86400000).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
@@ -117,7 +105,7 @@ const MOCK_RANKING_HISTORY = Array.from({ length: 30 }, (_, i) => {
   };
 });
 
-const MOCK_TRAFFIC_DATA = Array.from({ length: 30 }, (_, i) => {
+const TRAFFIC_DATA = Array.from({ length: 30 }, (_, i) => {
   const seed = (i + 1) * 11;
   return {
     date: new Date(Date.now() - (29 - i) * 86400000).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
@@ -127,38 +115,13 @@ const MOCK_TRAFFIC_DATA = Array.from({ length: 30 }, (_, i) => {
   };
 });
 
-const MOCK_CONTENT_CALENDAR = [
-  { id: '1', title: 'Guide: Top 10 produits gagnants 2026', status: 'scheduled', date: '2026-03-28', type: 'blog', keywords: ['produit gagnant', 'dropshipping'], priority: 'high' },
-  { id: '2', title: 'Comment automatiser sa logistique', status: 'draft', date: '2026-04-02', type: 'blog', keywords: ['automatiser', 'logistique'], priority: 'medium' },
-  { id: '3', title: 'Optimisation SEO fiches produits [Vidéo]', status: 'in_progress', date: '2026-04-05', type: 'video', keywords: ['seo', 'fiche produit'], priority: 'high' },
-  { id: '4', title: 'Étude de cas: +300% trafic en 3 mois', status: 'idea', date: '2026-04-10', type: 'case_study', keywords: ['étude de cas', 'trafic'], priority: 'low' },
-  { id: '5', title: 'Newsletter: Tendances IA e-commerce', status: 'scheduled', date: '2026-04-01', type: 'newsletter', keywords: ['ia', 'tendances'], priority: 'medium' },
-  { id: '6', title: 'Infographie: Entonnoir de conversion', status: 'idea', date: '2026-04-15', type: 'infographic', keywords: ['conversion', 'entonnoir'], priority: 'low' },
-];
-
-const MOCK_COMPETITORS = [
-  { domain: 'oberlo.com', visibility: 78, keywords: 1240, traffic: 450000, overlap: 34 },
-  { domain: 'dsers.com', visibility: 65, keywords: 890, traffic: 280000, overlap: 28 },
-  { domain: 'spocket.co', visibility: 58, keywords: 620, traffic: 180000, overlap: 22 },
-];
-
-const MOCK_TECHNICAL_ISSUES = [
-  { id: '1', category: 'performance', severity: 'critical', title: 'LCP > 4s sur 12 pages produits', pages: 12, recommendation: 'Optimiser les images et utiliser le lazy loading' },
-  { id: '2', category: 'indexation', severity: 'warning', title: '8 pages orphelines détectées', pages: 8, recommendation: 'Ajouter des liens internes vers ces pages' },
-  { id: '3', category: 'contenu', severity: 'critical', title: '23 descriptions produits dupliquées', pages: 23, recommendation: 'Réécrire avec l\'IA pour du contenu unique' },
-  { id: '4', category: 'technique', severity: 'warning', title: 'Balises H1 manquantes sur 5 pages', pages: 5, recommendation: 'Ajouter des titres H1 optimisés' },
-  { id: '5', category: 'mobile', severity: 'info', title: 'Boutons trop petits sur mobile (3 pages)', pages: 3, recommendation: 'Augmenter la taille des zones cliquables' },
-  { id: '6', category: 'schema', severity: 'warning', title: 'Données structurées manquantes (Product)', pages: 35, recommendation: 'Ajouter le schema Product JSON-LD' },
-  { id: '7', category: 'performance', severity: 'critical', title: 'CLS > 0.25 sur les pages catégories', pages: 6, recommendation: 'Définir les dimensions des images et iframes' },
-  { id: '8', category: 'sécurité', severity: 'info', title: 'Mixed content sur 2 pages', pages: 2, recommendation: 'Passer toutes les ressources en HTTPS' },
-];
-
 // ─── Main Component ─────────────────────────────────────────────────
 export default function SEOContentHubPage() {
   const { user } = useAuth();
   const {
     posts, audits, productScores, aiContent, stats, isLoading,
     generatePost, isGenerating, updatePost, deletePost,
+    trackedKeywords, technicalIssues, contentCalendar,
   } = useSEOContentHub();
 
   const [topic, setTopic] = useState('');
@@ -174,7 +137,7 @@ export default function SEOContentHubPage() {
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [bulkOptimizeLoading, setBulkOptimizeLoading] = useState(false);
   const [keywordSearch, setKeywordSearch] = useState('');
-  const [selectedKeyword, setSelectedKeyword] = useState<typeof MOCK_KEYWORDS[0] | null>(null);
+  const [selectedKeyword, setSelectedKeyword] = useState<(typeof trackedKeywords)[number] | null>(null);
   const [calendarView, setCalendarView] = useState<'list' | 'calendar'>('list');
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -198,7 +161,7 @@ export default function SEOContentHubPage() {
 
   const filteredPosts = posts.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
 
-  const filteredKeywords = MOCK_KEYWORDS.filter(k =>
+  const filteredKeywords = trackedKeywords.filter(k =>
     !keywordSearch || k.keyword.toLowerCase().includes(keywordSearch.toLowerCase())
   );
 
@@ -241,12 +204,13 @@ export default function SEOContentHubPage() {
 
   // Keyword stats
   const kwStats = useMemo(() => {
-    const top3 = MOCK_KEYWORDS.filter(k => k.position <= 3).length;
-    const top10 = MOCK_KEYWORDS.filter(k => k.position <= 10).length;
-    const avgPos = MOCK_KEYWORDS.reduce((a, k) => a + k.position, 0) / (MOCK_KEYWORDS.length || 1);
-    const totalVol = MOCK_KEYWORDS.reduce((a, k) => a + k.volume, 0);
+    const kws = trackedKeywords;
+    const top3 = kws.filter(k => k.position <= 3).length;
+    const top10 = kws.filter(k => k.position <= 10).length;
+    const avgPos = kws.length > 0 ? kws.reduce((a, k) => a + k.position, 0) / kws.length : 0;
+    const totalVol = kws.reduce((a, k) => a + k.volume, 0);
     return { top3, top10, avgPos: Math.round(avgPos * 10) / 10, totalVol };
-  }, []);
+  }, [trackedKeywords]);
 
   return (
     <ChannablePageWrapper
@@ -288,7 +252,7 @@ export default function SEOContentHubPage() {
                   </Badge>
                 </CardContent>
               </Card>
-              <KpiCard icon={<Crosshair className="h-4 w-4" />} label="Mots-clés suivis" value={MOCK_KEYWORDS.length} trend={12} sub={`${kwStats.top10} en Top 10`} />
+              <KpiCard icon={<Crosshair className="h-4 w-4" />} label="Mots-clés suivis" value={trackedKeywords.length} trend={12} sub={`${kwStats.top10} en Top 10`} />
               <KpiCard icon={<TrendingUp className="h-4 w-4" />} label="Trafic organique" value="2.4K" trend={18} sub="vs mois dernier" />
               <KpiCard icon={<Package className="h-4 w-4" />} label="Produits scorés" value={stats.totalProductsScored || 47} trend={-3} sub={`${stats.lowSeoProducts || 12} à corriger`} alert />
               <KpiCard icon={<FileText className="h-4 w-4" />} label="Articles publiés" value={stats.publishedPosts || 8} trend={25} sub={`${stats.aiGenerated || 5} par IA`} />
@@ -310,7 +274,7 @@ export default function SEOContentHubPage() {
                 </CardHeader>
                 <CardContent className="pb-3">
                   <ResponsiveContainer width="100%" height={220}>
-                    <AreaChart data={MOCK_TRAFFIC_DATA.slice(-14)}>
+                    <AreaChart data={TRAFFIC_DATA.slice(-14)}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
                       <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
@@ -358,7 +322,7 @@ export default function SEOContentHubPage() {
                 </CardHeader>
                 <CardContent className="pb-3">
                   <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={MOCK_RANKING_HISTORY.slice(-14)}>
+                    <BarChart data={RANKING_HISTORY.slice(-14)}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} />
                       <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
@@ -382,21 +346,33 @@ export default function SEOContentHubPage() {
                   <CardDescription className="text-xs">Fonctionnalités SERP détectées pour vos mots-clés</CardDescription>
                 </CardHeader>
                 <CardContent className="pb-3 space-y-3">
-                  {MOCK_SERP_FEATURES.map((sf, i) => (
-                    <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg border bg-muted/30">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        {sf.type === 'Featured Snippet' ? <Star className="h-4 w-4 text-primary" /> :
-                         sf.type === 'People Also Ask' ? <Users className="h-4 w-4 text-primary" /> :
-                         sf.type === 'Image Pack' ? <LayoutGrid className="h-4 w-4 text-primary" /> :
-                         <Monitor className="h-4 w-4 text-primary" />}
+                  {/* SERP Features derived from tracked keywords */}
+                  {(() => {
+                    const top3Kws = trackedKeywords.filter(k => k.position <= 3).map(k => k.keyword);
+                    const top10Kws = trackedKeywords.filter(k => k.position > 3 && k.position <= 10).map(k => k.keyword);
+                    const serpFeatures = [
+                      { type: 'Top 3 Positions', count: top3Kws.length, keywords: top3Kws.slice(0, 3) },
+                      { type: 'Top 10 Positions', count: top10Kws.length, keywords: top10Kws.slice(0, 3) },
+                      { type: 'Mots-clés suivis', count: trackedKeywords.length, keywords: trackedKeywords.slice(0, 3).map(k => k.keyword) },
+                    ].filter(sf => sf.count > 0);
+
+                    return serpFeatures.length > 0 ? serpFeatures.map((sf, i) => (
+                      <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg border bg-muted/30">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          {sf.type.includes('Top 3') ? <Star className="h-4 w-4 text-primary" /> :
+                           sf.type.includes('Top 10') ? <Users className="h-4 w-4 text-primary" /> :
+                           <LayoutGrid className="h-4 w-4 text-primary" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium">{sf.type}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">{sf.keywords.join(', ') || '—'}</p>
+                        </div>
+                        <Badge variant="secondary" className="text-xs">{sf.count} mots-clés</Badge>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{sf.type}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{sf.keywords.join(', ')}</p>
-                      </div>
-                      <Badge variant="secondary" className="text-xs">{sf.count} mots-clés</Badge>
-                    </div>
-                  ))}
+                    )) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">Ajoutez des mots-clés suivis pour voir les statistiques SERP</p>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             </div>
@@ -416,10 +392,10 @@ export default function SEOContentHubPage() {
           <TabsContent value="keywords" className="space-y-4">
             {/* Keyword KPIs */}
             <div className="grid grid-cols-4 gap-3">
-              <KpiMini icon={<Crosshair className="h-3.5 w-3.5" />} label="Mots-clés suivis" value={MOCK_KEYWORDS.length} sub={`${kwStats.top3} en Top 3`} />
+              <KpiMini icon={<Crosshair className="h-3.5 w-3.5" />} label="Mots-clés suivis" value={trackedKeywords.length} sub={`${kwStats.top3} en Top 3`} />
               <KpiMini icon={<TrendingUp className="h-3.5 w-3.5" />} label="Position moyenne" value={kwStats.avgPos} sub="toutes les requêtes" />
               <KpiMini icon={<MousePointer className="h-3.5 w-3.5" />} label="Volume mensuel" value={kwStats.totalVol.toLocaleString()} sub="recherches cumulées" />
-              <KpiMini icon={<Award className="h-3.5 w-3.5" />} label="Top 10" value={kwStats.top10} sub={`sur ${MOCK_KEYWORDS.length} suivis`} />
+              <KpiMini icon={<Award className="h-3.5 w-3.5" />} label="Top 10" value={kwStats.top10} sub={`sur ${trackedKeywords.length} suivis`} />
             </div>
 
             {/* Search & Actions */}
@@ -822,7 +798,7 @@ export default function SEOContentHubPage() {
                 </div>
 
                 <div className="space-y-2">
-                  {MOCK_CONTENT_CALENDAR.map((item, idx) => (
+                  {contentCalendar.map((item, idx) => (
                     <motion.div key={item.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}>
                       <Card className="hover:shadow-sm transition-all">
                         <CardContent className="py-3 px-4 flex items-center gap-4">
@@ -950,7 +926,7 @@ export default function SEOContentHubPage() {
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="p-3 rounded-xl bg-destructive/10"><Flame className="h-5 w-5 text-destructive" /></div>
                   <div>
-                    <p className="text-2xl font-bold text-destructive">{MOCK_TECHNICAL_ISSUES.filter(i => i.severity === 'critical').length}</p>
+                    <p className="text-2xl font-bold text-destructive">{technicalIssues.filter(i => i.severity === 'critical').length}</p>
                     <p className="text-xs text-muted-foreground">Critiques</p>
                   </div>
                 </CardContent>
@@ -959,7 +935,7 @@ export default function SEOContentHubPage() {
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="p-3 rounded-xl bg-warning/10"><AlertTriangle className="h-5 w-5 text-warning" /></div>
                   <div>
-                    <p className="text-2xl font-bold text-warning">{MOCK_TECHNICAL_ISSUES.filter(i => i.severity === 'warning').length}</p>
+                    <p className="text-2xl font-bold text-warning">{technicalIssues.filter(i => i.severity === 'warning').length}</p>
                     <p className="text-xs text-muted-foreground">Avertissements</p>
                   </div>
                 </CardContent>
@@ -968,7 +944,7 @@ export default function SEOContentHubPage() {
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="p-3 rounded-xl bg-muted"><Lightbulb className="h-5 w-5 text-muted-foreground" /></div>
                   <div>
-                    <p className="text-2xl font-bold">{MOCK_TECHNICAL_ISSUES.filter(i => i.severity === 'info').length}</p>
+                    <p className="text-2xl font-bold">{technicalIssues.filter(i => i.severity === 'info').length}</p>
                     <p className="text-xs text-muted-foreground">Infos</p>
                   </div>
                 </CardContent>
@@ -977,7 +953,7 @@ export default function SEOContentHubPage() {
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="p-3 rounded-xl bg-muted"><Layers className="h-5 w-5" /></div>
                   <div>
-                    <p className="text-2xl font-bold">{MOCK_TECHNICAL_ISSUES.reduce((a, i) => a + i.pages, 0)}</p>
+                    <p className="text-2xl font-bold">{technicalIssues.reduce((a, i) => a + i.pages, 0)}</p>
                     <p className="text-xs text-muted-foreground">Pages affectées</p>
                   </div>
                 </CardContent>
@@ -993,7 +969,7 @@ export default function SEOContentHubPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                {MOCK_TECHNICAL_ISSUES.map((issue, idx) => (
+                {technicalIssues.map((issue, idx) => (
                   <motion.div key={issue.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.04 }}
                     className={cn("p-3 rounded-lg border flex items-start gap-3 hover:bg-muted/30 transition-colors",
                       issue.severity === 'critical' ? 'border-destructive/30 bg-destructive/5' :
@@ -1048,7 +1024,7 @@ export default function SEOContentHubPage() {
             </div>
 
             <div className="space-y-3">
-              {MOCK_COMPETITORS.map((comp, idx) => (
+              {REFERENCE_COMPETITORS.map((comp, idx) => (
                 <motion.div key={comp.domain} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.08 }}>
                   <Card className="hover:shadow-md transition-all">
                     <CardContent className="p-4">
