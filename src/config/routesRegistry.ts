@@ -31,6 +31,8 @@ export const ROUTES_REGISTRY: RouteConfig[] = [
   { path: '/store', protected: false, category: 'public', description: 'Boutique Shopify', implemented: true },
   { path: '/academy', protected: false, category: 'public', description: 'Académie', implemented: true },
   { path: '/guides/getting-started', protected: false, category: 'public', description: 'Guide démarrage', implemented: true },
+  { path: '/tracking', protected: false, category: 'public', description: 'Suivi de commande brandé', implemented: true, label: 'Suivi commande' },
+  { path: '/tracking/:orderNumber', protected: false, category: 'public', description: 'Page de suivi brandée par commande', implemented: true },
 
   // ===== CORE =====
   { path: '/dashboard', protected: true, category: 'core', description: 'Tableau de bord', implemented: true },
