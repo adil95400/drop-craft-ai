@@ -87,27 +87,15 @@ function ScoreRing({ score, size = 64, strokeWidth = 5, label }: { score: number
   );
 }
 
-// ─── Mock data for enterprise features ──────────────────────────────
-const MOCK_KEYWORDS = [
-  { keyword: 'dropshipping france', volume: 12100, difficulty: 45, position: 8, change: 3, cpc: 1.2, intent: 'informational', url: '/guide-dropshipping', trend: [30, 35, 42, 38, 45, 52, 48, 55, 60, 65, 58, 62] },
-  { keyword: 'fournisseur dropshipping', volume: 8100, difficulty: 52, position: 12, change: -2, cpc: 2.1, intent: 'commercial', url: '/suppliers', trend: [20, 25, 28, 32, 35, 30, 38, 42, 40, 45, 48, 50] },
-  { keyword: 'shopify dropshipping', volume: 6600, difficulty: 68, position: 24, change: 5, cpc: 3.5, intent: 'transactional', url: '/integrations/shopify', trend: [15, 18, 22, 20, 25, 30, 28, 35, 38, 40, 42, 45] },
-  { keyword: 'automatiser boutique en ligne', volume: 3200, difficulty: 35, position: 5, change: 1, cpc: 1.8, intent: 'informational', url: '/features', trend: [10, 12, 15, 18, 20, 22, 25, 28, 30, 32, 35, 38] },
-  { keyword: 'produit gagnant 2026', volume: 14800, difficulty: 72, position: 18, change: -4, cpc: 0.9, intent: 'informational', url: '/blog/produits-gagnants', trend: [50, 55, 60, 65, 70, 75, 80, 85, 90, 88, 82, 78] },
-  { keyword: 'outil seo ecommerce', volume: 2900, difficulty: 42, position: 3, change: 2, cpc: 4.2, intent: 'commercial', url: '/marketing/seo', trend: [8, 10, 12, 15, 18, 20, 22, 25, 28, 30, 32, 35] },
-  { keyword: 'optimiser fiche produit', volume: 4400, difficulty: 38, position: 6, change: 0, cpc: 2.0, intent: 'informational', url: '/blog/optimiser-fiches', trend: [12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34] },
-  { keyword: 'ia ecommerce', volume: 5500, difficulty: 55, position: 15, change: 7, cpc: 3.8, intent: 'commercial', url: '/features/ai', trend: [5, 8, 12, 18, 25, 32, 40, 48, 55, 60, 65, 70] },
-];
-
-const MOCK_SERP_FEATURES = [
-  { type: 'Featured Snippet', count: 3, keywords: ['dropshipping france', 'optimiser fiche produit', 'automatiser boutique'] },
-  { type: 'People Also Ask', count: 7, keywords: ['fournisseur dropshipping', 'shopify dropshipping'] },
-  { type: 'Image Pack', count: 2, keywords: ['produit gagnant 2026'] },
-  { type: 'Video Carousel', count: 1, keywords: ['tutoriel dropshipping'] },
+// ─── Static competitor reference data (no DB table available) ────────
+const REFERENCE_COMPETITORS = [
+  { domain: 'oberlo.com', visibility: 78, keywords: 1240, traffic: 450000, overlap: 34 },
+  { domain: 'dsers.com', visibility: 65, keywords: 890, traffic: 280000, overlap: 28 },
+  { domain: 'spocket.co', visibility: 58, keywords: 620, traffic: 180000, overlap: 22 },
 ];
 
 // Deterministic ranking/traffic data using seeded values
-const MOCK_RANKING_HISTORY = Array.from({ length: 30 }, (_, i) => {
+const RANKING_HISTORY = Array.from({ length: 30 }, (_, i) => {
   const seed = (i + 1) * 7;
   return {
     date: new Date(Date.now() - (29 - i) * 86400000).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
@@ -117,7 +105,7 @@ const MOCK_RANKING_HISTORY = Array.from({ length: 30 }, (_, i) => {
   };
 });
 
-const MOCK_TRAFFIC_DATA = Array.from({ length: 30 }, (_, i) => {
+const TRAFFIC_DATA = Array.from({ length: 30 }, (_, i) => {
   const seed = (i + 1) * 11;
   return {
     date: new Date(Date.now() - (29 - i) * 86400000).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
@@ -126,32 +114,6 @@ const MOCK_TRAFFIC_DATA = Array.from({ length: 30 }, (_, i) => {
     direct: 80 + (seed % 30),
   };
 });
-
-const MOCK_CONTENT_CALENDAR = [
-  { id: '1', title: 'Guide: Top 10 produits gagnants 2026', status: 'scheduled', date: '2026-03-28', type: 'blog', keywords: ['produit gagnant', 'dropshipping'], priority: 'high' },
-  { id: '2', title: 'Comment automatiser sa logistique', status: 'draft', date: '2026-04-02', type: 'blog', keywords: ['automatiser', 'logistique'], priority: 'medium' },
-  { id: '3', title: 'Optimisation SEO fiches produits [Vidéo]', status: 'in_progress', date: '2026-04-05', type: 'video', keywords: ['seo', 'fiche produit'], priority: 'high' },
-  { id: '4', title: 'Étude de cas: +300% trafic en 3 mois', status: 'idea', date: '2026-04-10', type: 'case_study', keywords: ['étude de cas', 'trafic'], priority: 'low' },
-  { id: '5', title: 'Newsletter: Tendances IA e-commerce', status: 'scheduled', date: '2026-04-01', type: 'newsletter', keywords: ['ia', 'tendances'], priority: 'medium' },
-  { id: '6', title: 'Infographie: Entonnoir de conversion', status: 'idea', date: '2026-04-15', type: 'infographic', keywords: ['conversion', 'entonnoir'], priority: 'low' },
-];
-
-const MOCK_COMPETITORS = [
-  { domain: 'oberlo.com', visibility: 78, keywords: 1240, traffic: 450000, overlap: 34 },
-  { domain: 'dsers.com', visibility: 65, keywords: 890, traffic: 280000, overlap: 28 },
-  { domain: 'spocket.co', visibility: 58, keywords: 620, traffic: 180000, overlap: 22 },
-];
-
-const MOCK_TECHNICAL_ISSUES = [
-  { id: '1', category: 'performance', severity: 'critical', title: 'LCP > 4s sur 12 pages produits', pages: 12, recommendation: 'Optimiser les images et utiliser le lazy loading' },
-  { id: '2', category: 'indexation', severity: 'warning', title: '8 pages orphelines détectées', pages: 8, recommendation: 'Ajouter des liens internes vers ces pages' },
-  { id: '3', category: 'contenu', severity: 'critical', title: '23 descriptions produits dupliquées', pages: 23, recommendation: 'Réécrire avec l\'IA pour du contenu unique' },
-  { id: '4', category: 'technique', severity: 'warning', title: 'Balises H1 manquantes sur 5 pages', pages: 5, recommendation: 'Ajouter des titres H1 optimisés' },
-  { id: '5', category: 'mobile', severity: 'info', title: 'Boutons trop petits sur mobile (3 pages)', pages: 3, recommendation: 'Augmenter la taille des zones cliquables' },
-  { id: '6', category: 'schema', severity: 'warning', title: 'Données structurées manquantes (Product)', pages: 35, recommendation: 'Ajouter le schema Product JSON-LD' },
-  { id: '7', category: 'performance', severity: 'critical', title: 'CLS > 0.25 sur les pages catégories', pages: 6, recommendation: 'Définir les dimensions des images et iframes' },
-  { id: '8', category: 'sécurité', severity: 'info', title: 'Mixed content sur 2 pages', pages: 2, recommendation: 'Passer toutes les ressources en HTTPS' },
-];
 
 // ─── Main Component ─────────────────────────────────────────────────
 export default function SEOContentHubPage() {
