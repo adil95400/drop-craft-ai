@@ -263,7 +263,7 @@ export function AppRoutes() {
           <Route path="/profile" element={<Protected><ProfilePage /></Protected>} />
           <Route path="/subscription" element={<Protected><SubscriptionDashboard /></Protected>} />
           <Route path="/choose-plan" element={<Protected><ChoosePlanPage /></Protected>} />
-          <Route path="/api/documentation" element={<Protected><APIDocumentationPage /></Protected>} />
+          <Route path="/api/documentation" element={<Navigate to="/api-docs" replace />} />
           
           {/* Ads Spy - redirect to research */}
           <Route path="/ads-spy" element={<Navigate to="/research/ads" replace />} />
