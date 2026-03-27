@@ -102,7 +102,7 @@ export const PricingPreviewSection = memo(({ onNavigate }: PricingPreviewSection
                     )}
                   </div>
                   {isAnnual && (
-                    <p className="text-xs text-muted-foreground">Billed ${price * 12}/year</p>
+                    <p className="text-xs text-muted-foreground">Billed €{price * 12}/year</p>
                   )}
                 </CardHeader>
                 <CardContent className="space-y-4">
