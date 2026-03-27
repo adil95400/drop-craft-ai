@@ -280,7 +280,7 @@ export function AppRoutes() {
           <Route path="/knowledge-base" element={<Protected><KnowledgeBasePage /></Protected>} />
           <Route path="/support" element={<Protected><SupportMainPage /></Protected>} />
           <Route path="/support/chat" element={<Protected><SupportMainPage /></Protected>} />
-          <Route path="/api-documentation" element={<Protected><APIDocumentationPage /></Protected>} />
+          <Route path="/api-documentation" element={<Navigate to="/api-docs" replace />} />
           
           {/* Sitemap */}
           <Route path="/sitemap" element={<Protected><Sitemap /></Protected>} />

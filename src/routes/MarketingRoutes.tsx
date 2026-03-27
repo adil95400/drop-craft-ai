@@ -86,8 +86,6 @@ export function MarketingRoutes() {
       <Route path="seo/multilingual" element={<MultilingualSEOPage />} />
       <Route path="seo/content-hub" element={<SEOContentHubPage />} />
       
-      {/* Creative Studio */}
-      <Route path="creative-studio" element={<CreativeStudioPage />} />
       
       {/* Legacy redirects */}
       <Route path="crm-ultra-pro" element={<Navigate to="/crm" replace />} />

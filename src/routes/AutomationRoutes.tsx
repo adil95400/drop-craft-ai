@@ -56,8 +56,8 @@ export function AutomationRoutes() {
       <Route path="triggers" element={<TriggersManagerPage />} />
       
       {/* AI Tools - Redirect to content generation */}
-      <Route path="ai" element={<ContentGenerationPage />} />
-      <Route path="ai-studio" element={<ContentGenerationPage />} />
+      <Route path="ai" element={<Navigate to="/ai/content" replace />} />
+      <Route path="ai-studio" element={<Navigate to="/ai/content" replace />} />
       
       {/* Auto-Fulfillment */}
       <Route path="fulfillment" element={<AutoFulfillmentPage />} />

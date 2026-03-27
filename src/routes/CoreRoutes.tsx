@@ -27,16 +27,13 @@ export function CoreRoutes() {
   return (
     <Routes>
       <Route index element={<DashboardHome />} />
-      <Route path="profile" element={<ProfilePage />} />
       <Route path="settings" element={<ChannableSettingsPage />} />
       <Route path="store/builder" element={<AIStoreBuilderHub />} />
       <Route path="invoices" element={<BrandingInvoicesHub />} />
       <Route path="pod" element={<PrintOnDemandHub />} />
       <Route path="research/intelligence" element={<CompetitiveIntelligenceHub />} />
-      <Route path="sync-manager" element={<SyncManagerPage />} />
       <Route path="marketplace-sync" element={<StoreSyncDashboard />} />
       <Route path="multi-store" element={<StoreDashboard />} />
-      <Route path="notifications" element={<NotificationsPage />} />
       <Route path="notifications/email-templates" element={<EmailTemplatesPage />} />
       <Route path="notifications/webhooks" element={<WebhooksOutgoingPage />} />
       <Route path="stock" element={<StockManagement />} />
