@@ -28,7 +28,6 @@ const LoyaltyProgramPage = lazy(() => import('@/pages/LoyaltyProgramPage'));
 const CouponsManagementPage = lazy(() => import('@/pages/CouponsManagementPage'));
 const MarketingCalendarPage = lazy(() => import('@/pages/MarketingCalendarPage'));
 const SocialCommercePage = lazy(() => import('@/pages/SocialCommercePage'));
-const CreativeStudioPage = lazy(() => import('@/pages/ContentGenerationPage'));
 const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage'));
 const UpsellCrossSellPage = lazy(() => import('@/pages/marketing/UpsellCrossSellPage'));
 
