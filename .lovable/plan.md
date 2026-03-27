@@ -1,63 +1,85 @@
 
 
-# Audit des doublons — Pages, imports et routes
+# Audit d'Organisation, Synchronisation et Cohérence Inter-Pages
 
-## Doublons identifiés
+## Constat Global
 
-### 1. Imports lazy dupliqués (même page importée dans plusieurs fichiers routes)
-
-| Page | Importée dans | Impact |
-|------|--------------|--------|
-| `NotificationsPage` | `index.tsx` + `CoreRoutes.tsx` | Double import, double route (`/notifications` + `/dashboard/notifications`) |
-| `SyncManagerPage` | `index.tsx` + `CoreRoutes.tsx` | Double route (`/sync-manager` + `/dashboard/sync-manager`) |
-| `ProfilePage` | `index.tsx` + `CoreRoutes.tsx` | Double route (`/profile` + `/dashboard/profile`) |
-| `CatalogIntelligencePage` | `index.tsx` + `AIRoutes.tsx` | Double route (`/catalog-intelligence` + `/ai/catalog`) |
-| `APIDocumentationPage` | `index.tsx` + `IntegrationRoutes.tsx` | Double route (`/api-documentation` + `/integrations/api/docs`) |
-| `ContentGenerationPage` | `AIRoutes.tsx` + `MarketingRoutes.tsx` + `AutomationRoutes.tsx` | Triple import (3 modules) |
-| `OnboardingWizardPage` | `index.tsx` (from `@/pages/OnboardingWizardPage`) + `CoreRoutes.tsx` (from `@/pages/onboarding/OnboardingWizardPage`) | Possiblement 2 fichiers différents — à vérifier |
-
-### 2. Routes accessibles par 2 chemins différents (doublons fonctionnels)
-
-| Fonctionnalité | Route 1 | Route 2 | Action |
-|----------------|---------|---------|--------|
-| Notifications | `/notifications` | `/dashboard/notifications` | Supprimer de CoreRoutes |
-| Profil | `/profile` | `/dashboard/profile` | Supprimer de CoreRoutes |
-| Sync Manager | `/sync-manager` | `/dashboard/sync-manager` | Supprimer de CoreRoutes |
-| Catalog Intelligence | `/catalog-intelligence` | `/ai/catalog` | Rediriger `/catalog-intelligence` → `/ai/catalog` |
-| API Documentation | `/api-documentation` | `/api/documentation` + `/api-docs` | Garder `/api-docs`, supprimer les autres |
-| ContentGeneration | `/ai/content` + `/ai/studio` + `/marketing/content` + `/automation/ai-studio` | 4 routes → même page | Garder `/ai/content`, rediriger les autres |
-
-### 3. MarketingRoutes — Double import identique
-
-```typescript
-const CreativeStudioPage = lazy(() => import('@/pages/ContentGenerationPage'));  // doublon
-const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage')); // identique
-```
-Deux variables différentes pointant vers le même fichier.
+L'application est **bien structurée architecturalement** (routing modulaire, stores Zustand, contextes React, services découplés). Cependant, plusieurs problèmes de cohérence et de synchronisation subsistent.
 
 ---
 
-## Plan de nettoyage
+## Problèmes Identifiés
 
-### Étape 1 — Nettoyer CoreRoutes.tsx
-Retirer les imports et routes déjà gérés dans `index.tsx` :
-- `ProfilePage`, `NotificationsPage`, `SyncManagerPage`
+### 1. Données mock résiduelles (2 pages)
+- **`TriggersManagerPage.tsx`** : utilise `MOCK_TRIGGERS` — données statiques non connectées à la DB
+- **`SEOContentHubPage.tsx`** : 6 tableaux `MOCK_*` (keywords, SERP, competitors, calendar, technical issues, ranking/traffic)
 
-### Étape 2 — Dédupliquer les routes standalone dans index.tsx  
-- `/catalog-intelligence` → `Navigate` vers `/ai/catalog`
-- `/api-documentation` → `Navigate` vers `/api-docs`
-- Supprimer l'import `APIDocumentationPage` de `index.tsx` (garder dans `IntegrationRoutes`)
+### 2. `Math.random()` dans le code de production (67 fichiers)
+Encore **565 occurrences** de `Math.random()` dans le code. Beaucoup sont légitimes (génération d'ID), mais certaines produisent des données aléatoires affichées à l'utilisateur :
+- **`TopWinnersSection.tsx`** : engagement_score et running_days aléatoires
+- **`XMLConfigDialog.tsx`** : productCount aléatoire
+- **`MobileOptimizer.tsx`** : métriques device simulées
+- **`useCatalogHealth.ts`** : score de santé avec variation random
+- **`useSmartDecisionEngine.ts`** : `avg_latency_ms` aléatoire
+- **`SEOAnalyticsService.ts`** : CPC aléatoire
 
-### Étape 3 — Nettoyer MarketingRoutes.tsx
-- Supprimer le double import `CreativeStudioPage` (utiliser `ContentGenerationPage` uniquement)
+### 3. Contextes Auth dupliqués
+5 fichiers de contexte auth coexistent :
+- `AuthContext.tsx`, `LightAuthContext.tsx`, `UnifiedAuthContext.tsx`, `PlanContext.tsx` + `NavigationContext.tsx`
+- Risque de désynchronisation de l'état utilisateur entre pages
 
-### Étape 4 — Consolider ContentGenerationPage
-- Garder l'import dans `AIRoutes.tsx` comme source primaire
-- Dans `MarketingRoutes` et `AutomationRoutes`, remplacer par `Navigate` vers `/ai/content`
+### 4. Hooks massifs non consolidés
+**508 hooks** dans `src/hooks/` — beaucoup de doublons fonctionnels :
+- `useReviews` + `useRealReviews` + `useReviewManagement` + `useProductReviews`
+- `useAnalytics` + `useRealAnalytics` + `useAdvancedAnalytics` + `useAdvancedAnalyticsDashboard`
+- `useImport` + `useRealImportMethods` + `useOptimizedImport` + `useRobustImport` + `useBulkImport`
+- `usePriceRules` + `usePricingRules` + `useRepricingRules` + `useDynamicPricingRules`
 
-### Fichiers modifiés
-- `src/routes/CoreRoutes.tsx` — retrait de 3 imports/routes dupliqués
-- `src/routes/index.tsx` — remplacement de 2 routes par des redirections
-- `src/routes/MarketingRoutes.tsx` — suppression du double import
-- `src/routes/AutomationRoutes.tsx` — redirection vers `/ai/content`
+### 5. Synchronisation inter-pages
+Le **CrossModuleEventBus** est en place et fonctionnel (import → pricing → stock → marketing). Cependant :
+- Seulement **13 fichiers** l'utilisent sur 150+ pages
+- La plupart des pages fonctionnent en isolation (pas de réactivité croisée)
+- Le `useSyncStore` n'est utilisé que dans `useAutoSync` — pas propagé aux autres modules
+
+---
+
+## Plan de Correction
+
+### Étape 1 — Supprimer les mocks résiduels (2 fichiers)
+- **`TriggersManagerPage.tsx`** : connecter à la table `automation_workflows` (type = trigger)
+- **`SEOContentHubPage.tsx`** : remplacer les 6 `MOCK_*` par des données déterministes ou des requêtes DB (`seo_scores`, `products`)
+
+### Étape 2 — Corriger les `Math.random()` affichés à l'utilisateur (6 fichiers)
+Remplacer par des valeurs déterministes (hash-based) ou des requêtes DB :
+- `TopWinnersSection.tsx` → hash du titre
+- `XMLConfigDialog.tsx` → compter les produits réels
+- `MobileOptimizer.tsx` → API navigator réelle
+- `useCatalogHealth.ts` → supprime la variation random
+- `useSmartDecisionEngine.ts` → latence depuis `api_analytics`
+- `SEOAnalyticsService.ts` → CPC déterministe
+
+### Étape 3 — Étendre le CrossModuleEventBus aux pages clés
+Connecter les modules isolés au bus d'événements pour une synchronisation réactive :
+- **Orders** → émettre `orders.created` quand une commande est passée
+- **Stock** → écouter `orders.created` pour décrémenter
+- **Pricing** → écouter `products.imported` pour appliquer les règles auto
+- **Marketing** → écouter `products.updated` pour mettre à jour les campagnes
+
+### Étape 4 — Consolider les hooks dupliqués (optionnel, refactor lourd)
+Créer des hooks unifiés qui délèguent aux services existants, puis déprécier les anciens.
+
+---
+
+## Résumé d'Impact
+
+| Axe | Fichiers | Priorité |
+|-----|----------|----------|
+| Mocks résiduels | 2 | Haute |
+| Math.random() visible | 6 | Haute |
+| Bus événements étendu | ~8 | Moyenne |
+| Consolidation hooks | ~20 | Basse (refactor) |
+
+**Estimation** : Étapes 1-3 faisables maintenant. Étape 4 est un refactoring progressif.
+
+Souhaitez-vous que j'implémente les étapes 1 à 3 ?
 
