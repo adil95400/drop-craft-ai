@@ -246,7 +246,7 @@ export function AppRoutes() {
           <Route path="/media-editor" element={<Protected><AdvancedMediaEditorPage /></Protected>} />
           <Route path="/advanced" element={<Protected><AdvancedAnalyticsPage /></Protected>} />
           <Route path="/monitoring" element={<Protected><PerformanceMonitoringPage /></Protected>} />
-          <Route path="/catalog-intelligence" element={<Protected><CatalogIntelligencePage /></Protected>} />
+          <Route path="/catalog-intelligence" element={<Navigate to="/ai/catalog" replace />} />
           <Route path="/coupons" element={<Protected><CouponsManagementPage /></Protected>} />
           <Route path="/trial" element={<Protected><FreeTrialActivationPage /></Protected>} />
           <Route path="/ab-testing" element={<Protected><ABTestingPage /></Protected>} />
