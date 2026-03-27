@@ -137,7 +137,7 @@ export default function SEOContentHubPage() {
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [bulkOptimizeLoading, setBulkOptimizeLoading] = useState(false);
   const [keywordSearch, setKeywordSearch] = useState('');
-  const [selectedKeyword, setSelectedKeyword] = useState<typeof MOCK_KEYWORDS[0] | null>(null);
+  const [selectedKeyword, setSelectedKeyword] = useState<(typeof trackedKeywords)[number] | null>(null);
   const [calendarView, setCalendarView] = useState<'list' | 'calendar'>('list');
   const [activeTab, setActiveTab] = useState('overview');
 
