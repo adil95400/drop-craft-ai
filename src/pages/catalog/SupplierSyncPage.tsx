@@ -22,6 +22,9 @@ import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { AttributeSyncPanel } from '@/components/catalog/AttributeSyncPanel'
+import { MultiSourceEnrichPanel } from '@/components/catalog/MultiSourceEnrichPanel'
+import { AIContentRefreshPanel } from '@/components/catalog/AIContentRefreshPanel'
+import { AutoFallbackPanel } from '@/components/catalog/AutoFallbackPanel'
 
 const fadeUp = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }
 const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } }
