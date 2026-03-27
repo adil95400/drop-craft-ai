@@ -103,7 +103,7 @@ const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard')
 const ChoosePlanPage = lazy(() => import('@/pages/ChoosePlanPage'));
 const BillingPage = lazy(() => import('@/pages/BillingPage'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
-const APIDocumentationPage = lazy(() => import('@/pages/APIDocumentationPage'));
+
 const ApiDocsPage = lazy(() => import('@/pages/api/ApiDocsPage'));
 
 // Loading components
