@@ -16,6 +16,9 @@ serve(async (req) => {
 
     const { action, ...params } = await req.json();
 
+    // Ensure tables exist
+    await ensureTables(supabase);
+
     switch (action) {
       case "check_changes": return await checkChanges(supabase, params);
       case "apply_change": return await applyChange(supabase, params);
