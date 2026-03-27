@@ -252,7 +252,7 @@ export default function SEOContentHubPage() {
                   </Badge>
                 </CardContent>
               </Card>
-              <KpiCard icon={<Crosshair className="h-4 w-4" />} label="Mots-clés suivis" value={MOCK_KEYWORDS.length} trend={12} sub={`${kwStats.top10} en Top 10`} />
+              <KpiCard icon={<Crosshair className="h-4 w-4" />} label="Mots-clés suivis" value={trackedKeywords.length} trend={12} sub={`${kwStats.top10} en Top 10`} />
               <KpiCard icon={<TrendingUp className="h-4 w-4" />} label="Trafic organique" value="2.4K" trend={18} sub="vs mois dernier" />
               <KpiCard icon={<Package className="h-4 w-4" />} label="Produits scorés" value={stats.totalProductsScored || 47} trend={-3} sub={`${stats.lowSeoProducts || 12} à corriger`} alert />
               <KpiCard icon={<FileText className="h-4 w-4" />} label="Articles publiés" value={stats.publishedPosts || 8} trend={25} sub={`${stats.aiGenerated || 5} par IA`} />
@@ -274,7 +274,7 @@ export default function SEOContentHubPage() {
                 </CardHeader>
                 <CardContent className="pb-3">
                   <ResponsiveContainer width="100%" height={220}>
-                    <AreaChart data={MOCK_TRAFFIC_DATA.slice(-14)}>
+                    <AreaChart data={TRAFFIC_DATA.slice(-14)}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
                       <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
@@ -322,7 +322,7 @@ export default function SEOContentHubPage() {
                 </CardHeader>
                 <CardContent className="pb-3">
                   <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={MOCK_RANKING_HISTORY.slice(-14)}>
+                    <BarChart data={RANKING_HISTORY.slice(-14)}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} />
                       <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
@@ -380,10 +380,10 @@ export default function SEOContentHubPage() {
           <TabsContent value="keywords" className="space-y-4">
             {/* Keyword KPIs */}
             <div className="grid grid-cols-4 gap-3">
-              <KpiMini icon={<Crosshair className="h-3.5 w-3.5" />} label="Mots-clés suivis" value={MOCK_KEYWORDS.length} sub={`${kwStats.top3} en Top 3`} />
+              <KpiMini icon={<Crosshair className="h-3.5 w-3.5" />} label="Mots-clés suivis" value={trackedKeywords.length} sub={`${kwStats.top3} en Top 3`} />
               <KpiMini icon={<TrendingUp className="h-3.5 w-3.5" />} label="Position moyenne" value={kwStats.avgPos} sub="toutes les requêtes" />
               <KpiMini icon={<MousePointer className="h-3.5 w-3.5" />} label="Volume mensuel" value={kwStats.totalVol.toLocaleString()} sub="recherches cumulées" />
-              <KpiMini icon={<Award className="h-3.5 w-3.5" />} label="Top 10" value={kwStats.top10} sub={`sur ${MOCK_KEYWORDS.length} suivis`} />
+              <KpiMini icon={<Award className="h-3.5 w-3.5" />} label="Top 10" value={kwStats.top10} sub={`sur ${trackedKeywords.length} suivis`} />
             </div>
 
             {/* Search & Actions */}
@@ -786,7 +786,7 @@ export default function SEOContentHubPage() {
                 </div>
 
                 <div className="space-y-2">
-                  {MOCK_CONTENT_CALENDAR.map((item, idx) => (
+                  {contentCalendar.map((item, idx) => (
                     <motion.div key={item.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}>
                       <Card className="hover:shadow-sm transition-all">
                         <CardContent className="py-3 px-4 flex items-center gap-4">
@@ -914,7 +914,7 @@ export default function SEOContentHubPage() {
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="p-3 rounded-xl bg-destructive/10"><Flame className="h-5 w-5 text-destructive" /></div>
                   <div>
-                    <p className="text-2xl font-bold text-destructive">{MOCK_TECHNICAL_ISSUES.filter(i => i.severity === 'critical').length}</p>
+                    <p className="text-2xl font-bold text-destructive">{technicalIssues.filter(i => i.severity === 'critical').length}</p>
                     <p className="text-xs text-muted-foreground">Critiques</p>
                   </div>
                 </CardContent>
@@ -923,7 +923,7 @@ export default function SEOContentHubPage() {
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="p-3 rounded-xl bg-warning/10"><AlertTriangle className="h-5 w-5 text-warning" /></div>
                   <div>
-                    <p className="text-2xl font-bold text-warning">{MOCK_TECHNICAL_ISSUES.filter(i => i.severity === 'warning').length}</p>
+                    <p className="text-2xl font-bold text-warning">{technicalIssues.filter(i => i.severity === 'warning').length}</p>
                     <p className="text-xs text-muted-foreground">Avertissements</p>
                   </div>
                 </CardContent>
@@ -932,7 +932,7 @@ export default function SEOContentHubPage() {
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="p-3 rounded-xl bg-muted"><Lightbulb className="h-5 w-5 text-muted-foreground" /></div>
                   <div>
-                    <p className="text-2xl font-bold">{MOCK_TECHNICAL_ISSUES.filter(i => i.severity === 'info').length}</p>
+                    <p className="text-2xl font-bold">{technicalIssues.filter(i => i.severity === 'info').length}</p>
                     <p className="text-xs text-muted-foreground">Infos</p>
                   </div>
                 </CardContent>
@@ -941,7 +941,7 @@ export default function SEOContentHubPage() {
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="p-3 rounded-xl bg-muted"><Layers className="h-5 w-5" /></div>
                   <div>
-                    <p className="text-2xl font-bold">{MOCK_TECHNICAL_ISSUES.reduce((a, i) => a + i.pages, 0)}</p>
+                    <p className="text-2xl font-bold">{technicalIssues.reduce((a, i) => a + i.pages, 0)}</p>
                     <p className="text-xs text-muted-foreground">Pages affectées</p>
                   </div>
                 </CardContent>
@@ -957,7 +957,7 @@ export default function SEOContentHubPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                {MOCK_TECHNICAL_ISSUES.map((issue, idx) => (
+                {technicalIssues.map((issue, idx) => (
                   <motion.div key={issue.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.04 }}
                     className={cn("p-3 rounded-lg border flex items-start gap-3 hover:bg-muted/30 transition-colors",
                       issue.severity === 'critical' ? 'border-destructive/30 bg-destructive/5' :
@@ -1012,7 +1012,7 @@ export default function SEOContentHubPage() {
             </div>
 
             <div className="space-y-3">
-              {MOCK_COMPETITORS.map((comp, idx) => (
+              {REFERENCE_COMPETITORS.map((comp, idx) => (
                 <motion.div key={comp.domain} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.08 }}>
                   <Card className="hover:shadow-md transition-all">
                     <CardContent className="p-4">
