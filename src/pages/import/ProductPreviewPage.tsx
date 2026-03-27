@@ -3,7 +3,8 @@
  * Replaces the modal version with a dedicated route
  */
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, useParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -145,11 +146,72 @@ function CollapsibleCard({ title, icon: Icon, badge, children, defaultOpen = tru
 export default function ProductPreviewPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const params = useParams<{ id?: string }>()
+  const productId = params.id
+  const isEditMode = !!productId
+
   const { product, returnTo, queuedItemId } = (location.state || {}) as {
     product?: ProductPreviewData
     returnTo?: string
     queuedItemId?: string
   }
+
+  // DB loading for edit mode (/products/:id)
+  const { data: dbProduct, isLoading: isLoadingDb } = useQuery({
+    queryKey: ['product-preview', productId],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', productId!)
+        .eq('user_id', user.id)
+        .single()
+      if (error) throw error
+      // Convert DB product to ProductPreviewData
+      const images: string[] = []
+      if (data.images && Array.isArray(data.images)) {
+        images.push(...(data.images as string[]))
+      } else if (data.image_url) {
+        images.push(data.image_url)
+      }
+      return {
+        title: data.title || data.name || '',
+        description: data.description || '',
+        price: data.cost_price || data.price || 0,
+        currency: 'EUR',
+        suggested_price: data.price || 0,
+        profit_margin: data.profit_margin || 0,
+        images,
+        brand: data.brand || data.vendor || '',
+        vendor: data.vendor || '',
+        sku: data.sku || '',
+        platform_detected: data.source_url ? 'importé' : 'manuel',
+        source_url: data.source_url || '',
+        variants: Array.isArray(data.variants) ? data.variants as any[] : [],
+        videos: [],
+        extracted_reviews: [],
+        reviews: { rating: null, count: null },
+        specifications: {},
+        category: data.category || data.product_type || '',
+        subcategory: '',
+        product_type: data.product_type || '',
+        tags: Array.isArray(data.tags) ? data.tags as string[] : [],
+        original_price: data.compare_at_price,
+        handle: (data as any).handle || '',
+        stock_quantity: data.stock_quantity || 0,
+        seo: {
+          metaTitle: data.seo_title || '',
+          metaDescription: data.seo_description || '',
+          keywords: Array.isArray((data as any).seo_keywords) ? (data as any).seo_keywords as string[] : [],
+        },
+      } as ProductPreviewData
+    },
+    enabled: isEditMode && !product,
+  })
+
+  const initialProduct = product || dbProduct
 
   const [editedProduct, setEditedProduct] = useState<ProductPreviewData | null>(null)
   const [selectedImages, setSelectedImages] = useState<Set<number>>(new Set())
@@ -165,22 +227,19 @@ export default function ProductPreviewPage() {
   const [isImporting, setIsImporting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [productStatus, setProductStatus] = useState('draft')
-  const [category, setCategory] = useState(product?.category || product?.product_type || '')
-  const [subcategory, setSubcategory] = useState(product?.subcategory || '')
-  const [tags, setTags] = useState<string[]>(product?.tags || [])
+  const [category, setCategory] = useState('')
+  const [subcategory, setSubcategory] = useState('')
+  const [tags, setTags] = useState<string[]>([])
   const [suggestedCategories, setSuggestedCategories] = useState<{category: string, subcategory: string, confidence: number}[]>([])
   const [showAddReview, setShowAddReview] = useState(false)
   const [newReview, setNewReview] = useState({ customer_name: '', rating: 5, title: '', comment: '', verified_purchase: false })
 
   useEffect(() => {
-    if (!product) {
-      navigate(returnTo || '/import/autods')
-      return
-    }
-    const originalCount = product.images?.length || 0
-    const uniqueImages = deduplicateImages(product.images || [])
+    if (!initialProduct) return
+    const originalCount = initialProduct.images?.length || 0
+    const uniqueImages = deduplicateImages(initialProduct.images || [])
     setDuplicatesRemoved(originalCount - uniqueImages.length)
-    const rawBrand = product.brand ? cleanHtmlEntities(product.brand) : ''
+    const rawBrand = initialProduct.brand ? cleanHtmlEntities(initialProduct.brand) : ''
     const cleanedBrand = rawBrand
       .replace(/^Marque\s*:\s*/i, '')
       .replace(/^Brand\s*:\s*/i, '')
@@ -188,13 +247,32 @@ export default function ProductPreviewPage() {
       .replace(/^Visit\s*the\s*/i, '')
       .replace(/\s*Store$/i, '')
       .trim()
-    setEditedProduct({ ...product, images: uniqueImages, brand: cleanedBrand })
+    setEditedProduct({ ...initialProduct, images: uniqueImages, brand: cleanedBrand })
     setSelectedImages(new Set(uniqueImages.map((_, i) => i)))
     setMainImageIndex(0)
     setFailedImages(new Set())
-  }, [product])
+    setCategory(initialProduct.category || initialProduct.product_type || '')
+    setSubcategory(initialProduct.subcategory || '')
+    setTags(initialProduct.tags || [])
+    if (isEditMode) {
+      setProductStatus(initialProduct.stock_quantity != null && initialProduct.stock_quantity > 0 ? 'active' : 'draft')
+    }
+  }, [initialProduct])
 
-  if (!editedProduct) return null
+  if (isLoadingDb && isEditMode) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (!editedProduct) {
+    if (!isEditMode) {
+      navigate(returnTo || '/import/autods')
+    }
+    return null
+  }
 
   const optimizeWithAI = async (field: 'title' | 'description') => {
     const setter = field === 'title' ? setIsOptimizingTitle : setIsOptimizingDesc
@@ -482,7 +560,11 @@ export default function ProductPreviewPage() {
   }
 
   const handleGoBack = () => {
-    navigate(returnTo || '/import/autods')
+    if (isEditMode) {
+      navigate('/products')
+    } else {
+      navigate(returnTo || '/import/autods')
+    }
   }
 
   const handleSave = async () => {
@@ -516,26 +598,33 @@ export default function ProductPreviewPage() {
         stock_quantity: editedProduct.stock_quantity ?? 0,
         status: productStatus,
         profit_margin: marginVal,
-        user_id: user.id,
       }
 
-      const { data: insertedProduct, error } = await supabase.from('products').insert(productData).select('id').single()
-      if (error) throw error
+      if (isEditMode && productId) {
+        // Update existing product
+        const { error } = await supabase.from('products').update(productData).eq('id', productId).eq('user_id', user.id)
+        if (error) throw error
+        toast({
+          title: '✅ Produit mis à jour',
+          description: `"${editedProduct.title}" a été sauvegardé`,
+        })
+      } else {
+        // Insert new product
+        const { data: insertedProduct, error } = await supabase.from('products').insert({ ...productData, user_id: user.id }).select('id').single()
+        if (error) throw error
 
-      // Save reviews
-      const reviewsCount = await saveReviewsToDb(
-        insertedProduct.id, user.id,
-        editedProduct.extracted_reviews || [],
-        editedProduct.source_url || '', editedProduct.platform_detected
-      )
+        const reviewsCount = await saveReviewsToDb(
+          insertedProduct.id, user.id,
+          editedProduct.extracted_reviews || [],
+          editedProduct.source_url || '', editedProduct.platform_detected
+        )
+        await createImportJobRecord(user.id, editedProduct.platform_detected, editedProduct.source_url || '', editedProduct.title, reviewsCount, true)
 
-      // Create job record for history
-      await createImportJobRecord(user.id, editedProduct.platform_detected, editedProduct.source_url || '', editedProduct.title, reviewsCount, true)
-
-      toast({
-        title: '✅ Produit sauvegardé',
-        description: `"${editedProduct.title}" a été enregistré${reviewsCount > 0 ? ` avec ${reviewsCount} avis` : ''}`,
-      })
+        toast({
+          title: '✅ Produit sauvegardé',
+          description: `"${editedProduct.title}" a été enregistré${reviewsCount > 0 ? ` avec ${reviewsCount} avis` : ''}`,
+        })
+      }
       navigate(returnTo || '/products')
     } catch (err) {
       toast({
@@ -568,9 +657,14 @@ export default function ProductPreviewPage() {
             <h1 className="text-base font-semibold truncate max-w-[400px]">
               {editedProduct.title?.slice(0, 60) || 'Nouveau produit'}
             </h1>
-            <Badge variant="outline" className="capitalize text-xs">
-              {editedProduct.platform_detected}
-            </Badge>
+            {!isEditMode && (
+              <Badge variant="outline" className="capitalize text-xs">
+                {editedProduct.platform_detected}
+              </Badge>
+            )}
+            {isEditMode && (
+              <Badge variant="secondary" className="text-xs">Édition</Badge>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Select value={productStatus} onValueChange={setProductStatus}>
@@ -580,35 +674,38 @@ export default function ProductPreviewPage() {
               <SelectContent>
                 <SelectItem value="draft">Brouillon</SelectItem>
                 <SelectItem value="active">Actif</SelectItem>
+                <SelectItem value="archived">Archivé</SelectItem>
               </SelectContent>
             </Select>
             <Button
               onClick={handleSave}
               disabled={isSaving}
               size="sm"
-              variant="outline"
-              className="gap-1.5"
+              className="bg-primary hover:bg-primary/90 shadow-sm gap-1.5"
             >
               {isSaving ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              Sauvegarder
+              {isEditMode ? 'Mettre à jour' : 'Sauvegarder'}
             </Button>
-            <Button
-              onClick={handleConfirm}
-              disabled={isImporting || validSelectedCount === 0}
-              size="sm"
-              className="bg-primary hover:bg-primary/90 shadow-sm gap-1.5"
-            >
-              {isImporting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <ShoppingCart className="h-4 w-4" />
-              )}
-              Importer le produit
-            </Button>
+            {!isEditMode && (
+              <Button
+                onClick={handleConfirm}
+                disabled={isImporting || validSelectedCount === 0}
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+              >
+                {isImporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ShoppingCart className="h-4 w-4" />
+                )}
+                Importer le produit
+              </Button>
+            )}
           </div>
         </div>
 
@@ -1458,12 +1555,12 @@ export default function ProductPreviewPage() {
                 </Card>
               )}
 
-              {/* ── Import Summary ── */}
+              {/* ── Summary ── */}
               <Card className="border-primary/30 shadow-sm bg-primary/5">
                 <CardContent className="p-4 space-y-2">
                   <h4 className="text-sm font-semibold flex items-center gap-2">
                     <BarChart3 className="h-4 w-4 text-primary" />
-                    Résumé de l'import
+                    {isEditMode ? 'Résumé du produit' : "Résumé de l'import"}
                   </h4>
                   <div className="space-y-1.5 text-xs">
                     <div className="flex justify-between">
@@ -1495,19 +1592,19 @@ export default function ProductPreviewPage() {
                   </div>
                   <Separator className="my-2" />
                   <Button
-                    onClick={handleConfirm}
-                    disabled={isImporting || validSelectedCount === 0}
+                    onClick={isEditMode ? handleSave : handleConfirm}
+                    disabled={isEditMode ? isSaving : (isImporting || validSelectedCount === 0)}
                     className="w-full bg-primary hover:bg-primary/90 shadow-sm"
                   >
-                    {isImporting ? (
+                    {(isEditMode ? isSaving : isImporting) ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Import en cours...
+                        {isEditMode ? 'Mise à jour...' : 'Import en cours...'}
                       </>
                     ) : (
                       <>
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        Confirmer l'import
+                        {isEditMode ? <Save className="h-4 w-4 mr-2" /> : <ShoppingCart className="h-4 w-4 mr-2" />}
+                        {isEditMode ? 'Mettre à jour le produit' : "Confirmer l'import"}
                       </>
                     )}
                   </Button>
