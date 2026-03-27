@@ -706,7 +706,6 @@ export default function ProductPreviewPage() {
                 Importer le produit
               </Button>
             )}
-            </Button>
           </div>
         </div>
 
