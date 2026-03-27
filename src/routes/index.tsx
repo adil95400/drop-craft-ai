@@ -80,7 +80,7 @@ const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'
 const AcademyHomePage = lazy(() => import('@/pages/academy/AcademyHomePage'));
 const AcademyCoursePage = lazy(() => import('@/pages/academy/AcademyCoursePage'));
 const SupportMainPage = lazy(() => import('@/pages/support/SupportMainPage'));
-const CatalogIntelligencePage = lazy(() => import('@/pages/catalog/CatalogIntelligencePage'));
+
 const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
 const PageBuilderPage = lazy(() => import('@/pages/PageBuilderPage'));
 const PageEditorPage = lazy(() => import('@/pages/PageEditorPage'));
