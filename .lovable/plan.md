@@ -1,106 +1,63 @@
 
 
-# Audit Compétitif Complet — Drop Craft AI vs Concurrents
+# Audit des doublons — Pages, imports et routes
 
-## Concurrents analysés
-AutoDS, DSers, ShopOpti+, Zendrop, Oberlo (legacy), CJDropshipping, Spocket
+## Doublons identifiés
 
-## Résultat Global
+### 1. Imports lazy dupliqués (même page importée dans plusieurs fichiers routes)
 
-Drop Craft AI couvre **~95% des fonctionnalités** offertes par les concurrents. L'application est significativement plus complète que la plupart des outils individuels. Voici l'analyse détaillée par domaine :
+| Page | Importée dans | Impact |
+|------|--------------|--------|
+| `NotificationsPage` | `index.tsx` + `CoreRoutes.tsx` | Double import, double route (`/notifications` + `/dashboard/notifications`) |
+| `SyncManagerPage` | `index.tsx` + `CoreRoutes.tsx` | Double route (`/sync-manager` + `/dashboard/sync-manager`) |
+| `ProfilePage` | `index.tsx` + `CoreRoutes.tsx` | Double route (`/profile` + `/dashboard/profile`) |
+| `CatalogIntelligencePage` | `index.tsx` + `AIRoutes.tsx` | Double route (`/catalog-intelligence` + `/ai/catalog`) |
+| `APIDocumentationPage` | `index.tsx` + `IntegrationRoutes.tsx` | Double route (`/api-documentation` + `/integrations/api/docs`) |
+| `ContentGenerationPage` | `AIRoutes.tsx` + `MarketingRoutes.tsx` + `AutomationRoutes.tsx` | Triple import (3 modules) |
+| `OnboardingWizardPage` | `index.tsx` (from `@/pages/OnboardingWizardPage`) + `CoreRoutes.tsx` (from `@/pages/onboarding/OnboardingWizardPage`) | Possiblement 2 fichiers différents — à vérifier |
 
----
+### 2. Routes accessibles par 2 chemins différents (doublons fonctionnels)
 
-## Pages COMPLÈTES (au niveau ou supérieures aux concurrents)
+| Fonctionnalité | Route 1 | Route 2 | Action |
+|----------------|---------|---------|--------|
+| Notifications | `/notifications` | `/dashboard/notifications` | Supprimer de CoreRoutes |
+| Profil | `/profile` | `/dashboard/profile` | Supprimer de CoreRoutes |
+| Sync Manager | `/sync-manager` | `/dashboard/sync-manager` | Supprimer de CoreRoutes |
+| Catalog Intelligence | `/catalog-intelligence` | `/ai/catalog` | Rediriger `/catalog-intelligence` → `/ai/catalog` |
+| API Documentation | `/api-documentation` | `/api/documentation` + `/api-docs` | Garder `/api-docs`, supprimer les autres |
+| ContentGeneration | `/ai/content` + `/ai/studio` + `/marketing/content` + `/automation/ai-studio` | 4 routes → même page | Garder `/ai/content`, rediriger les autres |
 
-| Domaine | Pages | Verdict |
-|---------|-------|---------|
-| **Dashboard** | `/dashboard` — KPIs, alertes, vue unifiée | Complet |
-| **Import produits** | `/import` — URL, bulk, feed, CSV, AI, multi-store | Supérieur (multi-source + IA) |
-| **Fiche produit** | `/products/:id` — édition inline, SEO, variantes, scoring | Supérieur (scoring santé, IA granulaire) |
-| **Catalogue** | `/catalog/*` — santé, variantes, médias, attributs, déduplication | Supérieur (7 sous-pages d'audit) |
-| **Fournisseurs** | `/suppliers/*` — hub, mapping, fallback, scoring | Supérieur (multi-fournisseurs + fallback auto) |
-| **Sync continue** | `/catalog/supplier-sync` — attributs, multi-source, IA, fallback | Supérieur (unique sur le marché) |
-| **Commandes** | `/orders` — centre, détail, création, bulk, auto-order | Complet |
-| **Auto-fulfillment** | `/automation/fulfillment` — routing, 1-click, tracking | Complet |
-| **Pricing** | `/catalog/pricing-engine`, `/pricing-manager` — règles, repricing | Complet |
-| **Stock** | `/stock/*` — inventaire, entrepôts, mouvements, alertes | Complet |
-| **Marketing** | `/marketing/*` — ads, email, SEO, loyalty, upsell, panier abandonné | Complet |
-| **Analytics** | `/analytics/*` — prédictif, BI, compétitif, forecasting | Supérieur |
-| **Automatisation** | `/automation/*` — workflows, triggers, prix/stock auto | Complet |
-| **IA** | `/ai/*` — assistant, contenu, optimisation, actions auto | Supérieur |
-| **Intégrations** | `/integrations`, `/stores-channels` — multi-boutique | Complet |
-| **Expédition** | `/shipping` — zones, tarifs, calculateur, règles | Complet |
-| **Retours** | `/returns` — portail client, workflow | Complet |
-| **Avis** | `/reviews` — gestion des avis | Complet |
-| **Settings** | `/settings/*` — équipe, webhooks, 2FA, export, domaine | Complet |
-| **Enterprise** | `/enterprise/*` — API, observabilité, déploiement | Supérieur |
+### 3. MarketingRoutes — Double import identique
 
----
-
-## Lacunes identifiées (5% restant)
-
-### 1. Notifications push / alertes mobiles
-- **Concurrents** : AutoDS et DSers envoient des push notifications (rupture stock, commande échouée, changement prix)
-- **Drop Craft AI** : Page `/notifications` existe mais pas de système de push temps réel (email/SMS/push browser)
-- **Impact** : Moyen
-
-### 2. Extension navigateur Chrome
-- **Concurrents** : AutoDS, DSers, ShopOpti+ ont une extension Chrome pour importer en 1 clic depuis AliExpress/Amazon
-- **Drop Craft AI** : Page `/import/extension` existe mais l'extension elle-même n'est pas livrée (c'est un projet séparé)
-- **Impact** : Faible (hors scope webapp)
-
-### 3. Cashback / wallet fournisseur
-- **Concurrents** : Zendrop et CJ proposent un wallet intégré avec cashback sur commandes
-- **Drop Craft AI** : Non implémenté
-- **Impact** : Faible (modèle business différent)
-
-### 4. Chat fournisseur intégré
-- **Concurrents** : CJDropshipping a un chat direct avec les fournisseurs dans l'app
-- **Drop Craft AI** : Pas de messagerie fournisseur directe
-- **Impact** : Moyen
-
-### 5. Branded tracking page
-- **Concurrents** : AutoDS, Zendrop offrent une page de suivi brandée pour les clients finaux
-- **Drop Craft AI** : Le tracking existe mais pas de page publique brandée personnalisable
-- **Impact** : Moyen-élevé (différenciateur UX client final)
+```typescript
+const CreativeStudioPage = lazy(() => import('@/pages/ContentGenerationPage'));  // doublon
+const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage')); // identique
+```
+Deux variables différentes pointant vers le même fichier.
 
 ---
 
-## Recommandation de priorité
+## Plan de nettoyage
 
-Les 3 lacunes à combler pour une parité complète :
+### Étape 1 — Nettoyer CoreRoutes.tsx
+Retirer les imports et routes déjà gérés dans `index.tsx` :
+- `ProfilePage`, `NotificationsPage`, `SyncManagerPage`
 
-1. **Page de suivi brandée** — Page publique `/tracking/:orderNumber` avec le branding du marchand, timeline de livraison, carte, et upsell produits
-2. **Notifications push navigateur** — Intégrer les Web Push Notifications pour alertes critiques (rupture, commande échouée, changement prix)
-3. **Chat/messagerie fournisseur** — Système de communication intégré avec les fournisseurs connectés
+### Étape 2 — Dédupliquer les routes standalone dans index.tsx  
+- `/catalog-intelligence` → `Navigate` vers `/ai/catalog`
+- `/api-documentation` → `Navigate` vers `/api-docs`
+- Supprimer l'import `APIDocumentationPage` de `index.tsx` (garder dans `IntegrationRoutes`)
 
----
+### Étape 3 — Nettoyer MarketingRoutes.tsx
+- Supprimer le double import `CreativeStudioPage` (utiliser `ContentGenerationPage` uniquement)
 
-## Plan d'implémentation (si approuvé)
+### Étape 4 — Consolider ContentGenerationPage
+- Garder l'import dans `AIRoutes.tsx` comme source primaire
+- Dans `MarketingRoutes` et `AutomationRoutes`, remplacer par `Navigate` vers `/ai/content`
 
-### Étape 1 — Branded Tracking Page
-- Créer `/tracking/:orderNumber` (page publique sans auth)
-- Timeline visuelle du statut de livraison
-- Carte de progression du colis
-- Branding personnalisable (logo, couleurs du marchand)
-- Section recommandations produits (upsell)
-
-### Étape 2 — Web Push Notifications
-- Intégrer l'API Push du navigateur
-- Edge Function pour envoyer les notifications
-- Configuration dans Settings (types d'alertes activables)
-- Triggers : rupture stock, commande échouée, changement prix fournisseur
-
-### Étape 3 — Messagerie Fournisseur
-- Interface de chat dans la fiche fournisseur
-- Historique des conversations
-- Notifications de nouveaux messages
-
-### Fichiers à créer/modifier
-- `src/pages/tracking/BrandedTrackingPage.tsx` (nouveau)
-- `src/hooks/usePushNotifications.ts` (nouveau)
-- `src/components/suppliers/SupplierChat.tsx` (nouveau)
-- `supabase/functions/send-push-notification/index.ts` (nouveau)
-- Routes et navigation mises à jour
+### Fichiers modifiés
+- `src/routes/CoreRoutes.tsx` — retrait de 3 imports/routes dupliqués
+- `src/routes/index.tsx` — remplacement de 2 routes par des redirections
+- `src/routes/MarketingRoutes.tsx` — suppression du double import
+- `src/routes/AutomationRoutes.tsx` — redirection vers `/ai/content`
 
