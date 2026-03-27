@@ -173,12 +173,20 @@ export default function SupplierSyncPage() {
           </Card>
         </motion.div>
 
-        <Tabs defaultValue="suppliers" className="space-y-4">
+        <Tabs defaultValue="sync-changes" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="sync-changes">
+              <GitCompare className="h-3.5 w-3.5 mr-1" />
+              Sync Continue
+            </TabsTrigger>
             <TabsTrigger value="suppliers">Fournisseurs</TabsTrigger>
-            <TabsTrigger value="mapping">Mapping Produits</TabsTrigger>
+            <TabsTrigger value="mapping">Mapping</TabsTrigger>
             <TabsTrigger value="alerts">Alertes Stock</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="sync-changes">
+            <AttributeSyncPanel />
+          </TabsContent>
 
           <TabsContent value="suppliers" className="space-y-4">
             {supplierCards.length === 0 ? (
