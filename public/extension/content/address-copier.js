@@ -1,7 +1,7 @@
 /**
  * ShopOpti+ Pro - Address Copier
  * Copie automatique des adresses de livraison pour les commandes
- * Version: 6.0.0
+ * Version: 7.0.0
  */
 
 (function() {

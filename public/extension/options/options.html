@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopOpti+ Pro — Paramètres avancés</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #8B5CF6;
+      --primary-hover: #7C3AED;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --bg: #0F0F11;
+      --bg-card: #1A1A1F;
+      --bg-hover: #25252B;
+      --text: #FFFFFF;
+      --text-muted: #9CA3AF;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      padding: 0;
+    }
+    .container { max-width: 720px; margin: 0 auto; padding: 40px 24px; }
+    .header {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 40px; padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .header svg { width: 48px; height: 48px; }
+    .header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+    .header .version {
+      font-size: 12px; color: var(--text-muted);
+      padding: 4px 10px; background: var(--bg-card);
+      border-radius: 20px; margin-left: auto;
+    }
+
+    .section { margin-bottom: 32px; }
+    .section-title {
+      font-size: 13px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 16px;
+    }
+    .card {
+      background: var(--bg-card); border-radius: 16px;
+      border: 1px solid var(--border); overflow: hidden;
+    }
+    .setting-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px; border-bottom: 1px solid var(--border);
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-label { font-weight: 500; }
+    .setting-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Toggle switch */
+    .switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; inset: 0; background: #333; border-radius: 24px;
+      cursor: pointer; transition: 0.3s;
+    }
+    .slider::before {
+      content: ''; position: absolute; width: 18px; height: 18px;
+      left: 3px; bottom: 3px; background: white; border-radius: 50%;
+      transition: 0.3s;
+    }
+    .switch input:checked + .slider { background: var(--primary); }
+    .switch input:checked + .slider::before { transform: translateX(20px); }
+
+    /* Inputs */
+    input[type="number"], select {
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); padding: 8px 12px; border-radius: 8px;
+      font-size: 14px; width: 120px;
+    }
+    input[type="number"]:focus, select:focus {
+      outline: none; border-color: var(--primary);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 12px 24px; border-radius: 10px; border: none;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #6366F1);
+      color: white;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(139,92,246,0.4); }
+    .btn-secondary {
+      background: var(--bg-card); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .actions { display: flex; gap: 12px; margin-top: 32px; }
+
+    .status-bar {
+      margin-top: 16px; padding: 12px 16px;
+      background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2);
+      border-radius: 10px; color: var(--success); font-size: 13px;
+      display: none;
+    }
+    .status-bar.visible { display: block; }
+    .status-bar.error { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: var(--danger); }
+
+    .info-box {
+      padding: 16px 20px; background: rgba(139,92,246,0.08);
+      border: 1px solid rgba(139,92,246,0.2); border-radius: 12px;
+      font-size: 13px; color: var(--text-muted); line-height: 1.6;
+    }
+    .info-box strong { color: var(--text); }
+
+    .keyboard-shortcut {
+      display: inline-block; padding: 2px 8px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; font-size: 12px; font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <svg viewBox="0 0 48 48">
+        <circle cx="24" cy="24" r="22" fill="url(#og)"/>
+        <path d="M14 24l7 7 13-13" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <defs><linearGradient id="og" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8B5CF6"/><stop offset="100%" stop-color="#6366F1"/></linearGradient></defs>
+      </svg>
+      <div>
+        <h1>ShopOpti+ Pro</h1>
+        <div style="font-size:13px;color:var(--text-muted);">Paramètres avancés de l'extension</div>
+      </div>
+      <span class="version">v7.0.0</span>
+    </div>
+
+    <!-- Import Settings -->
+    <div class="section">
+      <div class="section-title">⚙️ Import</div>
+      <div class="card">
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Import automatique</div>
+            <div class="setting-desc">Importer automatiquement les produits détectés</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="opt-auto-import"><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Marge de prix par défaut (%)</div>
+            <div class="setting-desc">Marge appliquée au prix d'achat lors de l'import</div>
+          </div>
+          <input type="number" id="opt-margin" value="30" min="0" max="500">
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Arrondi de prix</div>
+            <div class="setting-desc">Règle d'arrondi pour les prix calculés</div>
+          </div>
+          <select id="opt-rounding">
+            <option value="ceil_99">X,99 €</option>
+            <option value="ceil">Arrondi supérieur</option>
+            <option value="round">Arrondi normal</option>
+            <option value="floor">Arrondi inférieur</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Importer les avis</div>
+            <div class="setting-desc">Extraire et importer les avis clients avec le produit</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="opt-import-reviews" checked><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Importer les vidéos</div>
+            <div class="setting-desc">Extraire les vidéos produit quand disponibles</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="opt-import-videos" checked><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="section">
+      <div class="section-title">🔔 Notifications</div>
+      <div class="card">
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Notifications système</div>
+            <div class="setting-desc">Afficher les notifications Chrome pour les imports</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="opt-notifications" checked><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Son de notification</div>
+            <div class="setting-desc">Jouer un son lors d'un import réussi</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="opt-sound"><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Avancé -->
+    <div class="section">
+      <div class="section-title">🛠 Avancé</div>
+      <div class="card">
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Mode debug</div>
+            <div class="setting-desc">Afficher les logs détaillés dans la console</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="opt-debug"><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Bouton flottant</div>
+            <div class="setting-desc">Afficher le bouton "+ ShopOpti" sur les pages produit</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="opt-float-btn" checked><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Raccourcis -->
+    <div class="section">
+      <div class="section-title">⌨️ Raccourcis clavier</div>
+      <div class="info-box">
+        <strong>Ouvrir ShopOpti+ :</strong> <span class="keyboard-shortcut">Ctrl+Shift+O</span><br>
+        <strong>Import rapide :</strong> <span class="keyboard-shortcut">Ctrl+Shift+I</span><br><br>
+        Modifiez les raccourcis dans <code>chrome://extensions/shortcuts</code>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="save-btn">💾 Sauvegarder</button>
+      <button class="btn btn-secondary" id="sync-btn">🔄 Synchroniser avec ShopOpti</button>
+      <button class="btn btn-danger" id="reset-btn">Réinitialiser</button>
+    </div>
+
+    <div class="status-bar" id="status-bar"></div>
+  </div>
+
+  <script>
+    const DEFAULTS = {
+      autoImport: false, priceMargin: 30, roundingRule: 'ceil_99',
+      notifications: true, sound: false, importReviews: true,
+      importVideos: true, debugLogs: false, floatButton: true
+    };
+
+    const els = {
+      autoImport: document.getElementById('opt-auto-import'),
+      margin: document.getElementById('opt-margin'),
+      rounding: document.getElementById('opt-rounding'),
+      reviews: document.getElementById('opt-import-reviews'),
+      videos: document.getElementById('opt-import-videos'),
+      notifications: document.getElementById('opt-notifications'),
+      sound: document.getElementById('opt-sound'),
+      debug: document.getElementById('opt-debug'),
+      floatBtn: document.getElementById('opt-float-btn'),
+      saveBtn: document.getElementById('save-btn'),
+      syncBtn: document.getElementById('sync-btn'),
+      resetBtn: document.getElementById('reset-btn'),
+      statusBar: document.getElementById('status-bar')
+    };
+
+    function showStatus(msg, isError = false) {
+      els.statusBar.textContent = msg;
+      els.statusBar.className = 'status-bar visible' + (isError ? ' error' : '');
+      setTimeout(() => els.statusBar.className = 'status-bar', 3000);
+    }
+
+    async function loadSettings() {
+      const result = await chrome.storage.local.get(['shopopti_settings']);
+      const s = result.shopopti_settings || DEFAULTS;
+      els.autoImport.checked = s.autoImport || false;
+      els.margin.value = s.priceMargin || 30;
+      els.rounding.value = s.roundingRule || 'ceil_99';
+      els.reviews.checked = s.importReviews !== false;
+      els.videos.checked = s.importVideos !== false;
+      els.notifications.checked = s.notifications !== false;
+      els.sound.checked = s.sound || false;
+      els.debug.checked = s.debugLogs || false;
+      els.floatBtn.checked = s.floatButton !== false;
+    }
+
+    async function saveSettings() {
+      const settings = {
+        autoImport: els.autoImport.checked,
+        priceMargin: parseInt(els.margin.value) || 30,
+        roundingRule: els.rounding.value,
+        importReviews: els.reviews.checked,
+        importVideos: els.videos.checked,
+        notifications: els.notifications.checked,
+        sound: els.sound.checked,
+        debugLogs: els.debug.checked,
+        floatButton: els.floatBtn.checked
+      };
+      await chrome.storage.local.set({ shopopti_settings: settings });
+      showStatus('✓ Paramètres sauvegardés');
+    }
+
+    els.saveBtn.addEventListener('click', saveSettings);
+
+    els.syncBtn.addEventListener('click', async () => {
+      els.syncBtn.disabled = true;
+      els.syncBtn.textContent = '⏳ Synchronisation...';
+      try {
+        const response = await chrome.runtime.sendMessage({ action: 'sync_settings' });
+        showStatus(response?.success ? '✓ Synchronisé avec ShopOpti' : '✗ ' + (response?.error || 'Erreur'), !response?.success);
+      } catch (e) {
+        showStatus('✗ ' + e.message, true);
+      }
+      els.syncBtn.disabled = false;
+      els.syncBtn.textContent = '🔄 Synchroniser avec ShopOpti';
+    });
+
+    els.resetBtn.addEventListener('click', async () => {
+      if (!confirm('Réinitialiser tous les paramètres par défaut ?')) return;
+      await chrome.storage.local.set({ shopopti_settings: DEFAULTS });
+      await loadSettings();
+      showStatus('✓ Paramètres réinitialisés');
+    });
+
+    loadSettings();
+  </script>
+</body>
+</html>
