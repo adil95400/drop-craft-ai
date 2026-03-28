@@ -171,13 +171,29 @@ function extractTitle(html: string, md: string, platform: string): string {
     const t = html.match(/id="productTitle"[^>]*>([^<]+)/i)?.[1]?.trim()
     if (t) return t
   }
+  if (platform === 'aliexpress') {
+    const t = html.match(/class="product-title[^"]*"[^>]*>([^<]+)/i)?.[1]?.trim()
+    if (t) return t
+    const at = html.match(/data-pl="product-title"[^>]*>([^<]+)/i)?.[1]?.trim()
+    if (at) return at
+  }
   // JSON-LD
   for (const m of html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)) { try { const d = JSON.parse(m[1].replace(/<\/?script[^>]*>/gi, '')); if (d.name) return d.name; if (d['@graph']) for (const i of d['@graph']) if (i.name) return i.name } catch {} }
   const og = html.match(/og:title"[^>]*content="([^"]+)"/i)
   if (og) return og[1].replace(/\s*[-|].*$/, '').trim()
   const ht = html.match(/<title[^>]*>([^<]+)<\/title>/i)
   if (ht) return ht[1].replace(/\s*[-|].*$/, '').trim()
-  if (md) { const mt = md.match(/^#\s+(.+)$/m); if (mt) return mt[1].trim() }
+  // Markdown title extraction (critical for Jina fallback)
+  if (md) {
+    const mt = md.match(/^#\s+(.+)$/m)
+    if (mt && mt[1].length > 5 && mt[1].length < 300) return mt[1].trim()
+    // Look for bold title patterns in markdown
+    const bt = md.match(/\*\*([^*]{10,200})\*\*/m)
+    if (bt) return bt[1].trim()
+    // First meaningful line
+    const lines = md.split('\n').map(l => l.trim()).filter(l => l.length > 10 && l.length < 300 && !l.startsWith('http') && !l.startsWith('[') && !l.startsWith('!')  && !/^\d+$/.test(l))
+    if (lines.length > 0) return lines[0].replace(/^#+\s*/, '').trim()
+  }
   return 'Produit importé'
 }
 
@@ -197,12 +213,26 @@ function extractPrice(html: string, md: string, platform: string): { price: numb
     // Original price
     const op = html.match(/a-text-price[^>]*>[\s\S]{0,100}?<span[^>]*>([^<]{1,20})/i) || html.match(/a-text-strike[^>]*>([^<]{1,20})/i)
     if (op) { const e = parseMoney(op[1]); if (e > price) originalPrice = e }
+  } else if (platform === 'aliexpress') {
+    // AliExpress specific price patterns
+    const ap = html.match(/actSkuCalPrice['"]\s*:\s*['"]([\d.]+)['"]/i) || html.match(/skuAmount['"]\s*:\s*\{[^}]*["']value['"]\s*:\s*['"]([\d.]+)['"]/i) || html.match(/formatedActivityPrice['"]\s*:\s*['"]([\d.]+)['"]/i) || html.match(/minAmount['"]\s*:\s*\{[^}]*["']value['"]\s*:\s*['"]([\d.]+)['"]/i)
+    if (ap) price = parseMoney(ap[1])
+    if (!price) { const pp = html.match(/product:price:amount"[^>]*content="([\d,.]+)"/i); if (pp) price = parseMoney(pp[1]) }
+    // Markdown price for AliExpress
+    if (!price && md) { const mp = md.match(/(?:€|EUR|US\s*\$|\$)\s*(\d{1,5}[,.]?\d{0,2})/i) || md.match(/(\d{1,5}[,.]?\d{2})\s*(?:€|EUR)/i); if (mp) price = parseMoney(mp[1]) }
+    const cm = html.match(/product:price:currency"[^>]*content="([^"]+)"/i)
+    if (cm) currency = cm[1].toUpperCase()
+    else currency = 'USD'
   } else {
     const pm = html.match(/product:price:amount"[^>]*content="([\d,.]+)"/i) || html.match(/price[^>]*>[\s]*[€$£]?\s*([\d,.]+)/i)
     if (pm) price = parseMoney(pm[1])
     const cm = html.match(/product:price:currency"[^>]*content="([^"]+)"/i)
     if (cm) currency = cm[1].toUpperCase()
-    if (!currency || currency === 'EUR') { if (platform === 'aliexpress') currency = 'USD' }
+  }
+  // Markdown price fallback for any platform
+  if (!price && md) {
+    const mp = md.match(/(?:€|EUR)\s*(\d{1,5}[,.]?\d{0,2})/i) || md.match(/(\d{1,5}[,.]?\d{2})\s*€/i) || md.match(/\$\s*(\d{1,5}[,.]?\d{0,2})/i) || md.match(/(\d{1,5}[,.]?\d{2})\s*(?:USD|GBP|£)/i)
+    if (mp) price = parseMoney(mp[1])
   }
   return { price, currency, originalPrice }
 }
@@ -296,37 +326,67 @@ async function scrapeShopify(url: string, handle: string | null): Promise<any | 
   } catch { return null }
 }
 
+function normalizeAliExpressUrl(url: string, productId: string | null): string {
+  if (productId) return `https://www.aliexpress.com/item/${productId}.html`
+  return url.replace(/\/\/[a-z]{2}\.aliexpress/i, '//www.aliexpress')
+}
+
 async function scrapeProduct(url: string, platform: string, productId?: string | null): Promise<any> {
-  const effectiveUrl = platform === 'amazon' ? canonicalizeAmazonUrl(url, productId || null) : url
+  const effectiveUrl = platform === 'amazon' ? canonicalizeAmazonUrl(url, productId || null)
+    : platform === 'aliexpress' ? normalizeAliExpressUrl(url, productId || null) : url
   if (platform === 'shopify') { const sd = await scrapeShopify(url, productId || null); if (sd) return { source_url: url, platform, scraped_at: new Date().toISOString(), ...sd } }
 
   const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
   let html = '', markdown = ''
+  const urlsToTry = [effectiveUrl, ...(effectiveUrl !== url ? [url] : [])]
 
+  // Strategy 1: Firecrawl (best for JS-heavy sites)
   if (firecrawlKey) {
-    for (const tryUrl of [effectiveUrl, ...(effectiveUrl !== url ? [url] : [])]) {
+    for (const tryUrl of urlsToTry) {
       try {
-        const r = await fetch('https://api.firecrawl.dev/v1/scrape', { method: 'POST', headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ url: tryUrl, formats: ['html', 'markdown', 'rawHtml'], onlyMainContent: false, waitFor: platform === 'amazon' ? 8000 : 5000 }) })
+        const waitMs = platform === 'amazon' ? 8000 : platform === 'aliexpress' ? 10000 : 5000
+        const r = await fetch('https://api.firecrawl.dev/v1/scrape', { method: 'POST', headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ url: tryUrl, formats: ['html', 'markdown', 'rawHtml'], onlyMainContent: false, waitFor: waitMs }) })
         if (r.ok) { const d = await r.json(); const ch = d.data?.rawHtml || d.data?.html || ''; const cm = d.data?.markdown || ''; if (ch.length > 5000 && !isBlocked(ch)) { html = ch; markdown = cm; break } else if (ch.length > html.length) { html = ch; markdown = cm } } else { await r.text() }
       } catch {}
     }
   }
 
+  // Strategy 2: Direct fetch with Chrome UA
   if (!html || html.length < 5000 || isBlocked(html)) {
+    for (const tryUrl of urlsToTry) {
+      try {
+        const r = await fetch(tryUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7', 'Accept-Encoding': 'gzip, deflate, br', 'Sec-Fetch-Dest': 'document', 'Sec-Fetch-Mode': 'navigate', 'Sec-Fetch-Site': 'none', 'Sec-Ch-Ua': '"Chromium";v="131", "Google Chrome";v="131"', 'Sec-Ch-Ua-Mobile': '?0', 'Sec-Ch-Ua-Platform': '"Windows"', 'Upgrade-Insecure-Requests': '1', 'Cache-Control': 'max-age=0' }, redirect: 'follow' })
+        if (r.ok) { const fh = await r.text(); if (fh.length > html.length && !isBlocked(fh)) { html = fh; break } } else { await r.text() }
+      } catch {}
+    }
+  }
+
+  // Strategy 3: Jina Reader fallback for ALL platforms (not just Amazon)
+  if (!html || html.length < 5000 || isBlocked(html)) {
+    const jinaUrl = effectiveUrl
     try {
-      const r = await fetch(effectiveUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Accept': 'text/html,application/xhtml+xml', 'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8', 'Sec-Fetch-Dest': 'document', 'Sec-Fetch-Mode': 'navigate' }, redirect: 'follow' })
-      if (r.ok) { const fh = await r.text(); if (fh.length > html.length && !isBlocked(fh)) html = fh } else { await r.text() }
+      const r = await fetch(`https://r.jina.ai/${jinaUrl}`, { headers: { 'Accept': 'text/plain', 'X-Return-Format': 'markdown' } })
+      if (r.ok) { const t = await r.text(); if (t.length > 500) { if (t.length > markdown.length) markdown = t; console.log(`[Jina] Got ${t.length} chars for ${platform}`) } } else { await r.text() }
     } catch {}
   }
 
-  // Jina fallback for Amazon
-  if ((!html || html.length < 5000 || isBlocked(html)) && platform === 'amazon') {
-    try { const r = await fetch(`https://r.jina.ai/${effectiveUrl}`, { headers: { Accept: 'text/plain' } }); if (r.ok) { const t = await r.text(); if (t.length > markdown.length) markdown = t } else { await r.text() } } catch {}
+  // Strategy 4: For AliExpress, try mobile API endpoint
+  if (platform === 'aliexpress' && (!html || html.length < 5000 || isBlocked(html)) && productId) {
+    try {
+      const mobileUrl = `https://m.aliexpress.com/item/${productId}.html`
+      const r = await fetch(mobileUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1', 'Accept': 'text/html', 'Accept-Language': 'fr-FR,fr;q=0.9' }, redirect: 'follow' })
+      if (r.ok) { const mh = await r.text(); if (mh.length > html.length && !isBlocked(mh)) html = mh } else { await r.text() }
+    } catch {}
   }
 
   if ((!html || html.length < 500) && markdown.length > 500) html = markdown
-  if (!html || html.length < 500) throw new Error(`Impossible de récupérer la page (${platform}). Réessayez.`)
-  if (isBlocked(html) && markdown.length < 500) throw new Error(`Le site ${platform} a bloqué la requête (anti-bot). Réessayez.`)
+  if (!html || html.length < 500) {
+    // Last resort: try to extract from markdown if available
+    if (markdown.length > 200) html = markdown
+    else throw new Error(`Impossible de récupérer la page (${platform}). Le site bloque probablement les requêtes automatiques. Essayez avec une URL différente ou importez manuellement.`)
+  }
+  if (isBlocked(html) && markdown.length > 500) { html = markdown }
+  if (isBlocked(html) && markdown.length < 500) throw new Error(`Le site ${platform} a bloqué la requête (anti-bot). Réessayez dans quelques minutes.`)
 
   const priceData = extractPrice(html, markdown, platform)
   const desc = html.match(/og:description"[^>]*content="([^"]+)"/i)?.[1]?.trim()?.replace(/&amp;/g, '&').replace(/&quot;/g, '"').slice(0, 5000) || ''
