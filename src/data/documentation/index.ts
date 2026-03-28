@@ -95,6 +95,10 @@ export {
   webhookManagementDocumentation,
   dataExportDocumentation,
   notificationPreferencesDocumentation,
+  extensionChromeDocumentation,
+  stripeBillingDocumentation,
+  priceMonitoringDocumentation,
+  returnsAutomationDocumentation,
 };
 
 // Re-export types
