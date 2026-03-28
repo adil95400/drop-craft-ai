@@ -124,10 +124,24 @@ async function tiktokApiRequest(
   const baseUrl = TIKTOK_API_BASE_URLS[region] || TIKTOK_API_BASE_URLS.US
   const timestamp = Math.floor(Date.now() / 1000)
   
+  const appKey = Deno.env.get('TIKTOK_APP_KEY') || ''
+  const appSecret = Deno.env.get('TIKTOK_APP_SECRET') || ''
+  
   const url = new URL(`${baseUrl}${endpoint}`)
-  url.searchParams.set('app_key', Deno.env.get('TIKTOK_APP_KEY') || '')
-  url.searchParams.set('timestamp', timestamp.toString())
-  url.searchParams.set('shop_id', shopId)
+  const queryParams: Record<string, string> = {
+    app_key: appKey,
+    timestamp: timestamp.toString(),
+    shop_id: shopId,
+  }
+  
+  Object.entries(queryParams).forEach(([k, v]) => url.searchParams.set(k, v))
+  
+  // Generate HMAC signature if app_secret is configured
+  const bodyStr = body ? JSON.stringify(body) : undefined
+  if (appSecret) {
+    const sign = await generateTikTokSignature(appSecret, endpoint, timestamp, queryParams, bodyStr)
+    url.searchParams.set('sign', sign)
+  }
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -139,7 +153,7 @@ async function tiktokApiRequest(
   const response = await fetch(url.toString(), {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: bodyStr,
   })
   
   const data = await response.json()
