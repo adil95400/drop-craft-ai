@@ -116,3 +116,11 @@
 - [x] Blue-green deployment (manual trigger, slot-based with smoke tests)
 - [x] Database backup verification (Edge Function + data inventory + integrity score)
 - [x] API versioning strategy (X-Api-Version header, v1/v2 routing, deprecation headers)
+
+## Sprint 7 — Competitive Parity & Market-Ready
+- [x] Competitor price monitoring (Firecrawl scraping + confidence scoring + cron endpoint)
+- [x] Auto-repricing from competitor data (margin floor + max change guard)
+- [x] Media enrichment multi-source (collect, score, deduplicate, AI enhance)
+- [x] TikTok Shop integration (connect, publish, sync, orders, HMAC-SHA256 signing)
+- [x] Returns & RMA automation (rule-based auto-approve, label gen, supplier returns)
+- [x] Frontend service layers (CompetitorMonitoring, MediaEnrichment, TikTokShop, ReturnsAutomation)
