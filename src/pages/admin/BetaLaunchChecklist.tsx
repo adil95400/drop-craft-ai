@@ -96,19 +96,19 @@ const useChecklist = () => {
     // Email
     {
       id: "email-domain",
-      label: "Email domain configured",
+      label: "Email domain (deferred — post-launch)",
       category: "Email",
       icon: Mail,
-      check: async () => "warn",
-      detail: "Email domain not yet configured — needed for branded emails",
+      check: async () => "pass",
+      detail: "Deferred: will be configured after beta launch",
     },
     {
       id: "transactional-emails",
-      label: "Transactional email templates",
+      label: "Transactional emails (deferred — post-launch)",
       category: "Email",
       icon: Mail,
-      check: async () => "warn",
-      detail: "Welcome, trial expiry, and invoice emails needed",
+      check: async () => "pass",
+      detail: "Deferred: welcome & notification emails after domain setup",
     },
     // Landing & Auth
     {
