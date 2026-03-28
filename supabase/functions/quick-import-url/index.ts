@@ -213,12 +213,26 @@ function extractPrice(html: string, md: string, platform: string): { price: numb
     // Original price
     const op = html.match(/a-text-price[^>]*>[\s\S]{0,100}?<span[^>]*>([^<]{1,20})/i) || html.match(/a-text-strike[^>]*>([^<]{1,20})/i)
     if (op) { const e = parseMoney(op[1]); if (e > price) originalPrice = e }
+  } else if (platform === 'aliexpress') {
+    // AliExpress specific price patterns
+    const ap = html.match(/actSkuCalPrice['"]\s*:\s*['"]([\d.]+)['"]/i) || html.match(/skuAmount['"]\s*:\s*\{[^}]*["']value['"]\s*:\s*['"]([\d.]+)['"]/i) || html.match(/formatedActivityPrice['"]\s*:\s*['"]([\d.]+)['"]/i) || html.match(/minAmount['"]\s*:\s*\{[^}]*["']value['"]\s*:\s*['"]([\d.]+)['"]/i)
+    if (ap) price = parseMoney(ap[1])
+    if (!price) { const pp = html.match(/product:price:amount"[^>]*content="([\d,.]+)"/i); if (pp) price = parseMoney(pp[1]) }
+    // Markdown price for AliExpress
+    if (!price && md) { const mp = md.match(/(?:€|EUR|US\s*\$|\$)\s*(\d{1,5}[,.]?\d{0,2})/i) || md.match(/(\d{1,5}[,.]?\d{2})\s*(?:€|EUR)/i); if (mp) price = parseMoney(mp[1]) }
+    const cm = html.match(/product:price:currency"[^>]*content="([^"]+)"/i)
+    if (cm) currency = cm[1].toUpperCase()
+    else currency = 'USD'
   } else {
     const pm = html.match(/product:price:amount"[^>]*content="([\d,.]+)"/i) || html.match(/price[^>]*>[\s]*[€$£]?\s*([\d,.]+)/i)
     if (pm) price = parseMoney(pm[1])
     const cm = html.match(/product:price:currency"[^>]*content="([^"]+)"/i)
     if (cm) currency = cm[1].toUpperCase()
-    if (!currency || currency === 'EUR') { if (platform === 'aliexpress') currency = 'USD' }
+  }
+  // Markdown price fallback for any platform
+  if (!price && md) {
+    const mp = md.match(/(?:€|EUR)\s*(\d{1,5}[,.]?\d{0,2})/i) || md.match(/(\d{1,5}[,.]?\d{2})\s*€/i) || md.match(/\$\s*(\d{1,5}[,.]?\d{0,2})/i) || md.match(/(\d{1,5}[,.]?\d{2})\s*(?:USD|GBP|£)/i)
+    if (mp) price = parseMoney(mp[1])
   }
   return { price, currency, originalPrice }
 }
