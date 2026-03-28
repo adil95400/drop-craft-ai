@@ -27,6 +27,37 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { action, competitor_id, productId, myPrice, competitors } = body;
 
+    // Cron-triggered mode: no auth needed, uses CRON_SECRET
+    if (action === 'cron_refresh') {
+      const cronSecret = req.headers.get('x-cron-secret') || body.cron_secret;
+      if (cronSecret !== Deno.env.get('CRON_SECRET')) {
+        return new Response(JSON.stringify({ error: 'Invalid cron secret' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      // Refresh all active competitors for all users
+      const supabaseAdmin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+      const { data: activeCompetitors } = await supabaseAdmin
+        .from('competitor_profiles')
+        .select('user_id')
+        .eq('is_active', true);
+      
+      const uniqueUsers = [...new Set((activeCompetitors || []).map((c: any) => c.user_id))];
+      const results = [];
+      for (const uid of uniqueUsers) {
+        try {
+          const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+          const result = await handleRefresh(userClient, uid);
+          const r = await result.json();
+          results.push({ user_id: uid, ...r });
+        } catch (e: any) {
+          results.push({ user_id: uid, error: e.message });
+        }
+      }
+      return jsonResponse({ cron: true, users_processed: uniqueUsers.length, results });
+    }
+
     // Legacy mode: direct competitor tracking (old API)
     if (productId && competitors) {
       return handleLegacyTrack(supabase, user.id, productId, myPrice, competitors);
