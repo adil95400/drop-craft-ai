@@ -62,6 +62,10 @@ export const ALL_DOCUMENTATION: ModuleDocumentation[] = [
   webhookManagementDocumentation,
   dataExportDocumentation,
   notificationPreferencesDocumentation,
+  extensionChromeDocumentation,
+  stripeBillingDocumentation,
+  priceMonitoringDocumentation,
+  returnsAutomationDocumentation,
 ];
 
 // Export individual modules
