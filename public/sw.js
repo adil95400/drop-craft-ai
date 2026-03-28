@@ -178,6 +178,9 @@ self.addEventListener('fetch', (event) => {
   // Ignorer les requêtes non-HTTP
   if (!url.protocol.startsWith('http')) return;
 
+  // IMPORTANT: Never cache OAuth redirects
+  if (url.pathname.startsWith('/~oauth')) return;
+
   // IMPORTANT: HTML/Documents -> Network First (pour les mises à jour immédiates)
   if (request.destination === 'document' || request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
