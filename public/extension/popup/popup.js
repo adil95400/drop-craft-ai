@@ -1,6 +1,6 @@
 /**
  * ShopOpti+ Pro - Popup Script
- * Version: 6.0.0
+ * Version: 7.0.0
  * 
  * P3 Features: Preview Pro, Deduplication, AI Merge, Dashboard Sync
  */
