@@ -296,37 +296,67 @@ async function scrapeShopify(url: string, handle: string | null): Promise<any | 
   } catch { return null }
 }
 
+function normalizeAliExpressUrl(url: string, productId: string | null): string {
+  if (productId) return `https://www.aliexpress.com/item/${productId}.html`
+  return url.replace(/\/\/[a-z]{2}\.aliexpress/i, '//www.aliexpress')
+}
+
 async function scrapeProduct(url: string, platform: string, productId?: string | null): Promise<any> {
-  const effectiveUrl = platform === 'amazon' ? canonicalizeAmazonUrl(url, productId || null) : url
+  const effectiveUrl = platform === 'amazon' ? canonicalizeAmazonUrl(url, productId || null)
+    : platform === 'aliexpress' ? normalizeAliExpressUrl(url, productId || null) : url
   if (platform === 'shopify') { const sd = await scrapeShopify(url, productId || null); if (sd) return { source_url: url, platform, scraped_at: new Date().toISOString(), ...sd } }
 
   const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
   let html = '', markdown = ''
+  const urlsToTry = [effectiveUrl, ...(effectiveUrl !== url ? [url] : [])]
 
+  // Strategy 1: Firecrawl (best for JS-heavy sites)
   if (firecrawlKey) {
-    for (const tryUrl of [effectiveUrl, ...(effectiveUrl !== url ? [url] : [])]) {
+    for (const tryUrl of urlsToTry) {
       try {
-        const r = await fetch('https://api.firecrawl.dev/v1/scrape', { method: 'POST', headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ url: tryUrl, formats: ['html', 'markdown', 'rawHtml'], onlyMainContent: false, waitFor: platform === 'amazon' ? 8000 : 5000 }) })
+        const waitMs = platform === 'amazon' ? 8000 : platform === 'aliexpress' ? 10000 : 5000
+        const r = await fetch('https://api.firecrawl.dev/v1/scrape', { method: 'POST', headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ url: tryUrl, formats: ['html', 'markdown', 'rawHtml'], onlyMainContent: false, waitFor: waitMs }) })
         if (r.ok) { const d = await r.json(); const ch = d.data?.rawHtml || d.data?.html || ''; const cm = d.data?.markdown || ''; if (ch.length > 5000 && !isBlocked(ch)) { html = ch; markdown = cm; break } else if (ch.length > html.length) { html = ch; markdown = cm } } else { await r.text() }
       } catch {}
     }
   }
 
+  // Strategy 2: Direct fetch with Chrome UA
   if (!html || html.length < 5000 || isBlocked(html)) {
+    for (const tryUrl of urlsToTry) {
+      try {
+        const r = await fetch(tryUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7', 'Accept-Encoding': 'gzip, deflate, br', 'Sec-Fetch-Dest': 'document', 'Sec-Fetch-Mode': 'navigate', 'Sec-Fetch-Site': 'none', 'Sec-Ch-Ua': '"Chromium";v="131", "Google Chrome";v="131"', 'Sec-Ch-Ua-Mobile': '?0', 'Sec-Ch-Ua-Platform': '"Windows"', 'Upgrade-Insecure-Requests': '1', 'Cache-Control': 'max-age=0' }, redirect: 'follow' })
+        if (r.ok) { const fh = await r.text(); if (fh.length > html.length && !isBlocked(fh)) { html = fh; break } } else { await r.text() }
+      } catch {}
+    }
+  }
+
+  // Strategy 3: Jina Reader fallback for ALL platforms (not just Amazon)
+  if (!html || html.length < 5000 || isBlocked(html)) {
+    const jinaUrl = effectiveUrl
     try {
-      const r = await fetch(effectiveUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Accept': 'text/html,application/xhtml+xml', 'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8', 'Sec-Fetch-Dest': 'document', 'Sec-Fetch-Mode': 'navigate' }, redirect: 'follow' })
-      if (r.ok) { const fh = await r.text(); if (fh.length > html.length && !isBlocked(fh)) html = fh } else { await r.text() }
+      const r = await fetch(`https://r.jina.ai/${jinaUrl}`, { headers: { 'Accept': 'text/plain', 'X-Return-Format': 'markdown' } })
+      if (r.ok) { const t = await r.text(); if (t.length > 500) { if (t.length > markdown.length) markdown = t; console.log(`[Jina] Got ${t.length} chars for ${platform}`) } } else { await r.text() }
     } catch {}
   }
 
-  // Jina fallback for Amazon
-  if ((!html || html.length < 5000 || isBlocked(html)) && platform === 'amazon') {
-    try { const r = await fetch(`https://r.jina.ai/${effectiveUrl}`, { headers: { Accept: 'text/plain' } }); if (r.ok) { const t = await r.text(); if (t.length > markdown.length) markdown = t } else { await r.text() } } catch {}
+  // Strategy 4: For AliExpress, try mobile API endpoint
+  if (platform === 'aliexpress' && (!html || html.length < 5000 || isBlocked(html)) && productId) {
+    try {
+      const mobileUrl = `https://m.aliexpress.com/item/${productId}.html`
+      const r = await fetch(mobileUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1', 'Accept': 'text/html', 'Accept-Language': 'fr-FR,fr;q=0.9' }, redirect: 'follow' })
+      if (r.ok) { const mh = await r.text(); if (mh.length > html.length && !isBlocked(mh)) html = mh } else { await r.text() }
+    } catch {}
   }
 
   if ((!html || html.length < 500) && markdown.length > 500) html = markdown
-  if (!html || html.length < 500) throw new Error(`Impossible de récupérer la page (${platform}). Réessayez.`)
-  if (isBlocked(html) && markdown.length < 500) throw new Error(`Le site ${platform} a bloqué la requête (anti-bot). Réessayez.`)
+  if (!html || html.length < 500) {
+    // Last resort: try to extract from markdown if available
+    if (markdown.length > 200) html = markdown
+    else throw new Error(`Impossible de récupérer la page (${platform}). Le site bloque probablement les requêtes automatiques. Essayez avec une URL différente ou importez manuellement.`)
+  }
+  if (isBlocked(html) && markdown.length > 500) { html = markdown }
+  if (isBlocked(html) && markdown.length < 500) throw new Error(`Le site ${platform} a bloqué la requête (anti-bot). Réessayez dans quelques minutes.`)
 
   const priceData = extractPrice(html, markdown, platform)
   const desc = html.match(/og:description"[^>]*content="([^"]+)"/i)?.[1]?.trim()?.replace(/&amp;/g, '&').replace(/&quot;/g, '"').slice(0, 5000) || ''
