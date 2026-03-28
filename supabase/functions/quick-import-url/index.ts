@@ -171,13 +171,29 @@ function extractTitle(html: string, md: string, platform: string): string {
     const t = html.match(/id="productTitle"[^>]*>([^<]+)/i)?.[1]?.trim()
     if (t) return t
   }
+  if (platform === 'aliexpress') {
+    const t = html.match(/class="product-title[^"]*"[^>]*>([^<]+)/i)?.[1]?.trim()
+    if (t) return t
+    const at = html.match(/data-pl="product-title"[^>]*>([^<]+)/i)?.[1]?.trim()
+    if (at) return at
+  }
   // JSON-LD
   for (const m of html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)) { try { const d = JSON.parse(m[1].replace(/<\/?script[^>]*>/gi, '')); if (d.name) return d.name; if (d['@graph']) for (const i of d['@graph']) if (i.name) return i.name } catch {} }
   const og = html.match(/og:title"[^>]*content="([^"]+)"/i)
   if (og) return og[1].replace(/\s*[-|].*$/, '').trim()
   const ht = html.match(/<title[^>]*>([^<]+)<\/title>/i)
   if (ht) return ht[1].replace(/\s*[-|].*$/, '').trim()
-  if (md) { const mt = md.match(/^#\s+(.+)$/m); if (mt) return mt[1].trim() }
+  // Markdown title extraction (critical for Jina fallback)
+  if (md) {
+    const mt = md.match(/^#\s+(.+)$/m)
+    if (mt && mt[1].length > 5 && mt[1].length < 300) return mt[1].trim()
+    // Look for bold title patterns in markdown
+    const bt = md.match(/\*\*([^*]{10,200})\*\*/m)
+    if (bt) return bt[1].trim()
+    // First meaningful line
+    const lines = md.split('\n').map(l => l.trim()).filter(l => l.length > 10 && l.length < 300 && !l.startsWith('http') && !l.startsWith('[') && !l.startsWith('!')  && !/^\d+$/.test(l))
+    if (lines.length > 0) return lines[0].replace(/^#+\s*/, '').trim()
+  }
   return 'Produit importé'
 }
 
