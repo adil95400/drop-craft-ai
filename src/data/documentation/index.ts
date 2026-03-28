@@ -28,6 +28,10 @@ import { sourcingAgentDocumentation } from './modules/sourcingAgent';
 import { webhookManagementDocumentation } from './modules/webhookManagement';
 import { dataExportDocumentation } from './modules/dataExport';
 import { notificationPreferencesDocumentation } from './modules/notificationPreferences';
+import { extensionChromeDocumentation } from './modules/extensionChrome';
+import { stripeBillingDocumentation } from './modules/stripeBilling';
+import { priceMonitoringDocumentation } from './modules/priceMonitoring';
+import { returnsAutomationDocumentation } from './modules/returnsAutomation';
 
 import type { ModuleDocumentation, DocumentationSearchResult, PlanType, UserLevel, DOCUMENTATION_CATEGORIES } from './types';
 
@@ -58,6 +62,10 @@ export const ALL_DOCUMENTATION: ModuleDocumentation[] = [
   webhookManagementDocumentation,
   dataExportDocumentation,
   notificationPreferencesDocumentation,
+  extensionChromeDocumentation,
+  stripeBillingDocumentation,
+  priceMonitoringDocumentation,
+  returnsAutomationDocumentation,
 ];
 
 // Export individual modules
@@ -87,6 +95,10 @@ export {
   webhookManagementDocumentation,
   dataExportDocumentation,
   notificationPreferencesDocumentation,
+  extensionChromeDocumentation,
+  stripeBillingDocumentation,
+  priceMonitoringDocumentation,
+  returnsAutomationDocumentation,
 };
 
 // Re-export types
